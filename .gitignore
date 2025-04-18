@@ -42,6 +42,7 @@ build/
 bin/
 
 # CMake
+cmake-build-debug/
 CMakeCache.txt
 CMakeFiles/
 Makefile

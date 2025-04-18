@@ -70,7 +70,7 @@ docker-compose run app /bin/bash
 ## Testing
 All tests are run automatically when you build with Docker. To run tests manually:
 ```bash
-ctest --output-on-failure
+./tests/run_tests
 ```
 
 ## Running the application
