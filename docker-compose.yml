@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /workspace/build
+    command: /bin/bash -c "cmake .. && make && ./tests/run_tests"
