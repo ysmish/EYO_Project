@@ -46,7 +46,7 @@ TEST(SaveToFileTests, SaveVectorWithTrueAndFalse) {
     EXPECT_EQ(contentStream.str(), "100111010");
 }
 
-TEST(SaveToFileTests, DoesNotOverwriteFile) {
+TEST(SaveToFileTests, DoesOverwriteFile) {
     // Create persistence handler
     auto filename = "bloomfilter.dat";
     auto persistenceHandler = FilePersistenceHandler(filename);
@@ -55,7 +55,7 @@ TEST(SaveToFileTests, DoesNotOverwriteFile) {
     std::vector<bool> bitArray1 = {true, false};
     persistenceHandler.save(bitArray1);
 
-    // Save a new bitArray vector in the same file (should append or not overwrite)
+    // Save a new bitArray vector in the same file (should overwrite or not append)
     std::vector<bool> bitArray2 = {false, true};
     persistenceHandler.save(bitArray2);
 
@@ -64,8 +64,8 @@ TEST(SaveToFileTests, DoesNotOverwriteFile) {
     std::ostringstream contentStream;
     contentStream << file.rdbuf();  
 
-    // The file should contain the first and second vectors combined, so we expect "1001"
-    EXPECT_EQ(contentStream.str(), "1001");
+    // The file should contain the second vector, and not combined
+    EXPECT_EQ(contentStream.str(), "01");
 }
 
 TEST(SaveToFileTests, FileCreation) {
