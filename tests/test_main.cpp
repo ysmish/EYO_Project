@@ -2,10 +2,10 @@
 
 // Forward declarations of test functions
 extern void RegisterInsertURLTests();
-extern void RegisterBloomFilterTests();
+extern void RegisterBloomFilterInitializationTests();
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
-    RegisterBloomFilterTests();
+    RegisterBloomFilterInitializationTests();
     return RUN_ALL_TESTS();
 }

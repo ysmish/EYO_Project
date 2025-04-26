@@ -4,7 +4,7 @@ project(MyCppProject VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 enable_testing()
 
-file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
 # Library target
 add_library(project_lib ${SOURCES})
