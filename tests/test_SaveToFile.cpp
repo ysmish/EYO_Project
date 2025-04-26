@@ -91,6 +91,6 @@ TEST(SaveToFileTests, InvalidFilePath) {
     std::vector<bool> bitArray = {true, false, true};
     
     // The save function should throw an error because the directory doesn't exist
-    EXPECT_THROW(persistenceHandler.save(bitArray), std::runtime_error);
+    EXPECT_THROW(persistenceHandler.save(bitArray), std::system_error);
 }
 
