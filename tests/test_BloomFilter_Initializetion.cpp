@@ -52,6 +52,3 @@ TEST(BloomFilterInitializationTest, EmptyInitialization) {
             std::invalid_argument
     );
 }
-
-void RegisterBloomFilterInitializationTests() {
-}
