@@ -15,6 +15,10 @@ bool BloomFilter::contains(const std::string &key) const {
     return false; // Placeholder implementation
 }
 
+bool BloomFilter::isBlacklisted(const std::string &key) const {
+    return false; // Placeholder implementation
+}
+
 size_t BloomFilter::getBitArraySize() const {
     return 0;
 }
