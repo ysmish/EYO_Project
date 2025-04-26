@@ -53,6 +53,3 @@ TEST(InsertURLTest, InsertInvalidURL) {
     std::string invalidUrl = "invalid_url";
     EXPECT_THROW(bloomFilter->insert(invalidUrl), std::invalid_argument);
 }
-
-void RegisterInsertURLTests() {
-}
