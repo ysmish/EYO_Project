@@ -9,7 +9,14 @@
 #include <stdexcept>
 #include <algorithm>
 BloomFilter::BloomFilter(size_t size, std::vector<std::unique_ptr<HashFunction>> hashFunctions, std::unique_ptr<PersistenceHandler> persistenceHandler)
-    : bitArray(size, false), hashFunctions(std::move(hashFunctions)), persistenceHandler(std::move(persistenceHandler)), blacklistedURLs() {
+    : persistenceHandler(std::move(persistenceHandler)), blacklistedURLs() {
+    // Throw exception if size is 0 or hash functions are empty
+    if (size <= 0 || hashFunctions.empty()) {
+        throw std::invalid_argument("Bloom filter size must be greater than 0 and hash functions must be provided.");
+    }
+
+    this->bitArray = std::vector<bool>(size, false);
+    this->hashFunctions = std::move(hashFunctions);
 }
 void BloomFilter::insert(const std::string &key) {
     // Check if the key is already blacklisted
@@ -47,8 +54,8 @@ bool BloomFilter::isBlacklisted(const std::string &key) const {
 }
 
 size_t BloomFilter::getBitArraySize() const {
-    return 0;
+    return bitArray.size();
 }
 size_t BloomFilter::getHashFunctionCount() const {
-    return 0;
+    return hashFunctions.size();
 }

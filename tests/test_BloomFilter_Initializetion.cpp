@@ -25,7 +25,7 @@ TEST(BloomFilterInitializationTest, AllocatesCorrectSize) {
     );
     // Check if the bit array is of the correct size
     EXPECT_EQ(bloomFilter->getBitArraySize(), size);
-    EXPECT_EQ(bloomFilter->getHashFunctionCount(), hashFunctions.size());
+    EXPECT_EQ(bloomFilter->getHashFunctionCount(), 2);
 }
 
 TEST(BloomFilterInitializationTest, EmptyInitialization) {
