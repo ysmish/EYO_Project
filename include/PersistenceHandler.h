@@ -11,9 +11,6 @@ public:
     virtual ~PersistenceHandler() = default;
     virtual void save(const std::vector<bool>& bitArray) = 0;
     virtual std::vector<bool> load() = 0;
-    bool isSaved() const; // Check if data is saved
-private:
-    bool saved; // Flag to check if data is saved
 };
 
 
