@@ -1,10 +1,8 @@
-//
-// Created by A on 18/4/2025.
-//
+#ifndef PERSISTENCE_HANDLER_H
+#define PERSISTENCE_HANDLER_H
 
-#ifndef ASP_PROJECT_PERSISTENCEHANDLER_H
-#define ASP_PROJECT_PERSISTENCEHANDLER_H
 #include <vector>
+#include <string>
 
 class PersistenceHandler {
 public:
@@ -13,5 +11,4 @@ public:
     virtual std::vector<bool> load() = 0;
 };
 
-
-#endif //ASP_PROJECT_PERSISTENCEHANDLER_H
+#endif 
