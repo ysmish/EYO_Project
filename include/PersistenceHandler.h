@@ -1,4 +1,3 @@
-// PersistenceHandler.h
 #ifndef PERSISTENCE_HANDLER_H
 #define PERSISTENCE_HANDLER_H
 
@@ -12,4 +11,4 @@ public:
     virtual std::vector<bool> load() = 0;
 };
 
-#endif // PERSISTENCE_HANDLER_H
+#endif 

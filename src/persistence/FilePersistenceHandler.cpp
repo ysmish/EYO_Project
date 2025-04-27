@@ -1,4 +1,3 @@
-// FilePersistenceHandler.cpp
 #include "FilePersistenceHandler.h"
 #include "PersistenceHandler.h"
 #include <fstream>
