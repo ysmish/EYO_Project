@@ -24,7 +24,7 @@ std::string executeProgram(const std::vector<std::string>& inputLines) {
     inputFile.close();
 
     // Execute program with input redirection
-    std::string cmd = "./url_filter < test_input.txt";
+    std::string cmd = "./main_app < test_input.txt";
     std::array<char, 128> buffer;
     std::string result;
     

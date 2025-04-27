@@ -16,9 +16,11 @@ BloomFilter::BloomFilter(size_t size,
 
     this->bitArray = std::vector<bool>(size, false);
     this->hashFunctions = std::move(hashFunctions);
-    std::vector<std::string> loadedBlacklist = persistenceHandler->load();
-    for (std::string &url : loadedBlacklist) {
-        this->insert(url);
+    // Load existing blacklisted URLs from the persistence handler
+    try {
+        this->blacklistedURLs = this->persistenceHandler->load();
+    } catch (const std::exception &e) {
+        throw std::runtime_error("Failed to load blacklisted URLs: " + std::string(e.what()));
     }
 }
 
@@ -46,6 +48,7 @@ void BloomFilter::insert(const std::string &key) {
         size_t hashValue = hashFunction->hash(key) % bitArray.size();
         bitArray[hashValue] = true;
     }
+    persistenceHandler->save(blacklistedURLs); // Save the updated blacklisted URLs
 }
 
 
