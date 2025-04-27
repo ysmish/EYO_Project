@@ -9,6 +9,7 @@
 class StdHashFunction : public HashFunction {
 private:
     size_t rounds;
+    static std::hash<std::string> hashFunction;
 public:
     StdHashFunction(size_t rounds = 1);
     size_t hash(const std::string& input) const override;
