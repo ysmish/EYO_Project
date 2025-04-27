@@ -9,24 +9,20 @@
 #include <stdexcept>
 
 TEST(BloomFilterInitializationTest, AllocatesCorrectSize) {
-    size_t size = 1000;
-    std::vector<std::unique_ptr<HashFunction>> hashFunctions;
-    hashFunctions.push_back(std::make_unique<StdHashFunction>(1));
-    hashFunctions.push_back(std::make_unique<StdHashFunction>(2));
-
-    // Create persistence handler
-    auto persistenceHandler = std::make_unique<FilePersistenceHandler>("bloomfilter.dat");
-
-    // Create Bloom filter
-    auto bloomFilter = std::make_unique<BloomFilter>(
-            size,
-            std::move(hashFunctions),
-            std::move(persistenceHandler)
-    );
-    // Check if the bit array is of the correct size
-    EXPECT_EQ(bloomFilter->getBitArraySize(), size);
-    EXPECT_EQ(bloomFilter->getHashFunctionCount(), 2);
-}
+        size_t size = 1000;
+        std::vector<std::unique_ptr<HashFunction>> hashFunctions;
+        hashFunctions.push_back(std::make_unique<StdHashFunction>(1));
+        hashFunctions.push_back(std::make_unique<StdHashFunction>(2));
+        
+        size_t expectedHashFunctionCount = hashFunctions.size();
+        auto persistenceHandler = std::make_unique<FilePersistenceHandler>("bloomfilter.dat");
+        
+        // Create Bloom filter with size, hash functions, and persistence handler
+        auto bloomFilter = std::make_unique<BloomFilter>(size, std::move(hashFunctions), std::move(persistenceHandler));
+        
+        EXPECT_EQ(bloomFilter->getBitArraySize(), size);
+        EXPECT_EQ(bloomFilter->getHashFunctionCount(), expectedHashFunctionCount);
+    }
 
 TEST(BloomFilterInitializationTest, EmptyInitialization) {
     // Test empty initialization

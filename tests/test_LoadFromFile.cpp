@@ -16,22 +16,23 @@ TEST(LoadFromFileTests, LoadEmptyFile) {
     std::ofstream(filename).close();  // Create an empty file
 
     auto persistenceHandler = FilePersistenceHandler(filename);
-    std::vector<bool> loaded = persistenceHandler.load();
+    std::vector<std::string> loaded = persistenceHandler.load();
 
     EXPECT_TRUE(loaded.empty());
 }
 
-TEST(LoadFromFileTests, LoadVectorWithTrueAndFalse) {
-    // Prepare a file with bitArray "100111010"
+TEST(LoadFromFileTests, LoadVectorWithURLs) {
+    // Prepare a file with URLs
     auto filename = "vector_bloomfilter.dat";
     std::ofstream file(filename);
-    file << "100111010";
+    file << "http://example.com" << std::endl;
+    file << "https://test.com" << std::endl;
     file.close();
 
     auto persistenceHandler = FilePersistenceHandler(filename);
-    std::vector<bool> loaded = persistenceHandler.load();
+    std::vector<std::string> loaded = persistenceHandler.load();
 
-    std::vector<bool> expected = {true, false, false, true, true, true, false, true, false};
+    std::vector<std::string> expected = {"http://example.com", "https://test.com"};
     EXPECT_EQ(loaded, expected);
 }
 
@@ -44,10 +45,12 @@ TEST(LoadFromFileTests, FileDoesNotExist) {
 }
 
 TEST(LoadFromFileTests, LoadFileWithInvalidCharacters) {
-    // Write an invalid string into file (e.g., "10x10")
+    // Write an invalid string into the file
     auto filename = "invalidchar_bloomfilter.dat";
     std::ofstream file(filename);
-    file << "10x10";
+    file << "http://example.com" << std::endl;
+    file << "https://test.com" << std::endl;
+    file << "10x10" << std::endl;  // Invalid URL
     file.close();
 
     auto persistenceHandler = FilePersistenceHandler(filename);
