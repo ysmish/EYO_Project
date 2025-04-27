@@ -5,7 +5,6 @@
 
 class HashFunction {
 public:
-    virtual ~HashFunction() = default;
     virtual size_t hash(const std::string& input) const = 0;
 };
 
