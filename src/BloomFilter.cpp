@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <stdexcept>
 #include <algorithm>
 BloomFilter::BloomFilter(size_t size, std::vector<std::unique_ptr<HashFunction>> hashFunctions, std::unique_ptr<PersistenceHandler> persistenceHandler)
     : bitArray(size, false), hashFunctions(std::move(hashFunctions)), persistenceHandler(std::move(persistenceHandler)), blacklistedURLs() {
@@ -14,6 +15,9 @@ void BloomFilter::insert(const std::string &key) {
     // Check if the key is already blacklisted
     if (isBlacklisted(key)) {
         return; // No need to insert if it's already blacklisted
+    }
+    if (key.empty()) {
+        throw std::invalid_argument("Empty keys are not allowed in the filter");
     }
     // Add the key to the blacklisted URLs
     blacklistedURLs.push_back(key);
@@ -25,6 +29,9 @@ void BloomFilter::insert(const std::string &key) {
 }
 
 bool BloomFilter::contains(const std::string &key) const {
+    if (key.empty()) {
+        return false; // Empty keys are not considered in the filter
+    }
     // if one of the hash functions returns false then the key is not in the filter
     for (const auto &hashFunction : hashFunctions) {
         size_t hashValue = hashFunction->hash(key) % bitArray.size();
