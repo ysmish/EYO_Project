@@ -21,6 +21,7 @@ public:
                 std::unique_ptr<PersistenceHandler> persistenceHandler);
     void insert(const std::string &key);
     bool contains(const std::string &key) const;
+    bool isBlacklisted(const std::string &key) const;
     size_t getBitArraySize() const;
     size_t getHashFunctionCount() const;
 };
