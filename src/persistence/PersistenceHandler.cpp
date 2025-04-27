@@ -3,3 +3,7 @@
 //
 
 #include "PersistenceHandler.h"
+
+bool PersistenceHandler::isSaved() const {
+    return saved; // Return the saved status
+}
