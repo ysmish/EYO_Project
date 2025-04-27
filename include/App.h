@@ -1,7 +1,3 @@
-//
-// Created by A on 27/4/2025.
-//
-
 #ifndef ASP_APP_H
 #define ASP_APP_H
 #include <map>

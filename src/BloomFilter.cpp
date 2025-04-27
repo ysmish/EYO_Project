@@ -6,15 +6,20 @@
 #include <algorithm>
 #include <regex>
 
-BloomFilter::BloomFilter(size_t size, std::vector<std::unique_ptr<HashFunction>> hashFunctions, std::unique_ptr<PersistenceHandler> persistenceHandler)
-    : persistenceHandler(std::move(persistenceHandler)), blacklistedURLs() {
-    // Throw exception if size is 0 or hash functions are empty
+BloomFilter::BloomFilter(size_t size,
+    std::vector<std::unique_ptr<HashFunction>> hashFunctions,
+    std::unique_ptr<PersistenceHandler> persistenceHandler)
+: persistenceHandler(std::move(persistenceHandler)), blacklistedURLs() {
     if (size <= 0 || hashFunctions.empty()) {
         throw std::invalid_argument("Bloom filter size must be greater than 0 and hash functions must be provided.");
     }
 
     this->bitArray = std::vector<bool>(size, false);
     this->hashFunctions = std::move(hashFunctions);
+    std::vector<std::string> loadedBlacklist = persistenceHandler->load();
+    for (std::string &url : loadedBlacklist) {
+        this->insert(url);
+    }
 }
 
 void BloomFilter::insert(const std::string &key) {
