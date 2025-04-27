@@ -2,41 +2,45 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <regex>
 
 FilePersistenceHandler::FilePersistenceHandler(const std::string &filename) : filename(filename) {}
 
-void FilePersistenceHandler::save(const std::vector<bool> &bitArray) {
+void FilePersistenceHandler::save(const std::vector<std::string>& blacklistedURLs) {
+    // Attempt to open the file for writing
     std::ofstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Could not open file for saving: " + filename);
+    
+    // Check if the file stream opened successfully
+    if (!file) {
+        throw std::system_error(std::error_code(), "Could not open file for saving: " + filename);
     }
 
-    for (bool bit : bitArray) {
-        file << bit;
+    // Save each URL on a new line
+    for (const std::string& url : blacklistedURLs) {
+        file << url << std::endl;
     }
 
     file.close();
 }
 
-std::vector<bool> FilePersistenceHandler::load() {
-    std::vector<bool> bitArray;
+std::vector<std::string> FilePersistenceHandler::load() {
+    std::vector<std::string> blacklistedURLs;
     std::ifstream file(filename);
 
     if (!file.is_open()) {
         throw std::system_error(std::error_code(), "Could not open file for loading: " + filename);
     }
 
-    char bit;
-    while (file >> bit) {
-        if (bit == '0') {
-            bitArray.push_back(false);
-        } else if (bit == '1') {
-            bitArray.push_back(true);
-        } else {
-            throw std::ios_base::failure("Invalid character in file: " + filename);
+    std::string line;
+    std::regex urlCheck(R"(^((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?$)");
+
+    while (std::getline(file, line)) {
+        if (!std::regex_match(line, urlCheck)) {
+            throw std::ios_base::failure("Invalid URL format in file: " + filename);
         }
+        blacklistedURLs.push_back(line);
     }
 
     file.close();
-    return bitArray;
+    return blacklistedURLs;
 }

@@ -10,87 +10,84 @@
 #include <fstream>
 #include <sstream>
 
-TEST(SaveToFileTests, SaveEmptyVector) {
+TEST(SaveToFileTests, SaveEmptyBlacklistedURLs) {
     // Create persistence handler
     auto filename = "bloomfilter.dat";
     auto persistenceHandler = FilePersistenceHandler(filename);
 
-    // Save the empty bitArray vector in the file
-    std::vector<bool> bitArray = {};
-    persistenceHandler.save(bitArray);
+    // Save the empty blacklistedURLs vector in the file
+    std::vector<std::string> blacklistedURLs = {};
+    persistenceHandler.save(blacklistedURLs);
 
-     // Get the bitArray vector from the file and check if the load succseeded
-     std::ifstream file(filename);
-     std::ostringstream contentStream;
-     // Read entire file content into the string stream
-     contentStream << file.rdbuf();  
- 
-     EXPECT_EQ(contentStream.str(), "");
-}
-
-TEST(SaveToFileTests, SaveVectorWithTrueAndFalse) {
-    // Create persistence handler
-    auto filename = "bloomfilter.dat";
-    auto persistenceHandler = FilePersistenceHandler(filename);
-
-    // Save the bitArray vector in the file
-    std::vector<bool> bitArray = {true, false, false, true, true, true, false, true, false};
-    persistenceHandler.save(bitArray);
-
-    // Get the bitArray vector from the file and check if the load succseeded
+    // Get the blacklistedURLs vector from the file and check if the load succeeded
     std::ifstream file(filename);
     std::ostringstream contentStream;
-    // Read entire file content into the string stream
-    contentStream << file.rdbuf();  
+    contentStream << file.rdbuf();
 
-    EXPECT_EQ(contentStream.str(), "100111010");
+    EXPECT_EQ(contentStream.str(), "");
 }
 
-TEST(SaveToFileTests, DoesOverwriteFile) {
+TEST(SaveToFileTests, SaveBlacklistedURLs) {
     // Create persistence handler
     auto filename = "bloomfilter.dat";
     auto persistenceHandler = FilePersistenceHandler(filename);
 
-    // Save the first bitArray vector in the file
-    std::vector<bool> bitArray1 = {true, false};
-    persistenceHandler.save(bitArray1);
+    // Save the blacklistedURLs vector in the file
+    std::vector<std::string> blacklistedURLs = {"http://example.com", "https://test.com"};
+    persistenceHandler.save(blacklistedURLs);
 
-    // Save a new bitArray vector in the same file (should overwrite or not append)
-    std::vector<bool> bitArray2 = {false, true};
-    persistenceHandler.save(bitArray2);
-
-    // Get the bitArray vector from the file and check if the load succeeded
+    // Get the blacklistedURLs vector from the file and check if the load succeeded
     std::ifstream file(filename);
     std::ostringstream contentStream;
-    contentStream << file.rdbuf();  
+    contentStream << file.rdbuf();
 
-    // The file should contain the second vector, and not combined
-    EXPECT_EQ(contentStream.str(), "01");
+    EXPECT_EQ(contentStream.str(), "http://example.com\nhttps://test.com\n");
 }
 
-TEST(SaveToFileTests, FileCreation) {
+TEST(SaveToFileTests, DoesOverwriteFileWithBlacklistedURLs) {
+    // Create persistence handler
+    auto filename = "bloomfilter.dat";
+    auto persistenceHandler = FilePersistenceHandler(filename);
+
+    // Save the first blacklistedURLs vector in the file
+    std::vector<std::string> blacklistedURLs1 = {"http://example.com"};
+    persistenceHandler.save(blacklistedURLs1);
+
+    // Save a new blacklistedURLs vector in the same file (should overwrite or not append)
+    std::vector<std::string> blacklistedURLs2 = {"https://test.com"};
+    persistenceHandler.save(blacklistedURLs2);
+
+    // Get the blacklistedURLs vector from the file and check if the load succeeded
+    std::ifstream file(filename);
+    std::ostringstream contentStream;
+    contentStream << file.rdbuf();
+
+    // The file should contain the second vector, not combined
+    EXPECT_EQ(contentStream.str(), "https://test.com\n");
+}
+
+TEST(SaveToFileTests, FileCreationWithBlacklistedURLs) {
     // Create persistence handler
     auto filename = "created_bloomfilter.dat";
     auto persistenceHandler = FilePersistenceHandler(filename);
 
-    // Save the bitArray vector in the file
-    std::vector<bool> bitArray = {true, false, true};
-    persistenceHandler.save(bitArray);
+    // Save the blacklistedURLs vector in the file
+    std::vector<std::string> blacklistedURLs = {"http://example.com"};
+    persistenceHandler.save(blacklistedURLs);
 
     // Check if the file was created
     std::ifstream file(filename);
     EXPECT_TRUE(file.is_open());  // File should exist and be openable
 }
 
-TEST(SaveToFileTests, InvalidFilePath) {
+TEST(SaveToFileTests, InvalidFilePathForBlacklistedURLs) {
     // Create persistence handler with a non-existent directory
     auto filename = "/nonexistent_directory/bloomfilter.dat";
     auto persistenceHandler = FilePersistenceHandler(filename);
 
     // Attempt to save the vector to the non-existent path
-    std::vector<bool> bitArray = {true, false, true};
-    
-    // The save function should throw an error because the directory doesn't exist
-    EXPECT_THROW(persistenceHandler.save(bitArray), std::system_error);
-}
+    std::vector<std::string> blacklistedURLs = {"http://example.com"};
 
+    // The save function should throw an error because the directory doesn't exist
+    EXPECT_THROW(persistenceHandler.save(blacklistedURLs), std::system_error);
+}

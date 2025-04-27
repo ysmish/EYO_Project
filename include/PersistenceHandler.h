@@ -6,9 +6,9 @@
 
 class PersistenceHandler {
 public:
+    virtual void save(const std::vector<std::string>& blacklistedURLs) = 0;
+    virtual std::vector<std::string> load() = 0;
     virtual ~PersistenceHandler() = default;
-    virtual void save(const std::vector<bool>& bitArray) = 0;
-    virtual std::vector<bool> load() = 0;
 };
 
 #endif 
