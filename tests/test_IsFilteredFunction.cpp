@@ -36,8 +36,8 @@ TEST(BloomFilterIsFilteredTest, DetectsFilteredUrl) {
 
     // Check empty URL behavior
     std::string emptyUrl = "";
-    bool isFiltered = bloomFilter->contains(emptyUrl);
-    bool isBlacklisted = bloomFilter->isBlacklisted(emptyUrl);
+    isFiltered = bloomFilter->contains(emptyUrl);
+    isBlacklisted = bloomFilter->isBlacklisted(emptyUrl);
     
     // Bloom filter should consistently handle empty URLs
     EXPECT_FALSE(isBlacklisted) << "Empty URL should not be in actual filter list by default";
@@ -51,9 +51,9 @@ TEST(BloomFilterIsFilteredTest, DetectsFilteredUrl) {
     EXPECT_TRUE(isBlacklisted) << "Empty URL should be in the actual filter list after adding it";
 
     // Check that a different URL is correctly identified as not filtered
-    std::string testUrl = "www.different-example.com";
-    bool isFiltered = bloomFilter->contains(testUrl);
-    bool isBlacklisted = bloomFilter->isBlacklisted(testUrl);
+    testUrl = "www.different-example.com";
+    isFiltered = bloomFilter->contains(testUrl);
+    isBlacklisted = bloomFilter->isBlacklisted(testUrl);
     
     // Either the URL is correctly identified as not filtered, or it's a false positive
     if (!isFiltered) {

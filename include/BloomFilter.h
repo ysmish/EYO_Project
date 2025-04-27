@@ -13,6 +13,7 @@
 class BloomFilter {
 private:
     std::vector<bool> bitArray;
+    std::vector<std::string> blacklistedURLs;
     std::vector<std::unique_ptr<HashFunction>> hashFunctions;
     std::unique_ptr<PersistenceHandler> persistenceHandler;
 public:
