@@ -1,84 +1,118 @@
-# ASP_Project
-Advanced system programming Project.
+# ASP Project: Bloom Filter Application
+
+## Overview
+This project implements a **Bloom Filter** application in C++ to efficiently manage and query blacklisted URLs. The application supports inserting URLs, checking if a URL is blacklisted, and persisting data across runs using a file-based persistence mechanism.
+
+The project is containerized using Docker and includes unit tests to ensure correctness.
+
+---
 
 ## Features
+- **Bloom Filter Implementation**:
+  - Efficiently checks membership of URLs.
+  - Supports multiple hash functions.
+  - Persists blacklisted URLs to a file for future use.
 
-- 🐋 Dockerized development environment
-- ✅ Unit testing with Google Test (GTest)
-- 🏗 CMake-based build system
-- 📁 Organized project structure
+- **Command-Based Interface**:
+  - `1 <URL>`: Insert a URL into the Bloom Filter.
+  - `2 <URL>`: Check if a URL is blacklisted.
+
+- **Persistence**:
+  - Blacklisted URLs are saved to a file (`data/bloom_filter_data.txt`) and reloaded on application startup.
+
+- **Unit Testing**:
+  - Comprehensive tests using Google Test (`gtest`).
+  - Tests include initialization, persistence, main application flow, and more.
+
+- **Dockerized Environment**:
+  - Separate services for running the application and tests using `docker-compose`.
+
+---
 
 ## Project Structure
-project-root/
+- **Source Code**:
+  - `src/`: Contains the main application logic.
+  - `include/`: Header files for the application.
 
-├── build/ # Build artifacts (ignored)
+- **Tests**:
+  - `tests/`: Unit tests for the Bloom Filter and related components.
 
-├── include/ # Public headers
+- **Data**
+  - `data/`: all data related to the bloom filter persistence.
 
-├── src/ # Source code
+- **Build Configuration**:
+  - `CMakeLists.txt`: Build configuration for the project.
+  - `Dockerfile`: Docker image setup for building and running the application.
 
-├── tests/ # Unit tests
+- **Docker Compose**:
+  - `docker-compose.yml`: Defines services for running the app and tests.
 
-├── CMakeLists.txt # Root CMake config
+---
 
-├── Dockerfile # Dockerfile for building the image
+## How to Build and Run
 
-├── docker-compose.yml # Dev environment setup
+### Prerequisites
+- Docker and Docker Compose installed.
+- CMake (if building locally).
 
-└── README.md # This file
+### Build and Run with Docker
+1. **Build the Docker Images**:
+   ```sh
+   docker-compose build
+   ```
 
+2. **Run the Application**:
+   ```sh
+   docker-compose run app
+   ```
 
-## Prerequisites
+3. **Run the Tests**:
+   ```sh
+   docker-compose run tests
+   ```
 
-- Docker (with Docker Compose)
-- Git
-- (Optional) CMake and build tools if not using Docker
+---
 
-## Getting Started
+## Example Usage
 
-### 1. Clone the repository
+![run example](data/run_example.png)
 
-```bash
-git clone https://github.com/Mro2903/ASP_Project.git
-cd ASP_Project
+### Input
+```plaintext
+8 1 2
+1 www.example.com
+2 www.example.com
+2 www.test.com
 ```
 
-### 2. Build and run with Docker
-```bash
-docker-compose up
+### Output
+```plaintext
+true true
+true false
 ```
-This will:
 
-- Build the development container
-
-- Configure CMake
-
-- Build the project
-
-- Run all unit tests
-
-### 3. Development workflow
-After making changes:
-```bash
-# Rebuild and run tests
-docker-compose run app /bin/bash -c "cmake .. && make && ./tests/run_tests"
-
-# Or enter the container for interactive development:
-docker-compose run app /bin/bash
-```
+---
 
 ## Testing
-All tests are run automatically when you build with Docker. To run tests manually:
-```bash
-./tests/run_tests
-```
+The project includes unit tests for:
+- Bloom Filter initialization and functionality.
+- Persistence of blacklisted URLs.
+- Handling of invalid inputs.
 
-## Running the application
-To run the application, you can use the following command inside the Docker container:
-```bash
-# Run the main application
-docker-compose run app /bin/bash -c "./main_app"
-
-# Or enter the container for interactive development:
-docker-compose run app /bin/bash
+To run the tests:
+```sh
+docker-compose run tests
 ```
+![tests run example](data/tests.png)
+---
+
+## Future Improvements
+- Implement additional commands for managing blacklisted URLs.
+- create more ways to handle input and persistence
+
+---
+
+## Contributors
+- *Omri Bareket*
+- *Yuli Smishkis*
+- *Eviatar Sayada*

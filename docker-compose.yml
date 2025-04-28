@@ -1,9 +1,14 @@
-version: '3.8'
-
 services:
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /workspace/build
+    command: ./tests/run_tests
+  
   app:
     build:
       context: .
       dockerfile: Dockerfile
     working_dir: /workspace/build
-    command: /bin/bash -c "cmake .. && make && ./tests/run_tests"
+    command: ./main_app
