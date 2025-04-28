@@ -3,13 +3,19 @@
 #include <sstream>
 #include <stdexcept>
 #include <regex>
+#include <filesystem> 
 
 FilePersistenceHandler::FilePersistenceHandler(const std::string &filename) : filename(filename) {}
 
 void FilePersistenceHandler::save(const std::vector<std::string>& blacklistedURLs) {
+    // Ensure the 'data' directory exists
+    if (!std::filesystem::exists("data")) {
+        std::filesystem::create_directory("data");
+    }
+
     // Attempt to open the file for writing
-    std::ofstream file(filename);
-    
+    std::ofstream file(filename); // Use std::ofstream directly
+
     // Check if the file stream opened successfully
     if (!file) {
         throw std::system_error(std::error_code(), "Could not open file for saving: " + filename);
@@ -25,9 +31,15 @@ void FilePersistenceHandler::save(const std::vector<std::string>& blacklistedURL
 
 std::vector<std::string> FilePersistenceHandler::load() {
     std::vector<std::string> blacklistedURLs;
+    
+    // Ensure the 'data' directory exists
+    if (!std::filesystem::exists("data")) {
+        std::filesystem::create_directory("data");
+    }
+
     std::ifstream file(filename);
 
-    // create a new file if it does not exist
+    // Create a new file if it does not exist
     if (!file) {
         std::ofstream newFile(filename);
         newFile.close(); // Close the file after creating it
