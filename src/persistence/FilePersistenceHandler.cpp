@@ -27,8 +27,10 @@ std::vector<std::string> FilePersistenceHandler::load() {
     std::vector<std::string> blacklistedURLs;
     std::ifstream file(filename);
 
-    if (!file.is_open()) {
-        throw std::system_error(std::error_code(), "Could not open file for loading: " + filename);
+    // create a new file if it does not exist
+    if (!file) {
+        std::ofstream newFile(filename);
+        newFile.close(); // Close the file after creating it
     }
 
     std::string line;
