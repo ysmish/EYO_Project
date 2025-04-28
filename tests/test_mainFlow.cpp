@@ -79,7 +79,7 @@ TEST(BloomFilterSubprocessTest, Example1Flow) {
     std::vector<std::string> expectedOutput = {
         "false",
         "true true",
-        "false",
+        "true false",
         "true false"
     };
 

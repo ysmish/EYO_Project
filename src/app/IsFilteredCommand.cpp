@@ -14,5 +14,9 @@ void IsFilteredCommand::execute(std::string url) {
     bool contains = bloomFilter->contains(url);
     bool isBlacklisted = bloomFilter->isBlacklisted(url);
     std::cout << std::boolalpha; // Print boolean values as true/false
-    std::cout << contains << " " << isBlacklisted << std::endl;
+    std::cout << contains;
+    if (contains) {
+        std::cout << " " << isBlacklisted; // Print the blacklisted status if the URL is in the filter
+    }
+    std::cout << std::endl; // Print a newline character
 }
