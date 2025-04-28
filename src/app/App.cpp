@@ -41,9 +41,13 @@ void App::run() {
     while(true) { // Infinite loop to read input
         output input = inputHandler->getInput(); // Get the input from the user
         try {
+            if (commands.find(input.command) == commands.end()) { // Check if the command exists in the map
+                std::cerr << "Invalid command: " << input.command << std::endl; // Print an error message if the command is invalid
+                continue; // Continue to the next iteration
+            }
             commands[input.command]->execute(input.url); // Execute the command with the provided URL
         } catch (const std::exception& e) { // Catch other exceptions
-            std::cerr << "No such command: " << input.command << std::endl; // Print an error message if the command is not found
+            continue; // Ignore the exception and continue to the next iteration
         }
     }
 }

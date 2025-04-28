@@ -18,7 +18,12 @@ BloomFilter::BloomFilter(size_t size,
     this->hashFunctions = std::move(hashFunctions);
     // Load existing blacklisted URLs from the persistence handler
     try {
-        this->blacklistedURLs = this->persistenceHandler->load();
+        for (const auto &url : this->persistenceHandler->load()) {
+            if (!std::regex_match(url, std::regex(R"(^((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?$)"))) {
+                throw std::ios_base::failure("Invalid URL format in file: " + url);
+            }
+            insert(url); // Insert the URL into the filter
+        }
     } catch (const std::exception &e) {
         throw std::runtime_error("Failed to load blacklisted URLs: " + std::string(e.what()));
     }

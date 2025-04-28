@@ -6,9 +6,6 @@
 #include <stdexcept>
 
 InsertCommand::InsertCommand(BloomFilter* bloomFilter) {
-    if (bloomFilter == nullptr) {
-        throw std::invalid_argument("Bloom filter cannot be null.");
-    }
     this->bloomFilter = bloomFilter; // Initialize the Bloom filter pointer
 }
 

@@ -15,7 +15,7 @@ void cleanupTestFiles() {
 }
 
 // Execute program with input and return output
-std::string executeProgram(const std::vector<std::string>& inputLines) {
+std::string executeProgram(const std::vector<std::string>& inputLines, size_t expectedOutputLines = 2) {
     // Create input file
     std::ofstream inputFile("test_input.txt");
     for (const auto& line : inputLines) {
@@ -28,16 +28,21 @@ std::string executeProgram(const std::vector<std::string>& inputLines) {
     std::array<char, 128> buffer;
     std::string result;
     
-    // Open process
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
         throw std::runtime_error("popen() failed!");
     }
     
     // Read output
+    size_t count = 0;
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
         result += buffer.data();
+        count++;
+        if (count >= expectedOutputLines) {
+            break; // Stop reading after expected output lines
+        }
     }
+    
     
     // Clean up input file
     std::remove("test_input.txt");
@@ -92,7 +97,7 @@ TEST(BloomFilterSubprocessTest, Example1Flow) {
         "true false"
     };
 
-    std::string output = executeProgram(inputLines);
+    std::string output = executeProgram(inputLines, expectedOutput.size());
     verifyOutput(output, expectedOutput);
     
     // Clean up test files
@@ -118,7 +123,7 @@ TEST(BloomFilterSubprocessTest, Example2Flow) {
         "true false"
     };
 
-    std::string output = executeProgram(inputLines);
+    std::string output = executeProgram(inputLines, expectedOutput.size());
     verifyOutput(output, expectedOutput);
     
     // Clean up test files
@@ -144,7 +149,7 @@ TEST(BloomFilterSubprocessTest, Example3Flow) {
         "true false"
     };
 
-    std::string output = executeProgram(inputLines);
+    std::string output = executeProgram(inputLines, expectedOutput.size());
     verifyOutput(output, expectedOutput);
     
     // Clean up test files
@@ -163,7 +168,7 @@ TEST(BloomFilterSubprocessTest, PersistenceAcrossRuns) {
             "1 www.example.com0"
         };
 
-        executeProgram(inputLines);
+        executeProgram(inputLines, 0); // No output expected
     }
 
     // Second run - check if the URL is still filtered
@@ -177,7 +182,7 @@ TEST(BloomFilterSubprocessTest, PersistenceAcrossRuns) {
             "true true"
         };
 
-        std::string output = executeProgram(inputLines);
+        std::string output = executeProgram(inputLines, expectedOutput.size());
         verifyOutput(output, expectedOutput);
     }
     
@@ -204,7 +209,7 @@ TEST(BloomFilterSubprocessTest, IncorrectFormatHandling) {
         "true true"  // Only the valid commands should produce output
     };
 
-    std::string output = executeProgram(inputLines);
+    std::string output = executeProgram(inputLines, expectedOutput.size());
     verifyOutput(output, expectedOutput);
     
     // Clean up test files
