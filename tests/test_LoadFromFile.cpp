@@ -41,8 +41,12 @@ TEST(LoadFromFileTests, FileDoesNotExist) {
     auto filename = "nonexistent_bloomfilter.dat";
     auto persistenceHandler = FilePersistenceHandler(filename);
 
+    // Attempt to load from the nonexistent file
+    persistenceHandler.load();
+
+    // Ensure that the file was created (it would be empty, but the file should exist)
     std::ifstream file(filename);
-    EXPECT_TRUE(file.is_open());  // Ensure the file does not exist
+    EXPECT_TRUE(file.is_open());
 }
 
 TEST(LoadFromFileTests, LoadFileWithInvalidCharacters) {
