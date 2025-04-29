@@ -75,7 +75,7 @@ The project is containerized using Docker and includes unit tests to ensure corr
 
 ## Example Usage
 
-![run example](data/run_example.png)
+![run example](images/run_example.png)
 
 ### Input
 ```plaintext
@@ -103,7 +103,7 @@ To run the tests:
 ```sh
 docker-compose run tests
 ```
-![tests run example](data/tests.png)
+![tests run example](images/tests.png)
 ---
 
 ## Future Improvements
