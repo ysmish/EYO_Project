@@ -8,11 +8,6 @@
 FilePersistenceHandler::FilePersistenceHandler(const std::string &filename) : filename(filename) {}
 
 void FilePersistenceHandler::save(const std::vector<std::string>& blacklistedURLs) {
-    // Ensure the 'data' directory exists
-    if (!std::filesystem::exists("data")) {
-        std::filesystem::create_directory("data");
-    }
-
     // Attempt to open the file for writing
     std::ofstream file(filename); // Use std::ofstream directly
 
@@ -31,11 +26,6 @@ void FilePersistenceHandler::save(const std::vector<std::string>& blacklistedURL
 
 std::vector<std::string> FilePersistenceHandler::load() {
     std::vector<std::string> blacklistedURLs;
-    
-    // Ensure the 'data' directory exists
-    if (!std::filesystem::exists("data")) {
-        std::filesystem::create_directory("data");
-    }
 
     std::ifstream file(filename);
 
