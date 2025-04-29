@@ -30,7 +30,7 @@ void App::run() {
         hashFunctions.push_back(std::make_unique<StdHashFunction>(firstLine.rounds[i])); // Add StdHashFunction objects to the vector
     }
     // Create a FilePersistenceHandler object
-    std::unique_ptr<PersistenceHandler> persistenceHandler = std::make_unique<FilePersistenceHandler>("data/bloom_filter_data.txt");
+    std::unique_ptr<PersistenceHandler> persistenceHandler = std::make_unique<FilePersistenceHandler>("../data/bloom_filter_data.txt");
 
     // Create the BloomFilter as a unique pointer
     std::unique_ptr<BloomFilter> bloomFilter = std::make_unique<BloomFilter>(firstLine.size, std::move(hashFunctions), std::move(persistenceHandler));
