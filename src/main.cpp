@@ -7,6 +7,7 @@
 #include <IsFilteredCommand.h>
 #include <ConsoleInputHandler.h>
 
+
 int main() {
     // Create a map to hold the commands
     std::map<std::string, std::unique_ptr<ICommand>> commands;
