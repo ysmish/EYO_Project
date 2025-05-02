@@ -17,11 +17,17 @@
 #include <string>
 #include <regex>
 
-App::App() {
+App::App(std::unique_ptr<InputHandler> inputHandler, std::unique_ptr<PersistenceHandler> persistenceHandler) : inputHandler(std::move(inputHandler)), persistenceHandler(std::move(persistenceHandler)) {
+    // Constructor to initialize the App with input and persistence handlers
+    if (!this->inputHandler) {
+        throw std::invalid_argument("Input handler cannot be null"); // Check if input handler is null
+    }
+    if (!this->persistenceHandler) {
+        throw std::invalid_argument("Persistence handler cannot be null"); // Check if persistence handler is null
+    }
 }
 
 void App::run() {
-    InputHandler *inputHandler = new ConsoleInputHandler(); // Create a ConsoleInputHandler object
 
     // Main loop to run the application
     fistLine firstLine = inputHandler->getFistLine(); // Get the first line of input
@@ -29,13 +35,10 @@ void App::run() {
     for (size_t i = 0; i < firstLine.rounds.size(); ++i) { // Loop through the number of rounds
         hashFunctions.push_back(std::make_unique<StdHashFunction>(firstLine.rounds[i])); // Add StdHashFunction objects to the vector
     }
-    // Create a FilePersistenceHandler object
-    std::unique_ptr<PersistenceHandler> persistenceHandler = std::make_unique<FilePersistenceHandler>("../data/bloom_filter_data.txt");
 
     // Create the BloomFilter as a unique pointer
     std::unique_ptr<BloomFilter> bloomFilter = std::make_unique<BloomFilter>(firstLine.size, std::move(hashFunctions), std::move(persistenceHandler));
 
-    std::map<std::string, ICommand*> commands; // Create a map to hold the commands
     commands["1"] = new InsertCommand(bloomFilter.get()); // Pass a pointer to InsertCommand
     commands["2"] = new IsFilteredCommand(bloomFilter.get()); // Pass a pointer to IsFilteredCommand
     while(true) { // Infinite loop to read input

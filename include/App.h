@@ -8,14 +8,16 @@
 #include <memory>
 #include <string>
 #include <InputHandler.h>
+#include <PersistenceHandler.h>
 #include <command.h>
 
-class App{
+class App {
 private:
-    std::map<std::string, std::unique_ptr<ICommand>> commands; // Map of commands to be executed
     std::unique_ptr<InputHandler> inputHandler; // Input handler to get user input
+    std::unique_ptr<PersistenceHandler> persistenceHandler; // Bloom filter to store the data
+    std::map<std::string, ICommand*> commands; // Map to hold the commands
 public:
-    App(); // Constructor to initialize the App with commands and input handler
+    App(std::unique_ptr<InputHandler> inputHandler, std::unique_ptr<PersistenceHandler> persistenceHandler);
     void run();
 };
 

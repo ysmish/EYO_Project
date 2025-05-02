@@ -5,6 +5,7 @@
 #include <memory>
 #include <InsertCommand.h>
 #include <IsFilteredCommand.h>
+#include <FilePersistenceHandler.h>
 #include <ConsoleInputHandler.h>
 
 
@@ -15,7 +16,10 @@ int main() {
 
     ConsoleInputHandler inputHandler; // Create an instance of ConsoleInputHandler
     // Create the application instance
-    App app;
+    App app(
+        std::make_unique<ConsoleInputHandler>(), // Create a unique pointer to ConsoleInputHandler
+        std::make_unique<FilePersistenceHandler>("../data/bloom_filter_data.txt") // Create a unique pointer to FilePersistenceHandler with the file name
+    );
     
     // Run the application
     app.run();
