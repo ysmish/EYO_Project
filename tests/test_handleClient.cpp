@@ -8,33 +8,50 @@
 #include <array>
 #include <sstream>
 #include <fstream>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 void cleanupTestFiles() {
-    std::remove("test_bloom_filter.dat");
+    // Remove any test files created during the tests
+    std::remove("../data/bloom_filter_data.txt");
 }
 
 // Execute program with input and return output
 std::string executeProgram(const std::vector<std::string>& inputLines) {
-    std::ofstream inputFile("test_input.txt");
-    for (const auto& line : inputLines) {
-        inputFile << line << std::endl;
-    }
-    inputFile.close();
 
-    std::string cmd = "timeout 2 ./main_app < test_input.txt 2>&1";//timeout because program is meant to be infinite
-    std::array<char, 128> buffer;
-    std::string result;
+    std::string cmd = "timeout 2 ./main_app 12345";//timeout because program is meant to be infinite
     
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
         throw std::runtime_error("popen() failed!");
     }
-    
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
+
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) {
+        throw std::runtime_error("Socket creation failed");
     }
-    std::remove("test_input.txt");
-    
+    // Connect to the server (localhost, port 12345)
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(12345);
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
+        throw std::runtime_error("Connection to server failed");
+    }
+    // Send input lines to the server
+    std::array<char, 128> buffer;
+    std::string result;
+    for (const auto& line : inputLines) {
+        std::string command = line + "\n";
+        send(sockfd, command.c_str(), command.size(), 0);
+        // Read the output from the server
+        while (recv(sockfd, buffer.data(), buffer.size(), 0) > 0) {
+            result += std::string(buffer.data());
+            if (result.find('\n') != std::string::npos) {
+                break; // Stop reading after the first line
+            }
+        }
+    }
     return result;
 }
 
@@ -58,55 +75,55 @@ void verifyOutput(const std::string& output, const std::vector<std::string>& exp
     }
 }
 
-// Test for example 1 from the instructions
-TEST(BloomFilterSubprocessTest, Example1Flow) {
-     
+
+TEST(HandleClientTest, Example1) {
+    // Cleanup any previous test files
     cleanupTestFiles();
-    
+
     // Input from example 1
-    std::vector<std::string> inputLines = {
-        "a",             
-        "8 1 2",         
-        "2 www.example.com0",
+    std::vector<std::string> inputLines = {      
+        "GET www.example.com0",
         "x",             
-        "1 www.example.com0", 
-        "2 www.example.com0", 
-        "2 www.example.com1", 
-        "2 www.example.com11" 
+        "POST www.example.com0", 
+        "GET www.example.com0", 
+        "GET www.example.com1", 
+        "GET www.example.com11" 
     };
 
     // Expected output from example 1
     std::vector<std::string> expectedOutput = {
-        "false",
-        "true true",
-        "true false",
-        "true false"
+        "200 OK\n\nfalse",
+        "400 Bad Request",
+        "201 Created",
+        "200 OK\n\ntrue true",
+        "200 OK\n\nfalse",
+        "200 OK\n\nfalse"
     };
 
     std::string output = executeProgram(inputLines);
     verifyOutput(output, expectedOutput);
-    
-     
+
+    // Cleanup any test files created during the test
     cleanupTestFiles();
 }
 
 // Test for example 2 from the instructions
-TEST(BloomFilterSubprocessTest, Example2Flow) {
-     
+TEST(HandleClientTestTest, Example2) {
+    // Cleanup any previous test files
     cleanupTestFiles();
     
     // Input from example 2
-    std::vector<std::string> inputLines = {
-        "8 1",            
-        "1 www.example.com0", 
-        "2 www.example.com0", 
-        "2 www.example.com1"  
+    std::vector<std::string> inputLines = {      
+        "POST www.example.com0", 
+        "GET www.example.com0", 
+        "GET www.example.com1"  
     };
 
     // Expected output from example 2
     std::vector<std::string> expectedOutput = {
-        "true true",
-        "true false"
+        "201 Created",
+        "200 OK\n\ntrue true",
+        "200 OK\n\nfalse"
     };
 
     std::string output = executeProgram(inputLines);
@@ -117,22 +134,24 @@ TEST(BloomFilterSubprocessTest, Example2Flow) {
 }
 
 // Test for example 3 from the instructions
-TEST(BloomFilterSubprocessTest, Example3Flow) {
+TEST(HandleClientTest, Example3) {
      
     cleanupTestFiles();
     
     // Input from example 3
-    std::vector<std::string> inputLines = {
-        "8 2",            
-        "1 www.example.com0", 
-        "2 www.example.com0", 
-        "2 www.example.com4"  
+    std::vector<std::string> inputLines = {        
+        "POST www.example.com0", 
+        "GET www.example.com0", 
+        "DELETE www.example.com0"
+        "GET www.example.com4"  
     };
 
     // Expected output from example 3
     std::vector<std::string> expectedOutput = {
-        "true true",
-        "true false"
+        "201 Created",
+        "200 OK\n\ntrue true",
+        "204 No Content",
+        "200 OK\n\ntrue false"
     };
 
     std::string output = executeProgram(inputLines);
@@ -143,29 +162,26 @@ TEST(BloomFilterSubprocessTest, Example3Flow) {
 }
 
 // Test persistence between runs
-TEST(BloomFilterSubprocessTest, PersistenceAcrossRuns) {
+TEST(HandleClientTest, PersistenceBetweenRuns) {
      
     cleanupTestFiles();
     
     // First run, add a URL
     {
         std::vector<std::string> inputLines = {
-            "8 1 2",
-            "1 www.example.com0"
+            "POST www.example.com0"
         };
-
         executeProgram(inputLines); // No output expected
     }
 
     // Second run, check if the URL is still filtered
     {
         std::vector<std::string> inputLines = {
-            "8 1 2",  
-            "2 www.example.com0"
+            "GET www.example.com0"
         };
 
         std::vector<std::string> expectedOutput = {
-            "true true"
+            "200 OK\n\ntrue true"
         };
 
         std::string output = executeProgram(inputLines);
@@ -176,12 +192,11 @@ TEST(BloomFilterSubprocessTest, PersistenceAcrossRuns) {
 }
 
 // Test for incorrect format handling
-TEST(BloomFilterSubprocessTest, IncorrectFormatHandling) {
+TEST(HandleClientTest, IncorrectFormatHandling) {
      
     cleanupTestFiles();
     
     std::vector<std::string> inputLines = {
-        "8 1 2",
         "3 command", 
         "1",         
         "2",         
@@ -191,7 +206,12 @@ TEST(BloomFilterSubprocessTest, IncorrectFormatHandling) {
     };
 
     std::vector<std::string> expectedOutput = {
-        "true true"  // Only the valid commands should produce output
+        "400 Bad Request",
+        "400 Bad Request",
+        "400 Bad Request",
+        "400 Bad Request",
+        "201 Created",
+        "200 OK\n\nfalse"
     };
 
     std::string output = executeProgram(inputLines);
