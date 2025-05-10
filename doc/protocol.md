@@ -1,4 +1,4 @@
-# Bloom Filter Protocol (Updated)
+# Bloom Filter Protocol 
 
 ## Goal
 To define a reliable, binary-safe TCP communication protocol between a Python-based client and a C++ server that operates on a Bloom filter. This version uses a **length-prefixed** message format for clarity and robustness.
