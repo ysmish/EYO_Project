@@ -15,8 +15,10 @@ class TCPClient:
 
     def send_command(self, command):
         """Send a newline-terminated command string to the server."""
-        message = (command + '\n').encode()
-        header = struct.pack('>I', len(message))   # '>I' means big-endian unsigned int
+        message = (command + '\n').encode('utf-8')
+        length = len(message)
+        network_length = socket.htonl(length)  # Convert to network byte order
+        header = struct.pack('I', network_length)  # Pack as 4-byte unsigned int
         self.sock.sendall(header + message)
 
     def receive_response(self):
@@ -27,7 +29,8 @@ class TCPClient:
             if not raw_length:
                 raise ConnectionError("Connection closed before length header received.")
 
-            message_length = struct.unpack('>I', raw_length)[0]  # '>I' means big-endian unsigned int
+            packed_length = struct.unpack('I', raw_length)[0]
+            message_length = socket.ntohl(packed_length)  # Convert to host byte order
 
             # Read the full message of that length
             message_data = self._recv_exactly(message_length)
