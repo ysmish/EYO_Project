@@ -1,67 +1,100 @@
-# Bloom Filter Protocol
+# Bloom Filter Protocol (Updated)
 
 ## Goal
-To create a connection between the client and the server that will allow the client to interact with the Bloom filter on the server side.
+To define a reliable, binary-safe TCP communication protocol between a Python-based client and a C++ server that operates on a Bloom filter. This version uses a **length-prefixed** message format for clarity and robustness.
 
-## Message Types
+---
 
-### Client → Server
+## Message Exchange Overview
 
-| Command | Fields   | Explanation                          | Response |
-|---------|----------|--------------------------------------|----------|
-| POST    | [URL]    | Adds a URL to the blacklist.         | 201      |
-| GET     | [URL]    | Check if a URL is in the blacklist.  | 204      |
-| DELETE  | [URL]    | Removes a URL from the blacklist.    | 200/404  |
+All communication is:
+- Over a **persistent TCP connection**
+- **Synchronous**: client sends → waits for response → proceeds
+- **Length-prefixed**: Every message (client → server, and server → client) starts with a **4-byte unsigned integer** indicating the **size of the message body that follows**.
 
-### Server → Client
+---
 
-| Response | Fields        | Explanation                                      |
-|----------|---------------|--------------------------------------------------|
-| 201      | Created       | Successful response to the POST request.        |
-| 200      | Ok            | Successful response to the GET request. Also sends the requested data in the content. |
-| 204      | No Content    | Successful response to the DELETE request.      |
-| 404      | Not Found     | Response to a valid but illogical request.      |
-| 400      | Bad Request   | Response to an invalid request.                 |
+## 🔒 Message Format
 
-## Message Syntax
+### Binary Structure
 
-- Every message is a string (ASCII characters only).
-- Messages may contain fields.
-- Fields are separated by a space `" "`.
-- Messages may contain content.
-- The content is separated by a double newline `"\n\n"` at the end of all fields.
-- The first field of client messages is the type of request.
-- The first field of server messages is the response number.
+```
+[4-byte big-endian unsigned int][message body in UTF-8]
+```
 
-## Connection and Communication Type
-- The connection is over TCP.
-- The communication is synchronous (after a request, wait for a response).
+| Component       | Size  | Description                                                                 |
+|----------------|-------|-----------------------------------------------------------------------------|
+| Length Prefix   | 4 B   | Unsigned 32-bit integer, **big-endian** (`network byte order`)              |
+| Message Body    | N B   | UTF-8 encoded string of exactly the specified length                       |
 
-## Example
+---
 
-| Step | Actor   | Action                                  | Data                                   |
-|------|---------|-----------------------------------------|----------------------------------------|
-| 1    | Client  | Connects to server                      | TCP Connection established             |
-| 2    | User    | Enters command: `POST http://example.com` | (Input to client)                      |
-| 3    | Client  | Sends command to server                 | `POST http://example.com`              |
-| 4    | Server  | Processes command (adds URL to blacklist) | (Internal logic)                       |
-| 5    | Server  | Sends response to client                | `201 Created`                          |
-| 6    | Client  | Displays response                       | `201 Created` (console)                |
-| 7    | User    | Enters command: `GET http://example.com`  | (Input to client)                      |
-| 8    | Client  | Sends command to server                 | `GET http://example.com`               |
-| 9    | Server  | Checks Bloom filter/blacklist           | (Internal logic)                       |
-| 10   | Server  | Sends response to client                | `200 Ok\n\ntrue true`                  |
-| 11   | Client  | Displays response                       | `200 Ok\n\ntrue true` (console)        |
-| 12   | User    | Enters invalid command: `FOO bar`       | (Input to client)                      |
-| 13   | Client  | Sends command to server                 | `FOO bar`                              |
-| 14   | Server  | Rejects invalid command                 | `400 Bad Request`                      |
-| 15   | Client  | Displays error                          | `400 Bad Request` (console)            |
-| 16   | User    | Enters command: `DELETE http://what.com` | (Input to client)                      |
-| 17   | Client  | Sends command to server                 | `DELETE http://what.com`               |
-| 18   | Server  | Processes command (tries to delete the URL) | (Internal logic)                       |
-| 19   | Server  | Rejects illogical command               | `404 Not Found`                        |
-| 20   | Client  | Displays error                          | `404 Not Found` (console)              |
+## Client → Server Messages
 
-### Notes
-- Fields cannot contain spaces or newlines, but this can be resolved using encodings like Base64.
-- The current protocol does not include metadata indicating the end of each message. This may change in future updates.
+| Command | Fields     | Example                          | Description                                  |
+|---------|------------|----------------------------------|----------------------------------------------|
+| POST    | [URL]      | `POST http://example.com\n`      | Add URL to the blacklist                     |
+| GET     | [URL]      | `GET http://example.com\n`       | Query if URL is blacklisted                  |
+| DELETE  | [URL]      | `DELETE http://example.com\n`    | Remove URL from blacklist                    |
+| Other   | [Invalid]  | `FOO bar\n`                      | Server should respond with `400 Bad Request` |
+
+> ⚠ Commands must end with a newline (`\n`) in the message body.
+
+---
+
+## Server → Client Responses
+
+| Code | Message Format                     | When Used                                           |
+|------|------------------------------------|----------------------------------------------------|
+| 201  | `201 Created`                      | URL successfully added (POST)                     |
+| 200  | `200 Ok\n\n[content]`              | URL is in blacklist (GET), includes Bloom result  |
+| 204  | `204 No Content`                   | URL removed or not found (DELETE)                 |
+| 404  | `404 Not Found`                    | URL not found or logical error                    |
+| 400  | `400 Bad Request`                  | Invalid syntax / unknown command                  |
+
+---
+
+## Full Communication Example (Byte-Level)
+
+1. **Client sends:**
+   ```
+   Length: 0x0000001A (26 bytes)
+   Body:   POST http://example.com\n
+   ```
+
+2. **Server responds:**
+   ```
+   Length: 0x0000000D (13 bytes)
+   Body:   201 Created
+   ```
+
+3. **Client sends:**
+   ```
+   Length: 0x00000019 (25 bytes)
+   Body:   GET http://example.com\n
+   ```
+
+4. **Server responds:**
+   ```
+   Length: 0x00000018 (24 bytes)
+   Body:   200 Ok\n\ntrue true
+   ```
+
+---
+
+## Connection Rules
+
+- The connection is **persistent**: do **not close** after each message.
+- The client should **reuse the same socket** throughout execution.
+- Both client and server must always:
+  1. Read exactly 4 bytes to get the message size
+  2. Then read exactly that many bytes to obtain the message
+
+---
+
+## Encoding and Constraints
+
+- All text is UTF-8 encoded.
+- Message bodies must contain only printable ASCII-compatible characters.
+- Newlines (`\n`) are allowed in the message body.
+- Fields in the body (e.g., `POST [URL]`) must be separated by a single space.
