@@ -157,7 +157,7 @@ TEST(TCPConnectionTest, ConnectionTermination) {
         };
         
         std::vector<std::string> expectedOutput = {
-            "200 OK\n\ntrue"
+            "200 OK\n\ntrue true"
         };
         
         std::string output = executeProgram(inputLines);
