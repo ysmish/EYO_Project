@@ -8,7 +8,7 @@
 
 class ICommand {
 public:
-    virtual void execute(std::string) = 0;
+    virtual std::string execute(std::string) = 0;
 };
 
 #endif //ASP_PROJECT_COMMAND_H

@@ -7,18 +7,20 @@
 #include <IsFilteredCommand.h>
 #include <FilePersistenceHandler.h>
 #include <ConsoleInputHandler.h>
+#include <StdHashFunction.h>
 
 
 int main() {
-    // Create a map to hold the commands
-    std::map<std::string, std::unique_ptr<ICommand>> commands;
-    commands["1"] = std::make_unique<InsertCommand>(nullptr); // InsertCommand will be initialized later
 
-    ConsoleInputHandler inputHandler; // Create an instance of ConsoleInputHandler
-    // Create the application instance
+    std::vector<std::unique_ptr<HashFunction>> hashFunctions;
+    hashFunctions.push_back(std::make_unique<StdHashFunction>(1));
+    hashFunctions.push_back(std::make_unique<StdHashFunction>(2));
+    hashFunctions.push_back(std::make_unique<StdHashFunction>(3));
     App app(
-        std::make_unique<ConsoleInputHandler>(), // Create a unique pointer to ConsoleInputHandler
-        std::make_unique<FilePersistenceHandler>("../data/bloom_filter_data.txt") // Create a unique pointer to FilePersistenceHandler with the file name
+        1000, // Size of the Bloom filter
+        std::move(hashFunctions), // Move the vector of hash functions
+        std::make_unique<FilePersistenceHandler>("data/bloom_filter_data.txt"), // Use file persistence handler
+        12345 // Port number for the server
     );
     
     // Run the application
