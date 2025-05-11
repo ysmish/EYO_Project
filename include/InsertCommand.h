@@ -11,6 +11,6 @@ private:
     BloomFilter* bloomFilter; // Pointer to the Bloom filter instance
 public:
     InsertCommand(BloomFilter* bloomFilter);
-    void execute(std::string url) override;
+    std::string execute(std::string url) override;
 };
 #endif // INSERT_COMMAND_H

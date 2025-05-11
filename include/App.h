@@ -10,14 +10,19 @@
 #include <InputHandler.h>
 #include <PersistenceHandler.h>
 #include <command.h>
+#include <BloomFilter.h>
 
 class App {
 private:
-    std::unique_ptr<InputHandler> inputHandler; // Input handler to get user input
-    std::unique_ptr<PersistenceHandler> persistenceHandler; // Bloom filter to store the data
     std::map<std::string, ICommand*> commands; // Map to hold the commands
+    std::unique_ptr<BloomFilter> bloomFilter; // Bloom filter to store the data
+    size_t port; // Port number for the server
+    void handleClient(int socket); // Method to handle the client
 public:
-    App(std::unique_ptr<InputHandler> inputHandler, std::unique_ptr<PersistenceHandler> persistenceHandler);
+    App(size_t size,
+        std::vector<std::unique_ptr<HashFunction>> hashFunction,
+        std::unique_ptr<PersistenceHandler> persistenceHandler,
+        size_t port);
     void run();
 };
 

@@ -11,6 +11,6 @@ private:
     BloomFilter* bloomFilter; // Pointer to the Bloom filter instance
 public:
     IsFilteredCommand(BloomFilter* bloomFilter);
-    void execute(std::string url) override;
+    std::string execute(std::string url) override;
 };
 #endif // ISFILTERED_COMMAND_H

@@ -9,7 +9,7 @@ InsertCommand::InsertCommand(BloomFilter* bloomFilter) {
     this->bloomFilter = bloomFilter; // Initialize the Bloom filter pointer
 }
 
-void InsertCommand::execute(std::string url) {
+std::string InsertCommand::execute(std::string url) {
     // Insert the URL into the Bloom filter
-    bloomFilter->insert(url);
+    return "201 Created";
 }
