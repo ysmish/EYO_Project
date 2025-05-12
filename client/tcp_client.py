@@ -9,6 +9,23 @@ class TCPClient:
       - and handles disconnections.
     """
 
+    @staticmethod
+    def validate_ip_and_port(host: str, port) -> bool:
+        """
+        Simple validator: returns True if host resolves and port is an integer 1–65535.
+        """
+        try:
+            p = int(port)
+        except (TypeError, ValueError):
+            return False
+        if not (1 <= p <= 65535):
+            return False
+        try:
+            socket.getaddrinfo(host, p)
+        except socket.gaierror:
+            return False
+        return True
+
     def __init__(self, server_ip, server_port):
         # Store connection parameters and initialize socket to None
         self.server_ip = server_ip

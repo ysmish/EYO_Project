@@ -2,6 +2,11 @@ import sys
 from tcp_client import TCPClient
 
 def run_client(server_ip, server_port):
+    # Validate input up-front via our static helper
+    if not TCPClient.validate_ip_and_port(server_ip, server_port):
+        print(f"[ERROR] Invalid server IP or port: {server_ip!r}, {server_port!r}")
+        return
+    
     # Instantiate our TCP client
     client = TCPClient(server_ip, server_port)
 
