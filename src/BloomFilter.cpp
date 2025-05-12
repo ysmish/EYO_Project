@@ -57,7 +57,22 @@ void BloomFilter::insert(const std::string &key) {
 }
 
 void BloomFilter::deleteURL(const std::string &key) {
-    // blank implementation stub
+    // 1) Validate non-empty and format
+    if (key.empty()) {
+        throw std::invalid_argument("Empty keys are not allowed in the filter");
+    }
+
+    // 2) Ensure the URL exists
+    auto it = std::find(blacklistedURLs.begin(), blacklistedURLs.end(), key);
+    if (it == blacklistedURLs.end()) {
+        throw std::invalid_argument("URL not found in filter");
+    }
+
+    // 3) Remove from the blacklist
+    blacklistedURLs.erase(it);
+
+    // 5) Persist updated blacklist
+    persistenceHandler->save(blacklistedURLs);
 }
 
 bool BloomFilter::contains(const std::string &key) const {

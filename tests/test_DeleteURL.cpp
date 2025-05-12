@@ -24,17 +24,17 @@ TEST(DeleteURLTest, RemoveExistingURL) {
     std::string url = "http://example.com";
 
     bloom->insert(url);
-    ASSERT_TRUE(bloom->contains(url));  // sanity check
+    ASSERT_TRUE(bloom->isBlacklisted(url));  // sanity check
 
     bloom->deleteURL(url);
-    EXPECT_FALSE(bloom->contains(url));
+    EXPECT_FALSE(bloom->isBlacklisted(url));
 }
 
 TEST(DeleteURLTest, RemoveNonexistentURL) {
     auto bloom = makeFilter("delete_missing.dat");
     std::string missing = "http://not-in-filter.com";
 
-    EXPECT_FALSE(bloom->contains(missing));
+    EXPECT_FALSE(bloom->isBlacklisted(missing));
     EXPECT_THROW(bloom->deleteURL(missing), std::invalid_argument);
 }
 
@@ -50,10 +50,10 @@ TEST(DeleteURLTest, RemoveTwiceThrows) {
     std::string url = "https://double-remove.com";
 
     bloom->insert(url);
-    ASSERT_TRUE(bloom->contains(url));
+    ASSERT_TRUE(bloom->isBlacklisted(url));
 
     bloom->deleteURL(url);
-    EXPECT_FALSE(bloom->contains(url));
+    EXPECT_FALSE(bloom->isBlacklisted(url));
 
     // second removal should now fail
     EXPECT_THROW(bloom->deleteURL(url), std::invalid_argument);
