@@ -10,6 +10,14 @@ InsertCommand::InsertCommand(BloomFilter* bloomFilter) {
 }
 
 std::string InsertCommand::execute(std::string url) {
-    // Insert the URL into the Bloom filter
-    return "201 Created";
+    try
+    {
+        bloomFilter->insert(url);
+        return "201 Created";
+    }
+    catch(const std::exception& e)
+    {
+        return "400 Bad Request";
+    }
+    
 }

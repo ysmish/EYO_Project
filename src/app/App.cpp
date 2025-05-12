@@ -11,6 +11,7 @@
 #include <InputHandler.h>
 #include <InsertCommand.h>
 #include <IsFilteredCommand.h>
+#include <DeleteCommand.h>
 #include <sys/socket.h>
 #include <map>
 #include <memory>
@@ -41,6 +42,7 @@ App::App(size_t size,
     this->bloomFilter = std::make_unique<BloomFilter>(size, std::move(hashFunction), std::move(persistenceHandler)); // Create a unique pointer to BloomFilter
     commands["POST"] = new InsertCommand(bloomFilter.get()); // Pass a pointer to InsertCommand
     commands["GET"] = new IsFilteredCommand(bloomFilter.get()); // Pass a pointer to IsFilteredCommand
+    commands["DELETE"] = new DeleteCommand(bloomFilter.get()); // Pass a pointer to DeleteCommand
 }
 
 void App::run() {

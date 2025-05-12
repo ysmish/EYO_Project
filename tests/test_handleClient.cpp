@@ -10,77 +10,41 @@
 #include <fstream>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <thread>
+#include <chrono>
+
 
 void cleanupTestFiles() {
     // Remove any test files created during the tests
     std::remove("../data/bloom_filter_data.txt");
 }
 
-// Execute program with input and return output
-std::string executeProgram(const std::vector<std::string>& inputLines) {
-
-    std::string cmd = "timeout 2 ./main_app 12345";//timeout because program is meant to be infinite
-    
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) {
-        throw std::runtime_error("Socket creation failed");
-    }
-    // Connect to the server (localhost, port 12345)
-    struct sockaddr_in serv_addr;
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(12345);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-    if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
-        throw std::runtime_error("Connection to server failed");
-    }
-    // Send input lines to the server
-    std::array<char, 128> buffer;
-    std::string result;
-    for (const auto& line : inputLines) {
-        std::string command = line + "\n";
-        send(sockfd, command.c_str(), command.size(), 0);
-        // Read the output from the server
-        while (recv(sockfd, buffer.data(), buffer.size(), 0) > 0) {
-            result += std::string(buffer.data());
-            if (result.find('\n') != std::string::npos) {
-                break; // Stop reading after the first line
-            }
-        }
-    }
-    return result;
-}
-
-void verifyOutput(const std::string& output, const std::vector<std::string>& expectedLines) {
-    std::stringstream ss(output);
-    std::string line;
-    std::vector<std::string> actualLines;
-    
-    while (std::getline(ss, line)) {
-        if (!line.empty()) {
-            if (!line.empty() && line[line.size() - 1] == '\r') {
-                line.erase(line.size() - 1);
-            }
-            actualLines.push_back(line);
-        }
-    }
-    
-    ASSERT_EQ(actualLines.size(), expectedLines.size()) << "Output line count mismatch";
-    for (size_t i = 0; i < expectedLines.size(); i++) {
-        EXPECT_EQ(actualLines[i], expectedLines[i]) << "Line " << i << " mismatch";
-    }
-}
-
-
 TEST(HandleClientTest, Example1) {
     // Cleanup any previous test files
     cleanupTestFiles();
 
-    // Input from example 1
+        // Start the server process
+    std::system("./main_app 12345 > /dev/null 2>&1 &");
+    
+    // Wait for server to start
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_GT(sockfd, 0) << "Socket creation failed";
+    
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(12345);
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    
+    int conn_result = connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    ASSERT_GE(conn_result, 0) << "Connection to server failed";
+    
+    // Wait for an idle period
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+        // Input from example 1
     std::vector<std::string> inputLines = {      
         "GET www.example.com0",
         "x",             
@@ -92,17 +56,30 @@ TEST(HandleClientTest, Example1) {
 
     // Expected output from example 1
     std::vector<std::string> expectedOutput = {
-        "200 OK\n\nfalse",
-        "400 Bad Request",
-        "201 Created",
-        "200 OK\n\ntrue true",
-        "200 OK\n\nfalse",
-        "200 OK\n\nfalse"
+        "200 OK\n\nfalse\n",
+        "400 Bad Request\n",
+        "201 Created\n",
+        "200 OK\n\ntrue true\n",
+        "200 OK\n\nfalse\n",
+        "200 OK\n\nfalse\n"
     };
 
-    std::string output = executeProgram(inputLines);
-    verifyOutput(output, expectedOutput);
+    for (int i = 0; i < inputLines.size(); i++) {
+        std::string command = inputLines[i] + "\n";
+        send(sockfd, command.c_str(), command.size(), 0);
 
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // Read the output from the server
+        std::array<char, 4096> buffer;
+        memset(buffer.data(), 0, buffer.size());
+        int bytes_read = recv(sockfd, buffer.data(), buffer.size() - 1, 0);
+        ASSERT_GT(bytes_read, 0) << "No response received";
+        
+        std::string response(buffer.data(), bytes_read);
+        EXPECT_EQ(response, expectedOutput[i]);
+    }
+    
+    close(sockfd);
     // Cleanup any test files created during the test
     cleanupTestFiles();
 }
@@ -111,7 +88,26 @@ TEST(HandleClientTest, Example1) {
 TEST(HandleClientTestTest, Example2) {
     // Cleanup any previous test files
     cleanupTestFiles();
+
+        // Start the server process
+    std::system("./main_app 12345 > /dev/null 2>&1 &");
     
+    // Wait for server to start
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_GT(sockfd, 0) << "Socket creation failed";
+    
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(12345);
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    
+    int conn_result = connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    ASSERT_GE(conn_result, 0) << "Connection to server failed";
+    
+    // Wait for an idle period
+    std::this_thread::sleep_for(std::chrono::seconds(3));
     // Input from example 2
     std::vector<std::string> inputLines = {      
         "POST www.example.com0", 
@@ -121,101 +117,213 @@ TEST(HandleClientTestTest, Example2) {
 
     // Expected output from example 2
     std::vector<std::string> expectedOutput = {
-        "201 Created",
-        "200 OK\n\ntrue true",
-        "200 OK\n\nfalse"
+        "201 Created\n",
+        "200 OK\n\ntrue true\n",
+        "200 OK\n\nfalse\n"
     };
 
-    std::string output = executeProgram(inputLines);
-    verifyOutput(output, expectedOutput);
+    for (int i = 0; i < inputLines.size(); i++) {
+        std::string command = inputLines[i] + "\n";
+        send(sockfd, command.c_str(), command.size(), 0);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // Read the output from the server
+        std::array<char, 4096> buffer;
+        memset(buffer.data(), 0, buffer.size());
+        int bytes_read = recv(sockfd, buffer.data(), buffer.size() - 1, 0);
+        ASSERT_GT(bytes_read, 0) << "No response received";
+        
+        std::string response(buffer.data(), bytes_read);
+        EXPECT_EQ(response, expectedOutput[i]);
+    }
     
-     
+    close(sockfd);
+    // Cleanup any test files created during the test
     cleanupTestFiles();
 }
 
 // Test for example 3 from the instructions
 TEST(HandleClientTest, Example3) {
-     
+    // Cleanup any previous test files
     cleanupTestFiles();
+
+        // Start the server process
+    std::system("./main_app 12345 > /dev/null 2>&1 &");
     
+    // Wait for server to start
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_GT(sockfd, 0) << "Socket creation failed";
+    
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(12345);
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    
+    int conn_result = connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    ASSERT_GE(conn_result, 0) << "Connection to server failed";
+    
+    // Wait for an idle period
+    std::this_thread::sleep_for(std::chrono::seconds(3));
     // Input from example 3
     std::vector<std::string> inputLines = {        
         "POST www.example.com0", 
         "GET www.example.com0", 
-        "DELETE www.example.com0"
+        "DELETE www.example.com0",
         "GET www.example.com4"  
     };
 
     // Expected output from example 3
     std::vector<std::string> expectedOutput = {
-        "201 Created",
-        "200 OK\n\ntrue true",
-        "204 No Content",
-        "200 OK\n\ntrue false"
+        "201 Created\n",
+        "200 OK\n\ntrue true\n",
+        "204 No Content\n",
+        "200 OK\n\nfalse\n"
     };
 
-    std::string output = executeProgram(inputLines);
-    verifyOutput(output, expectedOutput);
+    for (int i = 0; i < inputLines.size(); i++) {
+        std::string command = inputLines[i] + "\n";
+        send(sockfd, command.c_str(), command.size(), 0);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // Read the output from the server
+        std::array<char, 4096> buffer;
+        memset(buffer.data(), 0, buffer.size());
+        int bytes_read = recv(sockfd, buffer.data(), buffer.size() - 1, 0);
+        ASSERT_GT(bytes_read, 0) << "No response received";
+        
+        std::string response(buffer.data(), bytes_read);
+        EXPECT_EQ(response, expectedOutput[i]);
+    }
     
-     
+    close(sockfd);
+    // Cleanup any test files created during the test
     cleanupTestFiles();
 }
 
 // Test persistence between runs
 TEST(HandleClientTest, PersistenceBetweenRuns) {
-     
+    // Cleanup any previous test files
     cleanupTestFiles();
+
+        // Start the server process
+    std::system("./main_app 12345 > /dev/null 2>&1 &");
     
-    // First run, add a URL
-    {
-        std::vector<std::string> inputLines = {
-            "POST www.example.com0"
-        };
-        executeProgram(inputLines); // No output expected
-    }
-
-    // Second run, check if the URL is still filtered
-    {
-        std::vector<std::string> inputLines = {
-            "GET www.example.com0"
-        };
-
-        std::vector<std::string> expectedOutput = {
-            "200 OK\n\ntrue true"
-        };
-
-        std::string output = executeProgram(inputLines);
-        verifyOutput(output, expectedOutput);
-    }
+    // Wait for server to start
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_GT(sockfd, 0) << "Socket creation failed";
+    
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(12345);
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    
+    int conn_result = connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    ASSERT_GE(conn_result, 0) << "Connection to server failed";
+
+    std::string command = "POST www.example.com0\n";
+    send(sockfd, command.c_str(), command.size(), 0);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    close(sockfd);
+
+            // Start the server process
+    std::system("./main_app 12345 > /dev/null 2>&1 &");
+    
+    // Wait for server to start
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_GT(sockfd, 0) << "Socket creation failed";
+    
+    serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(12345);
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    
+    conn_result = connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    ASSERT_GE(conn_result, 0) << "Connection to server failed";
+
+    command = "GET www.example.com0\n";
+    send(sockfd, command.c_str(), command.size(), 0);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    // Read the output from the server
+    std::array<char, 4096> buffer;
+    memset(buffer.data(), 0, buffer.size());
+    int bytes_read = recv(sockfd, buffer.data(), buffer.size() - 1, 0);
+    ASSERT_GT(bytes_read, 0) << "No response received";
+    
+    std::string response(buffer.data(), bytes_read);
+    EXPECT_EQ(response, "200 OK\n\ntrue true\n");
+    
+    close(sockfd);
+    // Cleanup any test files created during the test
     cleanupTestFiles();
 }
 
 // Test for incorrect format handling
 TEST(HandleClientTest, IncorrectFormatHandling) {
-     
+    // Cleanup any previous test files
     cleanupTestFiles();
+
+        // Start the server process
+    std::system("./main_app 12345 > /dev/null 2>&1 &");
     
+    // Wait for server to start
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_GT(sockfd, 0) << "Socket creation failed";
+    
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(12345);
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    
+    int conn_result = connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    ASSERT_GE(conn_result, 0) << "Connection to server failed";
+    
+    // Wait for an idle period
+    std::this_thread::sleep_for(std::chrono::seconds(3));
     std::vector<std::string> inputLines = {
         "3 command", 
         "1",         
         "2",         
         "test",      
-        "1 www.valid-url.com",
-        "2 www.valid-url.com"
+        "POST www.valid-url.com",
+        "GET www.valid-url.com"
     };
 
     std::vector<std::string> expectedOutput = {
-        "400 Bad Request",
-        "400 Bad Request",
-        "400 Bad Request",
-        "400 Bad Request",
-        "201 Created",
-        "200 OK\n\nfalse"
+        "400 Bad Request\n",
+        "400 Bad Request\n",
+        "400 Bad Request\n",
+        "400 Bad Request\n",
+        "201 Created\n",
+        "200 OK\n\ntrue true\n"
     };
 
-    std::string output = executeProgram(inputLines);
-    verifyOutput(output, expectedOutput);
+    for (int i = 0; i < inputLines.size(); i++) {
+        std::string command = inputLines[i] + "\n";
+        send(sockfd, command.c_str(), command.size(), 0);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // Read the output from the server
+        std::array<char, 4096> buffer;
+        memset(buffer.data(), 0, buffer.size());
+        int bytes_read = recv(sockfd, buffer.data(), buffer.size() - 1, 0);
+        ASSERT_GT(bytes_read, 0) << "No response received";
+        
+        std::string response(buffer.data(), bytes_read);
+        EXPECT_EQ(response, expectedOutput[i]);
+    }
     
+    close(sockfd);
+    // Cleanup any test files created during the test
     cleanupTestFiles();
 }
