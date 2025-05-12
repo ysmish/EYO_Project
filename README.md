@@ -1,51 +1,58 @@
 # ASP Project: Bloom Filter Application
 
 ## Overview
-This project implements a **Bloom Filter** application in C++ to efficiently manage and query blacklisted URLs. The application supports inserting URLs, checking if a URL is blacklisted, and persisting data across runs using a file-based persistence mechanism.
-
-The project is containerized using Docker and includes unit tests to ensure correctness.
+This project provides a **Bloom Filter** api server written in C++ for efficient management and querying of blacklisted URLs. It supports inserting URLs, checking if a URL is blacklisted, deleting URLs, and persisting the blacklist across sessions. The application is designed to be efficient and scalable, making it suitable for various applications where URL filtering is required.
 
 ---
 
 ## Features
-- **Bloom Filter Implementation**:
-  - Efficiently checks membership of URLs.
-  - Supports multiple hash functions.
-  - Persists blacklisted URLs to a file for future use.
+- **Bloom Filter Implementation**  
+  - Efficient membership checking for URLs.
+  - Utilizes multiple hash functions.
+  - Persists blacklisted URLs to a file for future sessions.
+  - communication with the server via a command-based interface.
 
-- **Command-Based Interface**:
-  - `1 <URL>`: Insert a URL into the Bloom Filter.
-  - `2 <URL>`: Check if a URL is blacklisted.
+- **Command-Based Interface**  
+  - `GET <url>`: Check if a URL is blacklisted.
+  - `POST <url>`: Add a URL to the blacklist.
+  - `DELETE <url>`: Remove a URL from the blacklist.
+  - for more details, see the [documentation](doc/protocol.md).
 
-- **Persistence**:
-  - Blacklisted URLs are saved to a file (`data/bloom_filter_data.txt`) and reloaded on application startup.
+- **Persistence**  
+  - Blacklisted URLs are stored in `data/bloom_filter_data.txt` and reloaded at startup.
 
-- **Unit Testing**:
-  - Comprehensive tests using Google Test (`gtest`).
-  - Tests include initialization, persistence, main application flow, and more.
+- **Unit Testing**  
+  - Extensive tests using Google Test (`gtest`).
+  - Tests cover initialization, persistence, main application flow, and more.
 
-- **Dockerized Environment**:
-  - Separate services for running the application and tests using `docker-compose`.
+- **Dockerized Environment**  
+  - Separate Docker Compose services for the application and tests.
 
 ---
 
 ## Project Structure
-- **Source Code**:
-  - `src/`: Contains the main application logic.
-  - `include/`: Header files for the application.
+- **Source Code**  
+  - `src/`: Main application logic.
+  - `include/`: Header files.
 
-- **Tests**:
+- **Tests**  
   - `tests/`: Unit tests for the Bloom Filter and related components.
 
-- **Data**
-  - `data/`: all data related to the bloom filter persistence.
+- **Data**  
+  - `data/`: Persistent storage for the Bloom Filter.
 
-- **Build Configuration**:
-  - `CMakeLists.txt`: Build configuration for the project.
-  - `Dockerfile`: Docker image setup for building and running the application.
+- **doc**
+  - `doc/`: Documentation files.
 
-- **Docker Compose**:
+- **Build Configuration**  
+  - `CMakeLists.txt`: CMake build configuration.
+  - `Dockerfile`: Docker image setup.
+
+- **Docker Compose**  
   - `docker-compose.yml`: Defines services for running the app and tests.
+
+- **Images**
+  - `images/`: Contains example images for usage and testing.
 
 ---
 
@@ -61,12 +68,12 @@ The project is containerized using Docker and includes unit tests to ensure corr
    docker-compose build
    ```
 
-2. **Run the Application**:
+2. **Run the Application (Server Only)**:
    ```sh
    docker-compose run app
    ```
 
-3. **Run the Client**:
+3. **Run the Client (With The Server)**:
    ```sh
    docker-compose run client
    ```
@@ -84,16 +91,18 @@ The project is containerized using Docker and includes unit tests to ensure corr
 
 ### Input
 ```plaintext
-8 1 2
-1 www.example.com
-2 www.example.com
-2 www.test.com
+POST http://example.com
+GET http://example.com
+GET http://example2.com
 ```
 
 ### Output
 ```plaintext
+201 Created
+200 OK
+
 true true
-true false
+false
 ```
 
 ---
@@ -112,8 +121,8 @@ docker-compose run tests
 ---
 
 ## Future Improvements
-- Implement additional commands for managing blacklisted URLs.
-- create more ways to handle input and persistence
+- Handle multiple client connections.
+- Implement a more sophisticated command parser.
 
 ---
 
