@@ -2,34 +2,63 @@ import sys
 from tcp_client import TCPClient
 
 def run_client(server_ip, server_port):
+    # Instantiate our TCP client
     client = TCPClient(server_ip, server_port)
+
+    # Attempt initial connection to the server
     try:
         client.connect()
-        print(f"[INFO] Connected to server at {server_ip}:{server_port}")
+        print(f"[INFO] Connected to {server_ip}:{server_port}")
+    except ConnectionError as e:
+        print(f"[ERROR] {e}")
+        return
 
-        while True:
+    # Main command loop: read user input, send to server, print response
+    while True:
+        try:
             command = input("> ").strip()
             if not command:
+                # Ignore empty lines
                 continue
+
+            # Send the user’s command, then wait for the server’s reply
             client.send_command(command)
             response = client.receive_response()
             print(response)
-    except KeyboardInterrupt:
-        print("\n[INFO] Client terminated by user.")
-    except Exception as e:
-        print(f"[ERROR] {e}")
-    finally:
-        client.close()
 
+        except KeyboardInterrupt:
+            # Handle Ctrl+C gracefully
+            print("\n[INFO] Exiting on user request.")
+            break
+
+        except ConnectionError as e:
+            # If something goes wrong with the socket, try to reconnect once
+            print(f"[WARNING] {e}")
+            print("[INFO] Attempting to reconnect...")
+            try:
+                client.connect()
+                print("[INFO] Reconnected successfully.")
+            except ConnectionError as ce:
+                # If reconnection fails, give up
+                print(f"[ERROR] Reconnect failed: {ce}")
+                print("[FATAL] Cannot continue without a connection.")
+                break
+
+        except Exception as e:
+            # Catch-all for any other unexpected errors
+            print(f"[ERROR] Unexpected error: {e}")
+            break
+
+    # Clean up socket on exit
+    client.close()
 
 def main():
+    # Expect exactly two arguments: server IP and port
     if len(sys.argv) != 3:
         print("Usage: python3 -m client.main <server_ip> <server_port>")
         sys.exit(1)
 
-    server_ip = sys.argv[1]
-    server_port = sys.argv[2]
-    run_client(server_ip, server_port)
+    run_client(sys.argv[1], sys.argv[2])
 
 if __name__ == "__main__":
     main()
