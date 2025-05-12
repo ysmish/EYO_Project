@@ -12,3 +12,15 @@ services:
       dockerfile: Dockerfile
     working_dir: /workspace/build
     command: ./main_app
+    ports:
+      - "12345:12345"
+  
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    depends_on:
+      - app
+    command: ["python3", "main.py", "app", "12345"]
+    stdin_open: true
+    tty: true
