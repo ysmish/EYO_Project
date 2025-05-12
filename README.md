@@ -66,7 +66,12 @@ The project is containerized using Docker and includes unit tests to ensure corr
    docker-compose run app
    ```
 
-3. **Run the Tests**:
+3. **Run the Client**:
+   ```sh
+   docker-compose run client
+   ```
+
+4. **Run the Tests**:
    ```sh
    docker-compose run tests
    ```

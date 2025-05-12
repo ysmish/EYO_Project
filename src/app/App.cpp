@@ -85,7 +85,8 @@ void App::handleClient(int socket) {
         }
         try {
             if (commands.find(input.command) == commands.end()) { // Check if the command exists in the map
-                send(socket, "400 Bad Request\n", 17, 0); // Send a bad request response
+                std::string answer = "400 Bad Request\n"; // Set the answer to bad request
+                send(socket, answer.c_str(), answer.length(), 0); // Send a bad request response
                 continue; // Continue to the next iteration
             }
             std::string answer = commands[input.command]->execute(input.url); // Execute the command with the provided URL
