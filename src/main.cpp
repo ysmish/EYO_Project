@@ -19,7 +19,7 @@ int main() {
     App app(
         1000, // Size of the Bloom filter
         std::move(hashFunctions), // Move the vector of hash functions
-        std::make_unique<FilePersistenceHandler>("data/bloom_filter_data.txt"), // Use file persistence handler
+        std::make_unique<FilePersistenceHandler>("../data/bloom_filter_data.txt"), // Use file persistence handler
         12345 // Port number for the server
     );
     

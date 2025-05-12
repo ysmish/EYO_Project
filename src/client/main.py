@@ -21,7 +21,7 @@ def run_client(server_ip, server_port):
     # Main command loop: read user input, send to server, print response
     while True:
         try:
-            command = input("> ").strip()
+            command = input().strip()
             if not command:
                 # Ignore empty lines
                 continue
