@@ -10,5 +10,14 @@ IsFilteredCommand::IsFilteredCommand(BloomFilter* bloomFilter) {
 }
 
 std::string IsFilteredCommand::execute(std::string url) {
-    return "200 OK";
+    try
+    {
+        bool isFiltered = bloomFilter->contains(url);
+        bool isBlacklisted = bloomFilter->isBlacklisted(url);
+        return "200 OK\n\n" + std::to_string(isFiltered) + " " + std::to_string(isBlacklisted);
+    }
+    catch(const std::exception& e)
+    {
+        return "400 Bad Request";
+    }
 }
