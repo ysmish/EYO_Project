@@ -56,6 +56,9 @@ void BloomFilter::insert(const std::string &key) {
     persistenceHandler->save(blacklistedURLs); // Save the updated blacklisted URLs
 }
 
+void BloomFilter::deleteURL(const std::string &key) {
+    // blank implementation stub
+}
 
 bool BloomFilter::contains(const std::string &key) const {
     if (key.empty()) {
@@ -78,6 +81,7 @@ bool BloomFilter::isBlacklisted(const std::string &key) const {
 size_t BloomFilter::getBitArraySize() const {
     return bitArray.size();
 }
+
 size_t BloomFilter::getHashFunctionCount() const {
     return hashFunctions.size();
 }
