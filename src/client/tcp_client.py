@@ -14,12 +14,19 @@ class TCPClient:
         """
         Simple validator: returns True if host resolves and port is an integer 1–65535.
         """
+        # Cannot have empty/whitespace‐only host
+        if not host or not host.strip():
+            return False
+        
+        # Port must be an integer within TCP range
         try:
             p = int(port)
         except (TypeError, ValueError):
             return False
         if not (1 <= p <= 65535):
             return False
+        
+        # Host must be valid IP or resolvable name
         try:
             socket.getaddrinfo(host, p)
         except socket.gaierror:
