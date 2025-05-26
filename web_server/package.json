@@ -1,0 +1,23 @@
+{
+  "name": "web_server",
+  "version": "1.0.0",
+  "description": "web server for mails",
+  "homepage": "https://github.com/Mro2903/ASP_Project#readme",
+  "bugs": {
+    "url": "https://github.com/Mro2903/ASP_Project/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mro2903/ASP_Project.git"
+  },
+  "license": "ISC",
+  "author": "eyo",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
