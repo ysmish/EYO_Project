@@ -1,5 +1,5 @@
 services:
-  tests:
+  url_tests:
     build:
       context: ./url_server
       dockerfile: Dockerfile
@@ -21,6 +21,17 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - url_server
-    command: ["python3", "main.py", "app", "12345"]
+    command: ["python3", "main.py", "url_server", "12345"]
     stdin_open: true
     tty: true
+
+  web_server:
+    build:
+      context: ./web_server
+      dockerfile: Dockerfile
+    working_dir: /app
+    command: npm start
+    ports:
+      - "3000:3000"
+    depends_on:
+      - url_server
