@@ -1,0 +1,13 @@
+# node_modules directory
+node_modules
+
+# build and log output
+build
+npm-debug.log
+
+# test files
+test.bat
+test.sh
+
+# environment variables
+.env

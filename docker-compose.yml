@@ -1,26 +1,37 @@
 services:
-  tests:
+  url_tests:
     build:
-      context: .
+      context: ./url_server
       dockerfile: Dockerfile
     working_dir: /workspace/build
     command: ./tests/run_tests
   
-  app:
+  url_server:
     build:
-      context: .
+      context: ./url_server
       dockerfile: Dockerfile
     working_dir: /workspace/build
     command: ./main_app
     ports:
       - "12345:12345"
   
-  client:
+  url_client:
     build:
-      context: ./src/client
+      context: ./url_server/src/client
       dockerfile: Dockerfile
     depends_on:
-      - app
-    command: ["python3", "main.py", "app", "12345"]
+      - url_server
+    command: ["python3", "main.py", "url_server", "12345"]
     stdin_open: true
     tty: true
+
+  web_server:
+    build:
+      context: ./web_server
+      dockerfile: Dockerfile
+    working_dir: /app
+    command: npm start
+    ports:
+      - "3000:3000"
+    depends_on:
+      - url_server
