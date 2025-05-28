@@ -41,4 +41,4 @@ const addUser = (firstName, lastName, birthday, username, password, photo=null) 
 }
 
 
-export { addUser };
+export { addUser, users };
