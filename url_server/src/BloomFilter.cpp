@@ -5,15 +5,15 @@
 #include <stdexcept>
 #include <algorithm>
 #include <regex>
+#include <mutex>
 
 BloomFilter::BloomFilter(size_t size,
     std::vector<std::unique_ptr<HashFunction>> hashFunctions,
     std::unique_ptr<PersistenceHandler> persistenceHandler)
-: persistenceHandler(std::move(persistenceHandler)), blacklistedURLs() {
+: persistenceHandler(std::move(persistenceHandler)), blacklistedURLs(), mutex() {
     if (size <= 0 || hashFunctions.empty()) {
         throw std::invalid_argument("Bloom filter size must be greater than 0 and hash functions must be provided.");
     }
-
     this->bitArray = std::vector<bool>(size, false);
     this->hashFunctions = std::move(hashFunctions);
     // Load existing blacklisted URLs from the persistence handler
@@ -45,6 +45,7 @@ void BloomFilter::insert(const std::string &key) {
         return; // No need to insert if it's already blacklisted
     }
 
+    std::lock_guard<std::mutex> mutexLock(mutex); // Lock the mutex to ensure thread safety
     // Add the key to the blacklisted URLs
     blacklistedURLs.push_back(key);
 
@@ -62,6 +63,7 @@ void BloomFilter::deleteURL(const std::string &key) {
         throw std::invalid_argument("Empty keys are not allowed in the filter");
     }
 
+    std::lock_guard<std::mutex> lock(mutex); // Lock the mutex to ensure thread safety
     // 2) Ensure the URL exists
     auto it = std::find(blacklistedURLs.begin(), blacklistedURLs.end(), key);
     if (it == blacklistedURLs.end()) {
@@ -80,6 +82,7 @@ bool BloomFilter::contains(const std::string &key) const {
         return false; // Empty keys are not considered in the filter
     }
     // if one of the hash functions returns false then the key is not in the filter
+    std::lock_guard<std::mutex> lock(mutex); // Lock the mutex to ensure thread safety
     for (const auto &hashFunction : hashFunctions) {
         size_t hashValue = hashFunction->hash(key) % bitArray.size();
         if (!bitArray[hashValue]) {
@@ -90,6 +93,7 @@ bool BloomFilter::contains(const std::string &key) const {
 }
 
 bool BloomFilter::isBlacklisted(const std::string &key) const {
+    std::lock_guard<std::mutex> lock(mutex);
     return std::find(blacklistedURLs.begin(), blacklistedURLs.end(), key) != blacklistedURLs.end();
 }
 
