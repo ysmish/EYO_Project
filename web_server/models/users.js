@@ -1,5 +1,22 @@
 let users = []
 
+const getUser = (username) => {
+    if (!username) {
+        return { error: 'Username is required' }
+    }
+    const user = users.find(user => user.id === username);
+    if (!user) {
+        return { error: 'User not found' }
+    }
+    return {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        birthday: user.birthday.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        email: user.email,
+        photo: user.photo
+    }
+}
 
 const addUser = (firstName, lastName, birthday, username, password, photo=null) => {
     if (!firstName || !lastName || !birthday || !username || !password) {
@@ -41,4 +58,4 @@ const addUser = (firstName, lastName, birthday, username, password, photo=null) 
 }
 
 
-export { addUser };
+export { addUser, getUser };
