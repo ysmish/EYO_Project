@@ -13,6 +13,7 @@ private:
     std::vector<std::string> blacklistedURLs;
     std::vector<std::unique_ptr<HashFunction>> hashFunctions;
     std::unique_ptr<PersistenceHandler> persistenceHandler;
+    mutable std::mutex mutex; // Mutex for thread safety
 
 public:
     BloomFilter(size_t size,
