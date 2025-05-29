@@ -1,4 +1,4 @@
-import { addUser } from '../models/users.js';
+import { addUser, getUser } from '../models/users.js';
 
 const createNewUser = (req, res) => {
     const userData = req.body;
@@ -17,7 +17,11 @@ const createNewUser = (req, res) => {
             userData.photo
         );
         if (newUser.error) {
-            return res.status(400).json({
+            let statusCode = 400;
+            if (newUser.error === 'Username already exists') {
+                statusCode = 409; // Conflict for existing username
+            }
+            return res.status(statusCode).json({
                 message: 'Error creating user',
                 error: newUser.error
             });
@@ -32,9 +36,27 @@ const createNewUser = (req, res) => {
 }
 
 const getUserById = (req, res) => {
-    return res.status(200).json({
-        message: 'Get user by ID endpoint is not implemented yet'
-    });
+    const username = req.params.id;
+    if (!username) {
+        return res.status(400).json({
+            message: 'Username is required'
+        });
+    }
+    try {
+        const user = getUser(username);
+        if (user.error) {
+            return res.status(404).json({
+                message: 'User not found',
+                error: user.error
+            });
+        }
+        return res.status(200).json(user);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error retrieving user',
+            error: error.message
+        });
+    }
 }
 
 export { createNewUser, getUserById };
