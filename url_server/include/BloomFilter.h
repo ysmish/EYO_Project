@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <mutex>
 #include "HashFunction.h"
 #include "PersistenceHandler.h"
 
