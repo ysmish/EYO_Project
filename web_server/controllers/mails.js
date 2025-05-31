@@ -7,7 +7,7 @@ const getAllMails = (req, res) => {
     }
     try {
         const latestMails = getLatestMails(username);
-        return res.status(200).json({latestMails});
+        return res.status(200).json(latestMails);
     } catch (error) {
         console.error('Error fetching latest mails:', error);
         return res.status(500).json({error: 'Internal server error.' });
