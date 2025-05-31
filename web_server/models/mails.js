@@ -17,4 +17,10 @@
 // TODO: delete comment when mails are implemented
 let mails = []
 
-export { mails };
+const getLatestMails = (limit = 50) => {
+    return [...mails]
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, limit);
+};
+
+export { mails, getLatestMails };
