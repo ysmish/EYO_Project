@@ -8,7 +8,6 @@
         "subject": "Hello",
         "body": "This is a test email.",
         "date": new Date("2023-10-01T10:00:00Z"),
-        "read": false,
         "attachments": []
     }
 ]
@@ -18,32 +17,25 @@
 let mails = [];
 let nextId = 1;
 
-const getLatestMails = (userId, limit = 50) => {
-    return [...mails]
-        .filter(mail => 
-            mail.from === userId || 
-            mail.to === userId || 
-            (mail.cc && mail.cc.includes(userId))
-        )
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, limit);
-};
-
-const createNewMail = (mailData) => {
+const createNewMail = (from, to, cc, subject, body, attachments) => {
     const newMail = {
         id: nextId++,
-        ...mailData,
+        from,
+        to,
+        cc,
+        subject,
+        body,
         date: new Date(),
-        read: false,
-        attachments: mailData.attachments || []
+        attachments
     };
     mails.push(newMail);
+    console.log(newMail);
     return newMail;
 };
 
 const extractUrls = (text) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const urlRegex = /((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?$/g;
     return text.match(urlRegex) || [];
 };
 
-export { mails, getLatestMails, createNewMail, extractUrls };
+export { mails, createNewMail, extractUrls };

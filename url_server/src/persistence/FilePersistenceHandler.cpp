@@ -40,7 +40,7 @@ std::vector<std::string> FilePersistenceHandler::load() {
 
     while (std::getline(file, line)) {
         if (!std::regex_match(line, urlCheck)) {
-            throw std::ios_base::failure("Invalid URL format in file: " + filename);
+            throw std::ios_base::failure("Invalid URL format " + line + " in file: " + filename);
         }
         blacklistedURLs.push_back(line);
     }

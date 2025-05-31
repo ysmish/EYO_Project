@@ -19,7 +19,7 @@ int main() {
     App app(
         1000, // Size of the Bloom filter
         std::move(hashFunctions), // Move the vector of hash functions
-        std::make_unique<FilePersistenceHandler>("/workspace/data/bloom_filter_data.txt"), // Use absolute path in container
+        std::make_unique<FilePersistenceHandler>("../data/bloom_filter_data.txt"),
         12345 // Port number for the server
     );
     

@@ -1,20 +1,11 @@
-import { getLatestMails, createNewMail, extractUrls } from '../models/mails.js';
-import { checkUrl } from '../utils/urlChecker.js';
+import { createNewMail, extractUrls } from '../models/mails.js';
+import { checkUrl } from '../models/blacklist.js';
+import { getUser } from '../models/users.js';
 
 const getAllMails = (req, res) => {
-    try {
-        const username = req.headers.authorization;
-        
-        if (!username) {
-            return res.status(400).json({error: 'Username is required.'});
-        }
-
-        const mails = getLatestMails(username);
-        return res.status(200).json({mails});
-    } catch (error) {
-        console.error('Error fetching mails:', error);
-        return res.status(500).json({error: 'Failed to fetch mails' });
-    }
+    return res.status(200).json({
+        message: 'Add Mail endpoint is not implemented yet'
+    });
 }
 
 const getMailById = (req, res) => {
@@ -23,24 +14,29 @@ const getMailById = (req, res) => {
     });
 }
 
-const createMail = async (req, res) => {
-    try {
+const createMail = (req, res) => {
         const username = req.headers.authorization;
         
         if (!username) {
-            return res.status(401).json({error: 'Authorization header is required' });
+            return res.status(400).json({error: 'Username is required' });
         }
 
-        const { from, to, cc, subject, body } = req.body;
+        const { to, subject, body, attachments } = req.body;
+        const cc = req.body.cc || [];
+
+        if (getUser(username).error || getUser(to).error) {
+            return res.status(400).json({error: 'User not found' });
+        }
+        
+        for (const user of cc) {
+            if (getUser(user).error) {
+                return res.status(400).json({error: 'User not found' });
+            }
+        }
 
         // Basic validation
-        if (!from || !to || !subject || !body) {
+        if (!to || !subject || !body) {
             return res.status(400).json({error: 'Missing required fields' });
-        }
-
-        // Validate that the user is sending from their own email
-        if (from !== username) {
-            return res.status(400).json({error: 'Username is required.' });
         }
 
         // Extract URLs from the body
@@ -49,7 +45,7 @@ const createMail = async (req, res) => {
         // Check all URLs against the URL server
         try {
             for (const url of urls) {
-                const isAllowed = await checkUrl(url);
+                const isAllowed = checkUrl(url);
                 if (!isAllowed) {
                     return res.status(400).json({ error: `URL ${url} is blacklisted` });
                 }
@@ -60,20 +56,18 @@ const createMail = async (req, res) => {
         }
 
         // Create the mail if all URLs are valid
-        const newMail = createNewMail({
-            from,
+        const newMail = createNewMail(
+            username,
             to,
-            cc: cc || [],
+            cc,
             subject,
-            body
-        });
+            body,
+            attachments || []
+        );
 
-        return res.status(201).json({newMail});
-    } catch (error) {
-        console.error('Error creating mail:', error);
-        return res.status(500).json({error: 'Failed to create mail' });
-    }
+        return res.status(201).location(`/mails/${newMail.id}`).json(newMail);
 }
+
 
 const patchMail = (req, res) => {
     return res.status(200).json({
