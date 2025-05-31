@@ -6,10 +6,11 @@ const getAllMails = (req, res) => {
         return res.status(400).json({ error: 'Username is required.' });
     }
     try {
-        const latestMails = getLatestMails();
-        return res.status(200).json({data: latestMails});
+        const latestMails = getLatestMails(username);
+        return res.status(200).json({latestMails});
     } catch (error) {
-        return res.status(500).json({error: 'Failed to fetch mails' });
+        console.error('Error fetching latest mails:', error);
+        return res.status(500).json({error: 'Internal server error.' });
     }
 }
 
