@@ -58,4 +58,4 @@ const addUser = (firstName, lastName, birthday, username, password, photo=null) 
 }
 
 
-export { addUser, getUser };
+export { addUser, getUser, users };
