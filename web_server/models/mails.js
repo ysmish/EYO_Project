@@ -14,7 +14,21 @@
 ]
  */
 // ***IF CHAGING STRUCTURE, UPDATE THE SEARCH FUNCTION IN search.js***
-// TODO: delete comment when mails are implemented
 let mails = []
 
-export { mails };
+const getMailById = (mailId) => {
+    const mail = mails.find(m => m.id === mailId);
+    if (!mail) {
+        throw new Error('Mail not found');
+    }
+    return mail;
+};
+
+const hasAccessToMail = (mail, username) => {
+    return mail.from === username || 
+           mail.to === username || 
+           (mail.cc && mail.cc.includes(username));
+};
+
+
+export { mails, getMailById, hasAccessToMail };
