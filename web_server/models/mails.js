@@ -17,8 +17,13 @@
 // TODO: delete comment when mails are implemented
 let mails = []
 
-const getLatestMails = (limit = 50) => {
+const getLatestMails = (userId, limit = 50) => {
     return [...mails]
+        .filter(mail => 
+            mail.from === userId || 
+            mail.to === userId || 
+            (mail.cc && mail.cc.includes(userId))
+        )
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, limit);
 };
