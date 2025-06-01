@@ -1,4 +1,4 @@
-import { getLatestMails, createNewMail, extractUrls, hasAccessToMail, getMailById } from '../models/mails.js';
+import { getLatestMails, createNewMail, extractUrls, getMail } from '../models/mails.js';
 import { checkUrl } from '../models/blacklist.js';
 import { getUser } from '../models/users.js';
 
@@ -30,17 +30,13 @@ const getMailById = (req, res) => {
         return res.status(400).json({error: 'Invalid mail ID'});
     }
 
-    try {
-        const mail = getMailById(mailId, username);
-        if (hasAccessToMail(mail, username)) {  
-            return res.status(200).json({mail});
+    const mail = getMail(username, mailId);
+        if (!mail) {
+            return res.status(404).json({error: 'Mail not found'});
         }
         else {
-            return res.status(403).json({error: 'You do not have access to this mail'});
+            return res.status(200).json(mail);
         }
-    } catch (error) {
-        return res.status(404).json({error: 'Mail not found'});
-    }
 }
 
 const createMail = (req, res) => {
@@ -85,7 +81,7 @@ const createMail = (req, res) => {
         }
 
         // Create the mail if all URLs are valid
-        const newMail = createNewMail(
+        const mailId = createNewMail(
             username,
             to,
             cc,
@@ -94,7 +90,7 @@ const createMail = (req, res) => {
             attachments || []
         );
 
-        return res.status(201).location(`/mails/${newMail.id}`).json(newMail);
+        return res.status(201).location(`/mails/${mailId}`).end();
 }
 
 

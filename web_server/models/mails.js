@@ -1,25 +1,8 @@
-/**
- * [
-    {
-        "id": 1,
-        "from": "user1",
-        "to": "user2",
-        "cc": ["user3"],
-        "subject": "Hello",
-        "body": "This is a test email.",
-        "date": new Date("2023-10-01T10:00:00Z"),
-        "attachments": []
-    }
-]
- */
-// ***IF CHAGING STRUCTURE, UPDATE THE SEARCH FUNCTION IN search.js***
-
-let mails = [];
+let mails = {};
 let nextId = 1;
 
 const createNewMail = (from, to, cc, subject, body, attachments) => {
     const newMail = {
-        id: nextId++,
         from,
         to,
         cc,
@@ -28,9 +11,16 @@ const createNewMail = (from, to, cc, subject, body, attachments) => {
         date: new Date(),
         attachments
     };
-    mails.push(newMail);
-    console.log(newMail);
-    return newMail;
+    const mailId = nextId++;
+    mails[from] = mails[from] || {};
+    mails[from][mailId] = newMail;
+    mails[to] = mails[to] || {};
+    mails[to][mailId] = newMail;
+    cc.forEach(user => {
+        mails[user] = mails[user] || {};
+        mails[user][mailId] = newMail;
+    });
+    return mailId;
 };
 
 const extractUrls = (text) => {
@@ -38,30 +28,21 @@ const extractUrls = (text) => {
     return text.match(urlRegex) || [];
 };
 
-const getMailById = (mailId) => {
-    const mail = mails.find(m => m.id === mailId);
-    if (!mail) {
-        throw new Error('Mail not found');
+const getMail = (username, mailId) => {
+    if (mails[username] && mails[username][mailId]) {
+        return { id: mailId, ...mails[username][mailId] };
     }
-    return mail;
-};
-
-const hasAccessToMail = (mail, username) => {
-    return mail.from === username || 
-           mail.to === username || 
-           (mail.cc && mail.cc.includes(username));
+    return null;
 };
 
 const getLatestMails = (username, limit = 50) => {
-    return [...mails]
-        .filter(mail => 
-            mail.from === username || 
-            mail.to === username || 
-            (mail.cc && mail.cc.includes(username))
-        )
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, limit);
+    if (!mails[username]) {
+        return [];
+    }
+    return Object.entries(mails[username])
+        .map(([id, mail]) => ({ id: parseInt(id), ...mail }))
+        .sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, limit);
 };
 
 
-export { mails, getLatestMails, createNewMail, extractUrls, getMailById, hasAccessToMail };
+export { mails, getLatestMails, createNewMail, extractUrls, getMail };
