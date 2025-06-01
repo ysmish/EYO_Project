@@ -7,6 +7,7 @@
 #include <mutex>
 #include "HashFunction.h"
 #include "PersistenceHandler.h"
+#include <mutex>
 
 class BloomFilter {
 private:

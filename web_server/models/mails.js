@@ -38,4 +38,15 @@ const extractUrls = (text) => {
     return text.match(urlRegex) || [];
 };
 
-export { mails, createNewMail, extractUrls };
+const getLatestMails = (username, limit = 50) => {
+    return [...mails]
+        .filter(mail => 
+            mail.from === username || 
+            mail.to === username || 
+            (mail.cc && mail.cc.includes(username))
+        )
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, limit);
+};
+
+export { mails, getLatestMails, createNewMail, extractUrls };
