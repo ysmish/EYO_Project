@@ -38,6 +38,20 @@ const extractUrls = (text) => {
     return text.match(urlRegex) || [];
 };
 
+const getMailById = (mailId) => {
+    const mail = mails.find(m => m.id === mailId);
+    if (!mail) {
+        throw new Error('Mail not found');
+    }
+    return mail;
+};
+
+const hasAccessToMail = (mail, username) => {
+    return mail.from === username || 
+           mail.to === username || 
+           (mail.cc && mail.cc.includes(username));
+};
+
 const getLatestMails = (username, limit = 50) => {
     return [...mails]
         .filter(mail => 
@@ -49,4 +63,5 @@ const getLatestMails = (username, limit = 50) => {
         .slice(0, limit);
 };
 
-export { mails, getLatestMails, createNewMail, extractUrls };
+
+export { mails, getLatestMails, createNewMail, extractUrls, getMailById, hasAccessToMail };
