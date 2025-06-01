@@ -30,5 +30,15 @@ const hasAccessToMail = (mail, username) => {
            (mail.cc && mail.cc.includes(username));
 };
 
+const getLatestMails = (username, limit = 50) => {
+    return [...mails]
+        .filter(mail => 
+            mail.from === username || 
+            mail.to === username || 
+            (mail.cc && mail.cc.includes(username))
+        )
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, limit);
+};
 
-export { mails, getMailById, hasAccessToMail };
+export { mails, getLatestMails, getMailById, hasAccessToMail };
