@@ -69,7 +69,7 @@ const getLatestMails = (username, limit = 50) => {
         .sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, limit);
 };
 
-const deleteMail = (username, mailId) => {
+const deleteMailOfUser = (username, mailId) => {
     if (!mails[username] || !mails[username][mailId]) {
         return false;
     }
@@ -79,4 +79,4 @@ const deleteMail = (username, mailId) => {
     return true;
 };
 
-export { mails, getLatestMails, createNewMail, extractUrlsFromMail, getMail, deleteMail };
+export { mails, getLatestMails, createNewMail, extractUrlsFromMail, getMail, deleteMailOfUser };
