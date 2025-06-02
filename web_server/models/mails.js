@@ -23,9 +23,34 @@ const createNewMail = (from, to, cc, subject, body, attachments) => {
     return mailId;
 };
 
-const extractUrls = (text) => {
+const extractUrlsFromString = (text) => {
+    if (!text || typeof text !== 'string') return [];
     const urlRegex = /((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?$/g;
     return text.match(urlRegex) || [];
+};
+
+const extractUrlsFromMail = (mail) => {
+    const urls = new Set();
+    
+    // Go through all fields in the mail object
+    for (const [key, value] of Object.entries(mail)) {
+        if (Array.isArray(value)) {
+            // Handle arrays (like cc and attachments)
+            value.forEach(item => {
+                if (typeof item === 'string') {
+                    extractUrlsFromString(item).forEach(url => urls.add(url));
+                } else if (item && typeof item === 'object' && item.name) {
+                    // Handle attachment objects with names
+                    extractUrlsFromString(item.name).forEach(url => urls.add(url));
+                }
+            });
+        } else if (typeof value === 'string') {
+            // Handle string fields
+            extractUrlsFromString(value).forEach(url => urls.add(url));
+        }
+    }
+    
+    return Array.from(urls);
 };
 
 const getMail = (username, mailId) => {
@@ -45,4 +70,4 @@ const getLatestMails = (username, limit = 50) => {
 };
 
 
-export { mails, getLatestMails, createNewMail, extractUrls, getMail };
+export { mails, getLatestMails, createNewMail, extractUrls, extractUrlsFromMail, getMail };

@@ -1,4 +1,4 @@
-import { getLatestMails, createNewMail, extractUrls, getMail } from '../models/mails.js';
+import { getLatestMails, createNewMail, extractUrlsFromMail, getMail } from '../models/mails.js';
 import { checkUrl } from '../models/blacklist.js';
 import { getUser } from '../models/users.js';
 
@@ -40,8 +40,8 @@ const getMailById = (req, res) => {
 }
 
 const createMail = (req, res) => {
+        // Get username from header
         const username = req.headers.authorization;
-        
         if (!username) {
             return res.status(400).json({error: 'Username is required' });
         }
@@ -49,10 +49,10 @@ const createMail = (req, res) => {
         const { to, subject, body, attachments } = req.body;
         const cc = req.body.cc || [];
 
+        // Check if users exist
         if (getUser(username).error || getUser(to).error) {
             return res.status(400).json({error: 'User not found' });
         }
-        
         for (const user of cc) {
             if (getUser(user).error) {
                 return res.status(400).json({error: 'User not found' });
@@ -64,15 +64,25 @@ const createMail = (req, res) => {
             return res.status(400).json({error: 'Missing required fields' });
         }
 
-        // Extract URLs from the body
-        const urls = extractUrls(body);
-
-        // Check all URLs against the URL server
+        // Extract URLs from all mail fields
         try {
+            const urls = extractUrlsFromMail({
+                from: username,
+                to,
+                cc,
+                subject,
+                body,
+                attachments
+            });
+
+            // Check all URLs against the URL server
             for (const url of urls) {
                 const isAllowed = checkUrl(url);
                 if (!isAllowed) {
-                    return res.status(400).json({ error: `URL ${url} is blacklisted` });
+                    return res.status(400).json({ 
+                        error: `URL ${url} is blacklisted`,
+                        message: 'Found blacklisted URL in mail content'
+                    });
                 }
             }
         } catch (error) {
