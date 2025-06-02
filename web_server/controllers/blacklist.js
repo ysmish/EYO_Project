@@ -1,4 +1,5 @@
-import { addUrl, checkUrl } from '../models/blacklist.js';
+import { addUrl, checkUrl, deleteUrl } from '../models/blacklist.js';
+
 
 const addURL = (req, res) => {
     const url = req.body.url;
@@ -30,9 +31,23 @@ const addURL = (req, res) => {
 }
 
 const deleteURL = (req, res) => {
-    return res.status(200).json({
-        message: 'Delete URL endpoint is not implemented yet'
-    });
+    const url = req.body.url;
+    try {
+        const result = deleteUrl(url);
+        if (result) {
+            return res.status(204).json({
+                message: 'URL deleted successfully'
+            });
+        } else {
+            return res.status(404).json({
+                message: 'URL not found'
+            });
+        }
+    } catch (err) {
+        return res.status(500).json({
+            message: 'Internal server error'
+        });
+    }
 }
 
 export { addURL, deleteURL };
