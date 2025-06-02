@@ -1,11 +1,11 @@
-import { addUrl } from '../models/blacklist.js';
+import { addUrl, checkUrl } from '../models/blacklist.js';
 
 const addURL = (req, res) => {
     const url = req.body.url;
     if (!url) {
         return res.status(400).json({ error: 'URL is required' });
     }
-    
+
     // first check if the url is in the blacklist
     try {
         if (checkUrl(url)) {
