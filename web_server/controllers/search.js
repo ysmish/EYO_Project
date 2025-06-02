@@ -3,7 +3,6 @@ import { search } from '../models/search.js';
 const searchQuery = (req, res) => {
     const username = req.headers.authorization;
     const query = req.params.query;
-    console.log(username, query);
     if (!username || !query) {
         return res.status(400).json({ error: 'Username and query are required.' });
     }
