@@ -33,6 +33,12 @@ const changeLabel = (username, labelId, updates) => {
 };
 
 const removeLabel = (username, labelId) => {
+    if (!labels[username] || !labels[username][labelId]) {
+        return false;
+    }
+    
+    delete labels[username][labelId];
+    return true;
 };
 
 export { labels, createNewLabel, getLabel, getLabels, changeLabel, removeLabel };
