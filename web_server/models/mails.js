@@ -79,4 +79,23 @@ const deleteMailOfUser = (username, mailId) => {
     return true;
 };
 
-export { mails, getLatestMails, createNewMail, extractUrlsFromMail, getMail, deleteMailOfUser };
+const updateMail = (username, mailId, updates) => {
+    if (!mails[username] || !mails[username][mailId]) {
+        return false;
+    }
+
+    // Only update allowed fields
+    const allowedFields = ['subject', 'body', 'attachments', 'to', 'cc'];
+    const updatedMail = { ...mails[username][mailId] };
+    
+    for (const field of allowedFields) {
+        if (field in updates) {
+            updatedMail[field] = updates[field];
+        }
+    }
+
+    mails[username][mailId] = updatedMail;
+    return true;
+};
+
+export { mails, getLatestMails, createNewMail, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail };
