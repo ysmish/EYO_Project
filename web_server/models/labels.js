@@ -18,8 +18,18 @@ const createNewLabel = (username, name) => {
     return name;
 };
 
-const getLabel = (username, labelId) => {
-
+const getLabel = (username, name) => {
+    if (!labels[username]) {
+        return null;
+    }
+    
+    if (!labels[username][name]) {
+        return null;
+    }
+    
+    return {
+        name: name,
+    };
 };
 
 const getLabels = (username) => {
