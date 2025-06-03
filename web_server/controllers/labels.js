@@ -23,8 +23,11 @@ const createLabel = (req, res) => {
     }
 
     try {
-        const labelId = createNewLabel(username, name);
-        return res.status(201).location(`/api/labels/${labelId}`).end();
+        const label = createNewLabel(username, name)
+        if (label?.error) {
+            return res.status(400).json({ error: label.error });
+        }
+        return res.status(201).location(`/api/labels/${name}`).end();
     } catch (error) {
         console.error('Error creating label:', error);
         return res.status(500).json({ error: 'Internal server error' });
