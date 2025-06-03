@@ -1,7 +1,19 @@
 import { createNewLabel, getLabel, getLabels, changeLabel, removeLabel } from '../models/labels.js';
 
 const getAllLabels = (req, res) => {
-    return res.status(200).json([]);
+    // Get username from header
+    const username = req.headers.authorization;
+    if (!username) {
+        return res.status(400).json({ error: 'Username is required' });
+    }
+
+    try {
+        const labels = getLabels(username);
+        return res.status(200).json(labels);
+    } catch (error) {
+        console.error('Error fetching labels:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 }
 
 const getLabelById = (req, res) => {

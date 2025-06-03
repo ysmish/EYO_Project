@@ -23,6 +23,10 @@ const getLabel = (username, labelId) => {
 };
 
 const getLabels = (username) => {
+    if (!labels[username]) {
+        return [];
+    }
+    return Object.keys(labels[username]);
 };
 
 const changeLabel = (username, labelId, updates) => {
