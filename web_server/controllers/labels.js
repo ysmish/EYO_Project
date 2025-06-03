@@ -1,4 +1,4 @@
-import { createLabel, getLabelById, getAllLabels, updateLabel, deleteLabel } from '../models/labels.js';
+import { createNewLabel, getLabel, getLabels, changeLabel, removeLabel } from '../models/labels.js';
 
 const getAllLabels = (req, res) => {
     return res.status(200).json([]);
@@ -23,7 +23,7 @@ const createLabel = (req, res) => {
     }
 
     try {
-        const labelId = createLabel(username, name);
+        const labelId = createNewLabel(username, name);
         return res.status(201).location(`/api/labels/${labelId}`).end();
     } catch (error) {
         console.error('Error creating label:', error);
