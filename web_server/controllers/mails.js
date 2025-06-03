@@ -147,7 +147,7 @@ const patchMail = async (req, res) => {
     // Update the mail
     const success = updateMail(username, mailId, updates);
     if (success) {
-        return res.status(204).location(`/api/mails/${mailId}`).end();
+        return res.status(204).end();
     } else {
         return res.status(500).json({ error: 'Failed to update mail' });
     }
