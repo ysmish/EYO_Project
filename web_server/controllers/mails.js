@@ -39,7 +39,7 @@ const getMailById = (req, res) => {
         }
 }
 
-const createMail = (req, res) => {
+const createMail = async (req, res) => {
         // Get username from header
         const username = req.headers.authorization;
         if (!username) {
@@ -77,8 +77,8 @@ const createMail = (req, res) => {
 
             // Check all URLs against the URL server
             for (const url of urls) {
-                const isAllowed = checkUrl(url);
-                if (!isAllowed) {
+                const isBlacklisted = await checkUrl(url);
+                if (isBlacklisted) {
                     return res.status(400).json({ 
                         error: `URL ${url} is blacklisted`,
                         message: 'Found blacklisted URL in mail content'
@@ -104,7 +104,7 @@ const createMail = (req, res) => {
 }
 
 
-const patchMail = (req, res) => {
+const patchMail = async (req, res) => {
     // Get username from header
     const username = req.headers.authorization;
     if (!username) {
@@ -131,8 +131,8 @@ const patchMail = (req, res) => {
         
         // Check all URLs against the URL server
         for (const url of urls) {
-            const isAllowed = checkUrl(url);
-            if (!isAllowed) {
+            const isBlacklisted = await checkUrl(url);
+            if (isBlacklisted) {
                 return res.status(400).json({ 
                     error: `URL ${url} is blacklisted`,
                     message: 'Found blacklisted URL in mail content'
