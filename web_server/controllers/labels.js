@@ -55,11 +55,13 @@ const createLabel = (req, res) => {
     }
 
     try {
-        const label = createNewLabel(username, name)
-        if (label?.error) {
-            return res.status(400).json({ error: label.error });
+        const result = createNewLabel(username, name);
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
         }
-        return res.status(201).location(`/api/labels/${name}`).end();
+        // Set the Location header to point to the new label's URL
+        return res.status(201)
+                 .location(`/api/labels/${result.id}`).end();
     } catch (error) {
         console.error('Error creating label:', error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -67,9 +69,34 @@ const createLabel = (req, res) => {
 }
 
 const patchLabel = (req, res) => {
-    return res.status(200).json({
-        message: 'Add Label endpoint is not implemented yet'
-    });
+    // Get username from header
+    const username = req.headers.authorization;
+    if (!username) {
+        return res.status(400).json({ error: 'Username is required' });
+    }
+
+    // Get label ID from params (which is the current name)
+    const labelId = req.params.id;
+    if (!labelId) {
+        return res.status(400).json({ error: 'Label ID is required' });
+    }
+
+    // Get updates from request body
+    const updates = req.body;
+    if (!updates || !updates.name) {
+        return res.status(400).json({ error: 'New label name is required' });
+    }
+
+    try {
+        const result = changeLabel(username, labelId, updates);
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        return res.status(204).end();
+    } catch (error) {
+        console.error('Error updating label:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 }
 
 const deleteLabel = (req, res) => {
