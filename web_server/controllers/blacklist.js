@@ -65,7 +65,7 @@ const deleteURL = async (req, res) => {
             return res.status(503).json({ error: 'URL server is unavailable' });
         }
         if (!exists) {
-            return res.status(404).json({ error: 'URL not found in blacklist' });
+            return res.status(200).json({ error: 'URL not found in blacklist' });
         }
 
         const result = await deleteUrl(url);
