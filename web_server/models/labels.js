@@ -1,7 +1,7 @@
 let labels = {};
 let nextId = 1;
 
-const createLabel = (username, name) => {
+const createNewLabel = (username, name) => {
     if (!name) {
         throw new Error('Name is required');
     }
@@ -21,14 +21,14 @@ const createLabel = (username, name) => {
     return labelId;
 };
 
-const getLabelById = (username, labelId) => {
+const getLabel = (username, labelId) => {
     if (!labels[username] || !labels[username][labelId]) {
         return null;
     }
     return { id: labelId, ...labels[username][labelId] };
 };
 
-const getAllLabels = (username) => {
+const getLabels = (username) => {
     if (!labels[username]) {
         return [];
     }
@@ -36,7 +36,7 @@ const getAllLabels = (username) => {
         .map(([id, label]) => ({ id: parseInt(id), ...label }));
 };
 
-const updateLabel = (username, labelId, updates) => {
+const changeLabel = (username, labelId, updates) => {
     if (!labels[username] || !labels[username][labelId]) {
         return false;
     }
@@ -47,7 +47,7 @@ const updateLabel = (username, labelId, updates) => {
     return true;
 };
 
-const deleteLabel = (username, labelId) => {
+const removeLabel = (username, labelId) => {
     if (!labels[username] || !labels[username][labelId]) {
         return false;
     }
@@ -56,4 +56,4 @@ const deleteLabel = (username, labelId) => {
     return true;
 };
 
-export { labels, createLabel, getLabelById, getAllLabels, updateLabel, deleteLabel };
+export { labels, createNewLabel, getLabel, getLabels, changeLabel, removeLabel };
