@@ -28,8 +28,7 @@ const getLabel = (username, name) => {
     }
     
     return {
-        name: labelId,
-        emails: labels[username][name]
+        name: name,
     };
 };
 
