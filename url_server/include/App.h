@@ -17,7 +17,7 @@
 // Structure to pass data to thread
 struct ClientData {
     int socket;
-    App* app;
+    class App* app;
 };
 
 class App {
