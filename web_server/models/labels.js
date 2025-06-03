@@ -1,1 +1,34 @@
-export { };
+let labels = {};
+
+const createNewLabel = (username, name) => {
+    if (!name) {
+        throw { error: 'Label name is required' };
+    }
+
+    // Initialize user's labels if they don't exist
+    if (!labels[username]) {
+        labels[username] = {};
+    }
+
+    if (Object.keys(labels[username]).some(label => label === name)) {
+        return { error: 'Label name already exists' };
+    };
+
+    labels[username][name] = [];
+    return name;
+};
+
+const getLabel = (username, labelId) => {
+
+};
+
+const getLabels = (username) => {
+};
+
+const changeLabel = (username, labelId, updates) => {
+};
+
+const removeLabel = (username, labelId) => {
+};
+
+export { labels, createNewLabel, getLabel, getLabels, changeLabel, removeLabel };
