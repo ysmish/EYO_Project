@@ -1,4 +1,4 @@
-import { getLatestMails, createNewMail, extractUrlsFromMail, getMail, deleteMailOfUser } from '../models/mails.js';
+import { getLatestMails, createNewMail, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail } from '../models/mails.js';
 import { checkUrl } from '../models/blacklist.js';
 import { getUser } from '../models/users.js';
 
@@ -100,15 +100,58 @@ const createMail = (req, res) => {
             attachments || []
         );
 
-        return res.status(201).location(`/mails/${mailId}`).end();
+        return res.status(201).location(`/api/mails/${mailId}`).end();
 }
 
 
 const patchMail = (req, res) => {
-    return res.status(200).json({
-        message: 'Add Mail endpoint is not implemented yet'
-    });
-}
+    // Get username from header
+    const username = req.headers.authorization;
+    if (!username) {
+        return res.status(400).json({ error: 'Username is required.' });
+    }
+
+    // Get mail ID from URL parameter
+    const mailId = parseInt(req.params.id);
+    if (isNaN(mailId)) {
+        return res.status(400).json({ error: 'Invalid mail ID' });
+    }
+
+    // Check if the mail exists and belongs to the user
+    const mail = getMail(username, mailId);
+    if (!mail) {
+        return res.status(404).json({ error: 'Mail not found' });
+    }
+
+    const updates = req.body;
+    
+    // Extract URLs from the updates to check against blacklist
+    try {
+        const urls = extractUrlsFromMail(updates);
+        
+        // Check all URLs against the URL server
+        for (const url of urls) {
+            const isAllowed = checkUrl(url);
+            if (!isAllowed) {
+                return res.status(400).json({ 
+                    error: `URL ${url} is blacklisted`,
+                    message: 'Found blacklisted URL in mail content'
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error checking URLs:', error);
+        return res.status(500).json({ error: 'Failed to validate URLs' });
+    }
+
+    // Update the mail
+    const success = updateMail(username, mailId, updates);
+    if (success) {
+        return res.status(204).location(`/api/mails/${mailId}`).end();
+    } else {
+        return res.status(500).json({ error: 'Failed to update mail' });
+    }
+};
 
 const deleteMail = (req, res) => {
     // Get username from header
