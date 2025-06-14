@@ -1,0 +1,30 @@
+import "./styles.css";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Layout from "./components/home/Layout";
+import Mail from "./components/home/mail/Mail";
+import Mails from "./components/home/mails/Mails";
+import Login from "./components/auth/login/Login";
+import { ThemeProvider } from "./context/ThemeProvider";
+import AuthProvider from "./context/AuthProvider";
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        
+        <div className="App">
+          <BrowserRouter>
+            <Routes>
+              <Route element={<Layout />}>
+                <Route path="/" element={<Navigate to="/mails" replace />} />
+                <Route path="/mail" element={<Mail />} />
+                <Route path="/mails" element={<Mails />} />
+              </Route>
+              <Route path="login" element={<Login />} />
+            </Routes>
+          </BrowserRouter>
+        </div>
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
