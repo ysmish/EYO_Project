@@ -35,3 +35,14 @@ services:
       - "3000:3000"
     depends_on:
       - url_server
+
+web_app:
+  build:
+    context: ./web_app
+    dockerfile: Dockerfile
+  working_dir: /app
+  command: npm start
+  ports:
+    - "80:80"
+  depends_on:
+    - web_server
