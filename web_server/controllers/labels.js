@@ -1,11 +1,20 @@
 import { createNewLabel, getLabel, getLabels, changeLabel, removeLabel } from '../models/labels.js';
+import { authorizeToken } from '../models/tokens.js';
 
 const getAllLabels = (req, res) => {
-    // Get username from header
-    const username = req.headers.authorization;
-    if (!username) {
-        return res.status(400).json({ error: 'Username is required' });
+    // Get token from header
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization token is required' });
     }
+
+    // Verify JWT token
+    const authResult = authorizeToken(token);
+    if (authResult.error) {
+        return res.status(401).json({ error: authResult.error });
+    }
+
+    const username = authResult.username;
 
     try {
         const labels = getLabels(username);
@@ -17,11 +26,19 @@ const getAllLabels = (req, res) => {
 }
 
 const getLabelById = (req, res) => {
-    // Get username from header
-    const username = req.headers.authorization;
-    if (!username) {
-        return res.status(400).json({ error: 'Username is required' });
+    // Get token from header
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization token is required' });
     }
+
+    // Verify JWT token
+    const authResult = authorizeToken(token);
+    if (authResult.error) {
+        return res.status(401).json({ error: authResult.error });
+    }
+
+    const username = authResult.username;
 
     const labelId = req.params.id;
     if (!labelId) {
@@ -41,11 +58,19 @@ const getLabelById = (req, res) => {
 }
 
 const createLabel = (req, res) => {
-    // Get username from header
-    const username = req.headers.authorization;
-    if (!username) {
-        return res.status(400).json({ error: 'Username is required' });
+    // Get token from header
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization token is required' });
     }
+
+    // Verify JWT token
+    const authResult = authorizeToken(token);
+    if (authResult.error) {
+        return res.status(401).json({ error: authResult.error });
+    }
+
+    const username = authResult.username;
 
     const { name } = req.body;
 
@@ -69,11 +94,19 @@ const createLabel = (req, res) => {
 }
 
 const patchLabel = (req, res) => {
-    // Get username from header
-    const username = req.headers.authorization;
-    if (!username) {
-        return res.status(400).json({ error: 'Username is required' });
+    // Get token from header
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization token is required' });
     }
+
+    // Verify JWT token
+    const authResult = authorizeToken(token);
+    if (authResult.error) {
+        return res.status(401).json({ error: authResult.error });
+    }
+
+    const username = authResult.username;
 
     // Get label ID from params (which is the current name)
     const labelId = req.params.id;
@@ -100,11 +133,19 @@ const patchLabel = (req, res) => {
 }
 
 const deleteLabel = (req, res) => {
-    // Get username from header
-    const username = req.headers.authorization;
-    if (!username) {
-        return res.status(400).json({ error: 'Username is required' });
+    // Get token from header
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization token is required' });
     }
+
+    // Verify JWT token
+    const authResult = authorizeToken(token);
+    if (authResult.error) {
+        return res.status(401).json({ error: authResult.error });
+    }
+
+    const username = authResult.username;
 
     // Get label name from params
     const labelName = req.params.id;

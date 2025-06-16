@@ -1,12 +1,21 @@
 import { addUrl, checkUrl, deleteUrl } from '../models/blacklist.js';
 import { getUser } from '../models/users.js';
+import { authorizeToken } from '../models/tokens.js';
 
 const addURL = async (req, res) => {
-    const username = req.headers.authorization;
-    if (!username) {
-        return res.status(401).json({ error: 'Username is required' });
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization token is required' });
     }
 
+    // Verify JWT token
+    const authResult = authorizeToken(token);
+    if (authResult.error) {
+        return res.status(401).json({ error: authResult.error });
+    }
+
+    const username = authResult.username;
+    
     // Verify user exists
     const user = getUser(username);
     if (user.error) {
@@ -42,11 +51,19 @@ const addURL = async (req, res) => {
 };
 
 const deleteURL = async (req, res) => {
-    const username = req.headers.authorization;
-    if (!username) {
-        return res.status(401).json({ error: 'Username is required' });
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization token is required' });
     }
 
+    // Verify JWT token
+    const authResult = authorizeToken(token);
+    if (authResult.error) {
+        return res.status(401).json({ error: authResult.error });
+    }
+
+    const username = authResult.username;
+    
     // Verify user exists
     const user = getUser(username);
     if (user.error) {
