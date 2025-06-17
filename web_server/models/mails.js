@@ -24,6 +24,7 @@ const createNewMail = (from, to, cc, subject, body, attachments) => {
         subject,
         body,
         date: new Date(),
+        read: false,
         attachments
     };
     const mailId = nextId++;
@@ -100,7 +101,7 @@ const updateMail = (username, mailId, updates) => {
     }
 
     // Only update allowed fields
-    const allowedFields = ['subject', 'body', 'attachments', 'to', 'cc'];
+    const allowedFields = ['subject', 'body', 'attachments', 'to', 'cc', 'read'];
     const updatedMail = { ...mails[username][mailId] };
     
     for (const field of allowedFields) {
