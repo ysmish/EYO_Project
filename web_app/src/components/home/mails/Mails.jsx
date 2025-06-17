@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useAuth } from '../../../context/AuthProvider';
 import '../../../styles.css';
 
 const Mails = ({mails, setMails}) => {
   const [error] = useState(null);
+  const { token } = useAuth();
 
   const formatDateTime = (dateString) => {
     const mailDate = new Date(dateString);
@@ -24,6 +26,38 @@ const Mails = ({mails, setMails}) => {
     }
   };
 
+  const markAsRead = async (mailId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token
+        },
+        body: JSON.stringify({ read: true })
+      });
+
+      if (response.ok) {
+        // Update the local state to mark the mail as read
+        setMails(prevMails => 
+          prevMails.map(mail => 
+            mail.id === mailId ? { ...mail, read: true } : mail
+          )
+        );
+      } else {
+        console.error('Failed to mark mail as read');
+      }
+    } catch (error) {
+      console.error('Error marking mail as read:', error);
+    }
+  };
+
+  const handleMailClick = (mail) => {
+    // Only mark as read if it's currently unread
+    if (!mail.read) {
+      markAsRead(mail.id);
+    }
+  };
 
   if (error) {
     return (
@@ -42,13 +76,17 @@ const Mails = ({mails, setMails}) => {
       ) : (
         <div className="mails-list">
           {mails.map(mail => (
-            <div key={mail.id} className={`mail-item ${!mail.read ? 'unread' : ''}`}>
+            <div 
+              key={mail.id} 
+              className={`mail-item ${!mail.read ? 'unread' : ''}`}
+              onClick={() => handleMailClick(mail)}
+            >
               <div className="mail-content">
                 <span className="mail-sender">{mail.from}</span>
-                                  <div className="mail-text-content">
-                    <span className="mail-subject">{mail.subject}</span>
-                    <span className="mail-body">&nbsp; - {mail.body}</span>
-                  </div>
+                <div className="mail-text-content">
+                  <span className="mail-subject">{mail.subject}</span>
+                  <span className="mail-body">&nbsp; - {mail.body}</span>
+                </div>
               </div>
               <div className="mail-date">{formatDateTime(mail.date)}</div>
             </div>
