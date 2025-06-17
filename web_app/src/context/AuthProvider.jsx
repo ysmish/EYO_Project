@@ -7,32 +7,28 @@ const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const loginAction = async (data) => {
     try {
-        /**
-         *       const response = await fetch("your-api-endpoint/auth/login", {
+        const response = await fetch("http://localhost:3000/api/tokens", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      }); // respose is a jwt token
+      });
+      
+        const result = await response.json();
+        
         if (!response.ok) {
-          throw new Error("Login failed");
+          throw new Error(result.error || "Login failed");
         }
-        const token = await response.text();
-        setToken(token);
-        localStorage.setItem("token", token);
-        const decoded = verify(token, "your-secret-key");
-        setUser(decoded);
-        navigate("/");
-         */
-        // hardcoded user for demo purposes
-        setToken("hardcoded-jwt-token");
-        localStorage.setItem("token", "hardcoded-jwt-token");
+        
+        setToken(result.token);
+        localStorage.setItem("token", result.token);
         setUser({
-          id: "12345",
-          username: "demoUser"});
+          username: data.username
+        });
     } catch (err) {
       console.error(err);
+      throw err;
     }
   };
 
@@ -42,8 +38,30 @@ const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
   };
 
+  const registerAction = async (data) => {
+    try {
+      const response = await fetch("http://localhost:3000/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.message || "Registration failed");
+      }
+      
+      return { success: true };
+    } catch (err) {
+      console.error("Registration error:", err);
+      throw err;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ token, user, loginAction, logOut }}>
+    <AuthContext.Provider value={{ token, user, loginAction, logOut, registerAction }}>
       {children}
     </AuthContext.Provider>
   );
