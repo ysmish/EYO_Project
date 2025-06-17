@@ -8,6 +8,7 @@
   --bg-color: #111111;
   --shadow-color: #333333;
   --text-color: white;
+  --scheme: dark light;
 }
 
 :root {
@@ -124,5 +125,234 @@ body {
 .side-item.active {
     background-color: var(--shadow-color);
     font-weight: 500;
+}
+
+/* Authentication Styles */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: var(--bg-color);
+}
+
+.auth-card {
+    background-color: var(--bg-color);
+    border: 1px solid var(--shadow-color);
+    border-radius: 12px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.auth-card-header {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.auth-card-header .nav-item {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+[data-theme="dark"] .auth-card {
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+}
+
+.auth-header {
+    text-align: center;
+}
+
+.auth-header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+}
+
+.auth-header p {
+    color: var(--text-color);
+    opacity: var(--opacity-big);
+    margin: 0;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-group input {
+    padding: 0.75rem;
+    border: 1px solid var(--shadow-color);
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: 0.875rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #4F46E5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-group input.error {
+    border-color: #EF4444;
+}
+
+.form-group input.error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+    font-size: 0.75rem;
+    color: #EF4444;
+    margin-top: 0.25rem;
+}
+
+.general-error {
+    padding: 0.75rem;
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.auth-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.auth-button.primary {
+    background-color: #4F46E5;
+    color: white;
+}
+
+.auth-button.primary:hover:not(:disabled) {
+    background-color: #4338CA;
+    transform: translateY(-1px);
+}
+
+.auth-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--shadow-color);
+}
+
+.auth-footer p {
+    color: var(--text-color);
+    opacity: var(--opacity-big);
+    margin: 0;
+}
+
+.link-button {
+    background: none;
+    border: none;
+    color: #4F46E5;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: inherit;
+}
+
+.link-button:hover {
+    color: #4338CA;
+}
+
+/* Image Upload Styles */
+.form-group input[type="file"] {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.image-preview {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.preview-image {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 8px;
+    border: 2px solid var(--shadow-color);
+    object-fit: cover;
+}
+
+.remove-image-btn {
+    display: block;
+    margin: 0.5rem auto 0 auto;
+    padding: 0.25rem 0.75rem;
+    background-color: #EF4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.remove-image-btn:hover {
+    background-color: #DC2626;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .auth-container {
+        padding: 1rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .auth-card {
+        padding: 1.5rem;
+    }
+    
+    .preview-image {
+        max-width: 120px;
+        max-height: 120px;
+    }
+}
+
+.form-group input[type="date"] {
+    color-scheme: var(--scheme);
 }
 

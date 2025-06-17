@@ -4,6 +4,7 @@ import Layout from "./components/home/Layout";
 import Mail from "./components/home/mail/Mail";
 import Mails from "./components/home/mails/Mails";
 import Login from "./components/auth/login/Login";
+import Register from "./components/auth/register/Register";
 import { ThemeProvider } from "./context/ThemeProvider";
 import AuthProvider from "./context/AuthProvider";
 
@@ -21,6 +22,7 @@ export default function App() {
                 <Route path="/mails" element={<Mails />} />
               </Route>
               <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
             </Routes>
           </BrowserRouter>
         </div>

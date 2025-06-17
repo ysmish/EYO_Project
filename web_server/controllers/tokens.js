@@ -7,12 +7,12 @@ const createToken = (req, res) => {
         return res.status(400).json({ error: 'Username and password are required.' });
     }
     
-    const token = generateToken(username, password);
+    const result = generateToken(username, password);
     
-    if (token.error) {
-        return res.status(401).json({ error: token.error });
+    if (result.error) {
+        return res.status(401).json({ error: result.error });
     }
     
-    return res.status(201).json({ token: token.username });
+    return res.status(201).json({ token: result.token });
 }
 export { createToken };

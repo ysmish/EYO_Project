@@ -51,7 +51,7 @@ const addUser = (firstName, lastName, birthday, username, password, photo=null) 
         birthday: new Date(birthday), // Store as a Date object
         email: `${username}@example.com`, // Simple email generation for demonstration
         password, // TODO: ensure to hash the password
-        photo: photo || 'https://i.sstatic.net/frlIf.png', // Default photo if none provided
+        photo: photo || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSIjOUNBM0FGIi8+CjxwYXRoIGQ9Ik0yMCA4MEM3NS4wNzY5IDc5LjIzMDggMjQgNzUuMDc2OSAyNCA3MEMyNCA2NC45MjMxIDc1LjA3NjkgNjAgODAgNjAiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+', // Default placeholder avatar
     };
     users.push(newUser);
     return newUser;
