@@ -14,7 +14,7 @@ let mails = {
     12: {from: "Mro", to: "Evi", cc: [], subject: "Test Results", body: "All unit tests are passing now! The test coverage is at 85%. We're making good progress on the quality assurance front.", date: new Date('2024-01-08T10:45:00'), attachments: []}
   }
 };
-let nextId = 2;
+let nextId = 13;
 
 const createNewMail = (from, to, cc, subject, body, attachments) => {
     const newMail = {
