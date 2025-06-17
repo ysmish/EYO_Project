@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthProvider';
 import '../../../styles.css';
 
 const Mails = ({mails, setMails}) => {
   const [error] = useState(null);
   const { token } = useAuth();
+  const navigate = useNavigate();
 
   const formatDateTime = (dateString) => {
     const mailDate = new Date(dateString);
@@ -57,6 +59,9 @@ const Mails = ({mails, setMails}) => {
     if (!mail.read) {
       markAsRead(mail.id);
     }
+    
+    // Navigate to the mail detail page
+    navigate(`/mail/${mail.id}`);
   };
 
   if (error) {
