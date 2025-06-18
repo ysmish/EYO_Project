@@ -12,7 +12,7 @@ const Logo = () => {
       className='logo'
     >
       <Image
-        src={darkMode ? 'logo_w.svg' : 'logo_b.svg'}
+        src={darkMode ? '/logo_w.svg' : '/logo_b.svg'}
         alt="Logo"
         width={40}
         height={40}
