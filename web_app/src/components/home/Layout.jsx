@@ -14,12 +14,37 @@ const Layout = () => {
     // Check authentication state completely before proceeding
     const checkAuth = async () => {
       // Wait a moment to ensure auth context is fully loaded
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       if (!auth?.token) {
         navigate('/login');
+        setIsCheckingAuth(false);
+        return;
       }
-      setIsCheckingAuth(false);
+
+      // Validate the token by making a test API call
+      try {
+        const response = await fetch("http://localhost:3000/api/mails", {
+          headers: {
+            "Authorization": `${auth.token}`
+          }
+        });
+
+        if (!response.ok) {
+          // Token is invalid or expired
+          auth.logOut(); // This will clear both context and localStorage
+          navigate('/login');
+          setIsCheckingAuth(false);
+          return;
+        }
+
+        // Token is valid
+        setIsCheckingAuth(false);
+      } catch (error) {
+        console.error('Error validating token:', error);
+        // On network error, still allow access but log the error
+        setIsCheckingAuth(false);
+      }
     };
 
     checkAuth();
