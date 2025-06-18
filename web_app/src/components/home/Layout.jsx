@@ -48,7 +48,7 @@ const Layout = () => {
     };
 
     checkAuth();
-  }, [auth?.token, navigate]);
+  }, [auth, navigate]);
 
   if (isCheckingAuth) {
     return <Loading />;
