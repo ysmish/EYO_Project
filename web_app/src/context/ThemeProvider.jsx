@@ -7,10 +7,11 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(localStorage.getItem("darkMode") === "true");
 
   const toggleTheme = () => {
     setDarkMode((mode) => !mode);
+    localStorage.setItem("darkMode", !darkMode);
   };
 
   useEffect(() => {

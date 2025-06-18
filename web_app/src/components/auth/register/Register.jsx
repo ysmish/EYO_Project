@@ -7,6 +7,7 @@ import ImageUploadField from './components/ImageUploadField';
 import Settings from '../../home/navbar/_components/Settings';
 import { useAuth } from '../../../context/AuthProvider';
 import { useEffect } from 'react';
+import Loading from '../../loading/Loading';
 import '../../../styles.css';
 
 const Register = () => {
@@ -81,15 +82,17 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-card-header">
-          <Settings />
-          <div className="auth-header">
-            <h1>Create Account</h1>
-            <p>Join our mail system</p>
+    <>
+      {loading && <Loading />}
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-card-header">
+            <Settings />
+            <div className="auth-header">
+              <h1>Create Account</h1>
+              <p>Join our mail system</p>
+            </div>
           </div>
-        </div>
         
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -194,6 +197,7 @@ const Register = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
