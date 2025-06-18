@@ -3,7 +3,6 @@ import { useAuth } from "../../context/AuthProvider";
 import { useEffect, useState } from "react";
 import Navbar from "./navbar/Navbar";
 import Sidebar from "./sidebar/Sidebar";
-import Loading from "../loading/Loading";
 
 const Layout = () => {
   const auth = useAuth();
