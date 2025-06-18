@@ -356,3 +356,104 @@ body {
     color-scheme: var(--scheme);
 }
 
+/* UserButton dropdown styles */
+.user-dropdown {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  min-width: 260px;
+  z-index: 100;
+  background-color: var(--bg-color);
+  border: 1px solid var(--shadow-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  animation: fadeInUserDropdown 0.15s;
+}
+
+@keyframes fadeInUserDropdown {
+  from { opacity: 0; transform: translateY(-10px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+.user-dropdown-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-color);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.user-dropdown-close:hover {
+  opacity: 1;
+}
+
+.user-dropdown-content {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.user-dropdown-photo-label {
+  cursor: pointer;
+  display: inline-block;
+}
+
+.user-dropdown-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--shadow-color);
+  margin-bottom: 8px;
+  transition: box-shadow 0.2s;
+}
+
+.user-dropdown-photo-label:hover .user-dropdown-photo {
+  box-shadow: 0 0 0 2px #4F46E5;
+}
+
+.user-dropdown-name {
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.user-dropdown-email {
+  font-size: 13px;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+.user-dropdown-logout {
+  width: 100%;
+  margin-top: 12px;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  background-color: #4F46E5;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.user-dropdown-logout:hover:not(:disabled) {
+  background-color: #4338CA;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .user-dropdown {
+    min-width: 180px;
+    padding: 1rem 0.5rem 0.5rem 0.5rem;
+  }
+  .user-dropdown-photo {
+    width: 48px;
+    height: 48px;
+  }
+}
