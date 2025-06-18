@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import '../../../../styles.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useAuth } from '../../../../context/AuthProvider';
@@ -30,24 +30,7 @@ const Labels = ({ setSearchQuery }) => {
     '#059669'  // Dark Green
   ];
 
-  // Fetch labels when component mounts
-  useEffect(() => {
-    fetchLabels();
-  }, []);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const fetchLabels = async () => {
+  const fetchLabels = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:3000/api/labels', {
         headers: {
@@ -65,7 +48,24 @@ const Labels = ({ setSearchQuery }) => {
       console.error('Error fetching labels:', error);
       setError('Failed to load labels');
     }
-  };
+  }, [token]);
+
+  // Fetch labels when component mounts
+  useEffect(() => {
+    fetchLabels();
+  }, [fetchLabels]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLabelClick = (labelName, event) => {
     // Don't trigger label click if clicking on menu button or dropdown
