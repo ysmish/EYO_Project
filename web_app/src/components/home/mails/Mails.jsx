@@ -75,27 +75,38 @@ const Mails = ({mails, setMails}) => {
 
   return (
     <div className="mails-container">
-      <h2>Your Mails</h2>
       {mails.length === 0 ? (
-        <p>No mails found.</p>
+        <div className="mails-list">
+          <div className="mails-header">
+            <h2>Your Mails</h2>
+          </div>
+          <div className="no-mails-message">
+            <p>No mails found.</p>
+          </div>
+        </div>
       ) : (
         <div className="mails-list">
-          {mails.map(mail => (
-            <div 
-              key={mail.id} 
-              className={`mail-item ${!mail.read ? 'unread' : ''}`}
-              onClick={() => handleMailClick(mail)}
-            >
-              <div className="mail-content">
-                <span className="mail-sender">{mail.from}</span>
-                <div className="mail-text-content">
-                  <span className="mail-subject">{mail.subject}</span>
-                  <span className="mail-body">&nbsp; - {mail.body}</span>
+          <div className="mails-header">
+            <h2>Your Mails</h2>
+          </div>
+          <div className="mails-items-container">
+            {mails.map(mail => (
+              <div 
+                key={mail.id} 
+                className={`mail-item ${!mail.read ? 'unread' : ''}`}
+                onClick={() => handleMailClick(mail)}
+              >
+                <div className="mail-content">
+                  <span className="mail-sender">{mail.from}</span>
+                  <div className="mail-text-content">
+                    <span className="mail-subject">{mail.subject}</span>
+                    <span className="mail-body"> - {mail.body}</span>
+                  </div>
                 </div>
+                <div className="mail-date">{formatDateTime(mail.date)}</div>
               </div>
-              <div className="mail-date">{formatDateTime(mail.date)}</div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -15,7 +15,7 @@ const NewMail = () => {
 
   return (
     <>
-      <div className='side-item' onClick={handleOpenCompose}>
+      <div className='new-mail-button' onClick={handleOpenCompose}>
         <i className="bi bi-pencil-square"></i>
         <span>New Mail</span>
       </div>
