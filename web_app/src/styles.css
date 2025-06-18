@@ -28,8 +28,8 @@ body {
 
 .home-container {
   display: flex;
-  height: calc(100vh - 5rem);
-  padding-top: 5rem;
+  height: calc(100vh - 4rem);
+  padding-top: 4rem;
   overflow: hidden;
 }
 
@@ -37,7 +37,7 @@ body {
   position: fixed;
   top: 0;
   width: 100%;
-  height: 5rem;
+  height: 4rem;
   z-index: 49;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
@@ -50,7 +50,7 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-right: 1.5rem;
+  margin-right: 1rem;
 }
 
 .nav-item {
@@ -115,7 +115,7 @@ body {
     padding: 0 12px 0 26px;
     height: 32px;
     display: flex;
-    gap: 8px;
+    gap: 15px;
     align-items: center;
     border-radius: 0 16px 16px 0;
     color: var(--text-color);
@@ -464,7 +464,7 @@ body {
 /* Mail Components Styles */
 .mails-container {
     flex: 1;
-    padding: 1rem 2rem 1rem 2rem;
+    padding: 0.75rem 1.5rem 1rem 1rem;
     background-color: var(--bg-color);
     height: 100%;
     overflow: hidden;
@@ -478,6 +478,13 @@ body {
     font-size: 1.5rem;
     font-weight: 600;
     flex-shrink: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+}
+
+[data-theme="dark"] .mails-container h2 {
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 .mails-list {
@@ -555,7 +562,7 @@ body {
 }
 
 .mail-sender {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--text-color);
     font-weight: 400;
     flex-shrink: 0;
@@ -573,11 +580,11 @@ body {
     overflow: hidden;
     white-space: nowrap;
     min-width: 0;
-    gap: 0;
+    gap: 4px;
 }
 
 .mail-subject {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 400;
     color: var(--text-color);
     flex-shrink: 0;
@@ -585,25 +592,32 @@ body {
 }
 
 .mail-body {
-    font-size: 0.75rem;
-    color: var(--text-color);
-    opacity: 0.6;
+    font-size: 0.8rem;
+    color: #666666;
     font-weight: 400;
-    flex: 1;
+    flex-shrink: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
     white-space: nowrap;
+    max-width: 300px;
 }
 
 .mail-date {
-    font-size: 0.75rem;
-    color: var(--text-color);
-    opacity: var(--opacity-small);
+    font-size: 0.8rem;
+    color: #666666;
     flex-shrink: 0;
     min-width: 60px;
     text-align: right;
     font-weight: 500;
+}
+
+[data-theme="dark"] .mail-body {
+    color: #999999;
+}
+
+[data-theme="dark"] .mail-date {
+    color: #999999;
 }
 
 .error-container {
@@ -966,4 +980,58 @@ body {
         width: 100%;
         justify-content: center;
     }
+}
+
+/* New Mail Button - Simple & Beautiful */
+.new-mail-button {
+    margin: 1rem 0.75rem 1.25rem 0.75rem;
+    padding: 0.75rem 1.25rem;
+    height: auto;
+    min-height: 44px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: 10px;
+    background-color: #4F46E5;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+    border: none;
+    white-space: nowrap;
+}
+
+.new-mail-button:hover {
+    background-color: #4338CA;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.new-mail-button:active {
+    transform: translateY(0px);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.new-mail-button i {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.new-mail-button span {
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .new-mail-button {
+    background-color: #5B5FED;
+    box-shadow: 0 2px 8px rgba(91, 95, 237, 0.25);
+}
+
+[data-theme="dark"] .new-mail-button:hover {
+    background-color: #4F46E5;
+    box-shadow: 0 4px 12px rgba(91, 95, 237, 0.35);
 }
