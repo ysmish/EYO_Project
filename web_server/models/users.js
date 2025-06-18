@@ -57,5 +57,17 @@ const addUser = (firstName, lastName, birthday, username, password, photo=null) 
     return newUser;
 }
 
+const changePhoto = (username, photo) => {
+    if (!username || !photo) {
+        return { error: 'Username and photo are required' }
+    }
+    const user = users.find(user => user.id === username);
+    if (!user) {
+        return { error: 'User not found' }
+    }
+    user.photo = photo;
+    return { message: 'Photo updated successfully' };
+}
 
-export { addUser, getUser, users };
+// Exporting functions for use in controllers
+export { addUser, getUser, changePhoto, users };

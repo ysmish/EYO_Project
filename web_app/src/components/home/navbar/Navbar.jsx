@@ -3,7 +3,7 @@ import Search from './_components/Search';
 import Settings from './_components/Settings';
 import UserButton from './_components/UserButton';
 
-const Navbar = () => {
+const Navbar = ({user, setUser}) => {
 
   return (
     <div className="navbar">
@@ -11,7 +11,7 @@ const Navbar = () => {
       <Search />
       <div className='navbar-right'>
         <Settings />
-        <UserButton />
+        <UserButton user={user} setUser={setUser}/>
       </div>
     </div>
   );

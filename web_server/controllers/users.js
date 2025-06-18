@@ -1,4 +1,5 @@
-import { addUser, getUser } from '../models/users.js';
+import { addUser, getUser, changePhoto } from '../models/users.js';
+import { authorizeToken } from '../models/tokens.js';
 
 const createNewUser = (req, res) => {
     const userData = req.body;
@@ -59,4 +60,33 @@ const getUserById = (req, res) => {
     }
 }
 
-export { createNewUser, getUserById };
+const changeUserPhoto = (req, res) => {
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(400).json({ error: 'Authorization token is required.' });
+    }
+
+    // Verify JWT token
+    const authResult = authorizeToken(token);
+    if (authResult.error) {
+        return res.status(401).json({ error: authResult.error });
+    }
+    const username = authResult.username;
+    const photo = req.body.photo;
+    if (!photo) {
+        return res.status(400).json({ error: 'Photo is required.' });
+    }
+
+    try {
+        const result = changePhoto(username, photo);
+        if (result.error) {
+            return res.status(404).json({ error: result.error });
+        }
+        return res.status(200).json({ message: 'Photo updated successfully' });
+    } catch (error) {
+        console.error('Error updating photo:', error);
+        return res.status(500).json({ error: 'Internal server error.' });
+    }
+}
+
+export { createNewUser, getUserById, changeUserPhoto };
