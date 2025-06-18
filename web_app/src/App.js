@@ -18,7 +18,7 @@ export default function App() {
             <Routes>
               <Route element={<Layout />}>
                 <Route path="/" element={<Navigate to="/mails" replace />} />
-                <Route path="/mail" element={<Mail />} />
+                <Route path="/mail/:mailId" element={<Mail />} />
                 <Route path="/mails" element={<DefaultMails />} />
               </Route>
               <Route path="login" element={<Login />} />
