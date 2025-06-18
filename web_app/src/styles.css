@@ -636,3 +636,334 @@ body {
 .error-container button:hover {
     background-color: #0056b3;
 }
+
+/* Compose Modal Styles */
+.compose-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    pointer-events: none;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 1rem;
+}
+
+.compose-modal-overlay.expanded {
+    background-color: rgba(0, 0, 0, 0.5);
+    pointer-events: all;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.compose-modal {
+    background-color: var(--bg-color);
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+    width: 500px;
+    height: 600px;
+    overflow: hidden;
+    border: 1px solid var(--shadow-color);
+    display: flex;
+    flex-direction: column;
+    pointer-events: all;
+}
+
+.compose-modal.expanded {
+    width: 90vw;
+    height: 90vh;
+    max-width: 1000px;
+    max-height: 800px;
+    border-radius: 8px;
+}
+
+[data-theme="dark"] .compose-modal {
+    box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
+}
+
+.compose-header {
+    background-color: var(--shadow-color);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--shadow-color);
+    flex-shrink: 0;
+}
+
+.compose-header span {
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.compose-header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.compose-btn-icon {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.compose-btn-icon:hover {
+    background-color: var(--shadow-color);
+}
+
+.compose-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.compose-fields-container {
+    padding: 0.25rem 1rem 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.compose-field-inline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-bottom: 1px solid var(--shadow-color);
+    padding-bottom: 0.125rem;
+}
+
+.compose-field-left {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-right: 0.75rem;
+}
+
+.compose-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #9CA3AF;
+    opacity: 1;
+}
+
+.compose-cc-toggle {
+    font-size: 0.875rem;
+    color: #4F46E5;
+    cursor: pointer;
+    text-decoration: underline;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+.compose-cc-toggle:hover {
+    opacity: 1;
+}
+
+.compose-cc-toggle.active {
+    color: #9CA3AF;
+    text-decoration: line-through;
+}
+
+.compose-input-inline {
+    flex: 1;
+    padding: 0.5rem 0 0.5rem 0;
+    border: none;
+    background-color: transparent;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    font-family: inherit;
+    margin-left: 0;
+}
+
+.compose-input-inline:focus {
+    outline: none;
+}
+
+.compose-input-subject {
+    flex: 1;
+    padding: 0.5rem 0;
+    border: none;
+    background-color: transparent;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    font-family: inherit;
+    width: 100%;
+}
+
+.compose-input-subject:focus {
+    outline: none;
+}
+
+.compose-input-subject::placeholder {
+    color: #9CA3AF;
+    opacity: 1;
+}
+
+.compose-body-container {
+    flex: 1;
+    padding: 0.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.compose-body-textarea {
+    flex: 1;
+    border: none;
+    background-color: transparent;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: none;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.compose-body-textarea:focus {
+    outline: none;
+}
+
+
+
+.compose-error {
+    background-color: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+[data-theme="dark"] .compose-error {
+    background-color: rgba(220, 38, 38, 0.1);
+    border-color: rgba(220, 38, 38, 0.3);
+    color: #fca5a5;
+}
+
+.compose-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid var(--shadow-color);
+    flex-shrink: 0;
+    background-color: var(--bg-color);
+}
+
+.compose-btn-send {
+    background-color: #4F46E5;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.compose-btn-send:hover:not(:disabled) {
+    background-color: #4338CA;
+    transform: translateY(-1px);
+}
+
+.compose-btn-send:disabled {
+    background-color: #9CA3AF;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.compose-btn-cancel {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--shadow-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.compose-btn-cancel:hover:not(:disabled) {
+    background-color: var(--shadow-color);
+}
+
+.compose-btn-cancel:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.compose-success {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-color);
+}
+
+.compose-success i {
+    font-size: 2rem;
+    color: #10B981;
+    margin-bottom: 1rem;
+}
+
+.compose-success p {
+    font-size: 1rem;
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .compose-modal {
+        width: calc(100vw - 2rem);
+        height: 400px;
+    }
+    
+    .compose-modal.expanded {
+        width: 95vw;
+        height: 95vh;
+        max-width: none;
+        max-height: none;
+    }
+    
+    .compose-fields-container {
+        padding: 0.25rem 0.75rem 0 0.75rem;
+    }
+    
+    .compose-field-left {
+        margin-right: 0.75rem;
+    }
+    
+    .compose-body-container {
+        padding: 0.25rem 0.75rem;
+    }
+    
+    .compose-actions {
+        flex-direction: column;
+        padding: 0.5rem;
+    }
+    
+    .compose-btn-send,
+    .compose-btn-cancel {
+        width: 100%;
+        justify-content: center;
+    }
+}
