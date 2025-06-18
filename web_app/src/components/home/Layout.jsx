@@ -7,60 +7,44 @@ import Loading from "../loading/Loading";
 
 const Layout = () => {
   const auth = useAuth();
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Check authentication state completely before proceeding
-    const checkAuth = async () => {
-      // Wait a moment to ensure auth context is fully loaded
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      if (!auth?.token) {
-        navigate('/login');
-        setIsCheckingAuth(false);
-        return;
-      }
-
-      // Validate the token by making a test API call
+    const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/mails", {
+        const response = await fetch(`http://localhost:3000/api/users/${auth.user}`, {
           headers: {
-            "Authorization": `${auth.token}`
-          }
+            Authorization: `Bearer ${auth?.token}`,
+          },
         });
 
         if (!response.ok) {
-          // Token is invalid or expired
-          auth.logOut(); // This will clear both context and localStorage
-          navigate('/login');
-          setIsCheckingAuth(false);
-          return;
+          throw new Error("Failed to fetch user data");
         }
 
-        // Token is valid
-        setIsCheckingAuth(false);
+        const userData = await response.json();
+        setUser(userData);
+        // You can set user data in context or state if needed
       } catch (error) {
-        console.error('Error validating token:', error);
-        // On network error, still allow access but log the error
-        setIsCheckingAuth(false);
+        console.error("Error fetching user data:", error);
+        // Optionally handle the error, e.g., show a notification
       }
     };
+    console.log("auth", auth);
+    if (!auth?.token || !auth?.user) {
+      auth.logOut(); // Clear auth state if token or user is not available
+      navigate('/login');
+    }
+    fetchUser();
+  }, [auth, navigate, setUser]);
 
-    checkAuth();
-  }, [auth, navigate]);
-
-  if (isCheckingAuth) {
-    return <Loading />;
-  }
-
-  if (!auth?.token) {
+  if (!auth.token) {
     return null; // Return null while redirecting
   }
-
   return (
     <>
-      <Navbar />
+      <Navbar user={user} setUser={setUser} />
       <div className="home-container">
         <Sidebar />
         <Outlet />

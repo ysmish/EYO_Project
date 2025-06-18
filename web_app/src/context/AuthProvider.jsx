@@ -3,7 +3,7 @@ import { useContext, createContext, useState } from "react";
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(localStorage.getItem("user") || "");
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const loginAction = async (data) => {
     try {
@@ -23,9 +23,8 @@ const AuthProvider = ({ children }) => {
         
         setToken(result.token);
         localStorage.setItem("token", result.token);
-        setUser({
-          username: data.username
-        });
+        setUser(data.username);
+        localStorage.setItem("user", data.username);
     } catch (err) {
       console.error(err);
       throw err;
@@ -36,6 +35,7 @@ const AuthProvider = ({ children }) => {
     setUser(null);
     setToken("");
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
   const registerAction = async (data) => {
