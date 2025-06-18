@@ -1,4 +1,35 @@
-let labels = {};
+let labels = {
+    "Mro": {
+        'Inbox': {
+            id: 'Inbox',
+            name: 'Inbox'
+        },
+        'Sent': {
+            id: 'Sent',
+            name: 'Sent'
+        },
+        'Starred': {
+            id: 'Starred',
+            name: 'Starred'
+        },
+        'Drafts': {
+            id: 'Drafts',
+            name: 'Drafts'
+        },
+        'Spam': {
+            id: 'Spam',
+            name: 'Spam'
+        },
+        1: {
+            id: 1,
+            name: 'Work'
+        },
+        2: {
+            id: 2,
+            name: 'Personal'
+        }
+    }
+};
 let labelIdCounter = 1;  // Counter for generating unique label IDs
 
 const createNewLabel = (username, name) => {
@@ -21,7 +52,6 @@ const createNewLabel = (username, name) => {
     labels[username][id] = {
         id: id,
         name: name,
-        emails: []
     };
 
     return { id, name };
@@ -35,6 +65,10 @@ const getLabel = (username, labelId) => {
     labelId = parseInt(labelId);
     if (!labels[username][labelId]) {
         return null;
+    }
+
+    if (isNaN(labelId)) {
+        return { error: 'Invalid label ID' };
     }
     
     const label = labels[username][labelId];
@@ -51,7 +85,7 @@ const getLabels = (username) => {
     return Object.values(labels[username]).map(label => ({
         id: label.id,
         name: label.name
-    }));
+    })).filter(label => isNaN(label.id) === false); // Ensure IDs are valid numbers
 };
 
 const changeLabel = (username, labelId, updates) => {

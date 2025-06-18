@@ -1,3 +1,5 @@
+import { labels } from "./labels.js";
+
 let users = []
 
 const getUser = (username) => {
@@ -53,6 +55,28 @@ const addUser = (firstName, lastName, birthday, username, password, photo=null) 
         password, // TODO: ensure to hash the password
         photo: photo || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSIjOUNBM0FGIi8+CjxwYXRoIGQ9Ik0yMCA4MEM3NS4wNzY5IDc5LjIzMDggMjQgNzUuMDc2OSAyNCA3MEMyNCA2NC45MjMxIDc1LjA3NjkgNjAgODAgNjAiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+', // Default placeholder avatar
     };
+    labels[newUser.id] = {
+        'Inbox': {
+            id: 'Inbox',
+            name: 'Inbox'
+        },
+        'Sent': {
+            id: 'Sent',
+            name: 'Sent'
+        },
+        'Starred': {
+            id: 'Starred',
+            name: 'Starred'
+        },
+        'Drafts': {
+            id: 'Drafts',
+            name: 'Drafts'
+        },
+        'Spam': {
+            id: 'Spam',
+            name: 'Spam'
+        },
+    }
     users.push(newUser);
     return newUser;
 }
