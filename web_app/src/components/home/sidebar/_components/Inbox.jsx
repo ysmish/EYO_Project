@@ -3,7 +3,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 
 const Inbox = ({setSearchQuery}) => {
   const handleInboxClick = () => {
-    setSearchQuery('in:inbox');
+    setSearchQuery('in:inbox ');
   };
 
   return (

@@ -9,16 +9,14 @@ const Search = ({user, searchQuery, setSearchQuery}) => {
 
   // Sync with external search query and auto-search
   useEffect(() => {
-    if (searchQuery !== undefined && searchQuery !== null) {
+    if (searchQuery !== undefined && searchQuery !== null && searchQuery.trim()) {
+      // Only update local query if external query is non-empty
       setQuery(searchQuery);
-      if (searchQuery.trim()) {
-        // Automatically perform search with the external query
-        navigate(`/search/${encodeURIComponent(searchQuery)}`);
-        // Don't clear the searchQuery for non-empty queries so it stays visible
-      } else {
-        // Only clear the external query when it's empty (like from All Mails)
-        setSearchQuery('');
-      }
+      // Automatically perform search with the external query
+      navigate(`/search/${encodeURIComponent(searchQuery)}`);
+    } else if (searchQuery === '') {
+      // Only clear the external query when it's explicitly empty (like from All Mails)
+      setSearchQuery('');
     }
   }, [searchQuery, setSearchQuery, navigate]);
 
