@@ -8,7 +8,7 @@ const Navbar = ({user, setUser}) => {
   return (
     <div className="navbar">
       <Logo />
-      <Search />
+      <Search user={user}/>
       <div className='navbar-right'>
         <Settings />
         <UserButton user={user} setUser={setUser}/>

@@ -1,27 +1,50 @@
 import { mails } from './mails.js';
-const search = (username, query) => {
+const search = (username, keywords, flags, labels) => {
     if (!mails[username]) {
         return [];
     }
-    // Normalize the query to lowercase for case-insensitive search
-    const normalizedQuery = query.toLowerCase();
-        return Object.entries(mails[username])
+    // If no keywords are given, match all mails
+    const hasKeywords = keywords && keywords.length > 0;
+    const normalizedKeywords = hasKeywords ? keywords.map(keyword => keyword.toLowerCase()) : [];
+
+    return Object.entries(mails[username])
         .map(([id, mail]) => {
             mail = { id: parseInt(id), ...mail }
+            if (!hasKeywords) {
+                return mail;
+            }
             for (const key in mail) {
-                if (Array.isArray(mail[key]) && mail[key].some(item => toString(item).toLowerCase().includes(normalizedQuery))) {
+                if (key === 'labels') continue; // Skip labels field for keyword search
+                if (Array.isArray(mail[key]) && mail[key].some(item =>
+                    normalizedKeywords.some(keyword => item.toLowerCase().includes(keyword))
+                )) {
                     return mail;
                 }
-                if (typeof mail[key] === 'string' && mail[key].toLowerCase().includes(normalizedQuery)) {
+                if (typeof mail[key] === 'string' && normalizedKeywords.some(keyword =>
+                    mail[key].toLowerCase().includes(keyword)
+                )) {
                     return mail;
                 }
             }
             return null;
         })
         .filter(mail => mail !== null)
+        .filter(mail => {
+            // Check if the mail matches the flags
+            if (flags.inbox && !mail.labels.includes('Inbox')) return false;
+            if (flags.sent && !mail.labels.includes('Sent')) return false;
+            if (flags.starred && !mail.labels.includes('Starred')) return false;
+            if (flags.drafts && !mail.labels.includes('Drafts')) return false;
+            if (flags.spam && !mail.labels.includes('Spam')) return false;
+
+            // Check if the mail matches any of the labels
+            if (labels.length > 0 && !labels.some(label => mail.labels.includes(label))) {
+                return false;
+            }
+
+            return true;
+        })
         .sort((a, b) => new Date(b.date) - new Date(a.date));
 };
-
-
 
 export { search };
