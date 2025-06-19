@@ -135,9 +135,9 @@ const Mail = () => {
   ];
   return (
     <>
-      <ActionToolbar actions={toolbarActions} />
       <div className="mail-view-container">
         <div className="mail-view-card">
+          <ActionToolbar actions={toolbarActions} />
           <div className="mail-view-header">
             <button className="mail-back-btn" onClick={handleBack}>← Back</button>
             <div className="mail-view-header-main">
