@@ -98,13 +98,54 @@ const Mails = ({mails, setMails}) => {
     setSelected([]);
   };
 
-  const toolbarActions = 
-        
-        
-        
-        
-        
-        selected.length > 0 ? [
+  // Determine if all selected mails are starred
+  const allSelectedStarred = selected.length > 0 && selected.every(id => {
+    const mail = mails.find(m => m.id === id);
+    return mail && mail.labels && mail.labels.includes('Starred');
+  });
+
+  const handleStar = async () => {
+    const updatedMails = [...mails];
+    
+    for (const mailId of selected) {
+      const mailIndex = updatedMails.findIndex(m => m.id === mailId);
+      if (mailIndex !== -1) {
+        const mail = updatedMails[mailIndex];
+        const isStarred = mail.labels && mail.labels.includes('Starred');
+        const newLabels = isStarred
+          ? (mail.labels || []).filter(label => label !== 'Starred')
+          : [...(mail.labels || []), 'Starred'];
+
+        try {
+          const response = await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token
+            },
+            body: JSON.stringify({ labels: newLabels })
+          });
+
+          if (response.ok) {
+            updatedMails[mailIndex] = { ...mail, labels: newLabels };
+          }
+        } catch (error) {
+          console.error('Error updating star status:', error);
+        }
+      }
+    }
+    
+    setMails(updatedMails);
+    setSelected([]);
+  };
+
+  const toolbarActions = selected.length > 0 ? [
+    {
+      key: 'star',
+      iconClass: allSelectedStarred ? 'bi bi-star-fill' : 'bi bi-star',
+      label: allSelectedStarred ? 'Unstar' : 'Star',
+      onClick: handleStar
+    },
     {
       key: 'delete',
       iconClass: 'bi bi-trash',
@@ -146,8 +187,8 @@ const Mails = ({mails, setMails}) => {
                 key={mail.id} 
                 className={`mail-item ${!mail.read ? 'unread' : ''}`}
                 onClick={e => {
-                  // Prevent click if clicking checkbox or delete
-                  if (e.target.closest('.mail-delete-btn') || e.target.closest('.mail-select-checkbox')) return;
+                  // Prevent click if clicking checkbox, star button, or delete button
+                  if (e.target.closest('.mail-delete-btn') || e.target.closest('.mail-star-btn') || e.target.closest('.mail-select-checkbox')) return;
                   handleMailClick(mail);
                 }}
               >
@@ -166,6 +207,40 @@ const Mails = ({mails, setMails}) => {
                   </div>
                 </div>
                 <div className="mail-date">{formatDateTime(mail.date)}</div>
+                <button
+                  className="mail-star-btn"
+                  title={mail.labels && mail.labels.includes('Starred') ? 'Unstar' : 'Star'}
+                  onClick={async e => {
+                    e.stopPropagation();
+                    const isStarred = mail.labels && mail.labels.includes('Starred');
+                    const newLabels = isStarred
+                      ? (mail.labels || []).filter(label => label !== 'Starred')
+                      : [...(mail.labels || []), 'Starred'];
+
+                    try {
+                      const response = await fetch(`http://localhost:3000/api/mails/${mail.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': token
+                        },
+                        body: JSON.stringify({ labels: newLabels })
+                      });
+
+                      if (response.ok) {
+                        setMails(prevMails =>
+                          prevMails.map(m =>
+                            m.id === mail.id ? { ...m, labels: newLabels } : m
+                          )
+                        );
+                      }
+                    } catch (error) {
+                      console.error('Error updating star status:', error);
+                    }
+                  }}
+                >
+                  <i className={`bi ${mail.labels && mail.labels.includes('Starred') ? 'bi-star-fill' : 'bi-star'}`}></i>
+                </button>
                 <button
                   className="mail-delete-btn"
                   title="Delete"

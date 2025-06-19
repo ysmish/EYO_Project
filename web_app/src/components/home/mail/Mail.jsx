@@ -124,14 +124,54 @@ const Mail = () => {
     navigate('/mails');
   };
 
+  const handleStar = async () => {
+    const isStarred = mail.labels && mail.labels.includes('Starred');
+    const newLabels = isStarred
+      ? (mail.labels || []).filter(label => label !== 'Starred')
+      : [...(mail.labels || []), 'Starred'];
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token
+        },
+        body: JSON.stringify({ labels: newLabels })
+      });
+
+      if (response.ok) {
+        setMail(prev => ({
+          ...prev,
+          labels: newLabels
+        }));
+        // Update labels display
+        setLabels(prevLabels => {
+          const updatedLabels = isStarred
+            ? prevLabels.filter(label => label !== 'Starred')
+            : [...new Set([...prevLabels, 'Starred'])];
+          return updatedLabels;
+        });
+      }
+    } catch (error) {
+      console.error('Error updating star status:', error);
+    }
+  };
+
+  const isStarred = mail.labels && mail.labels.includes('Starred');
   const toolbarActions = [
+    {
+      key: 'star',
+      iconClass: isStarred ? 'bi bi-star-fill' : 'bi bi-star',
+      label: isStarred ? 'Unstar' : 'Star',
+      onClick: handleStar
+    },
     {
       key: 'delete',
       iconClass: 'bi bi-trash',
       label: 'Delete',
       onClick: handleDelete
     }
-    // Future actions can be added here
   ];
   return (
     <>
