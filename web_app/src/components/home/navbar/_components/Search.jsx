@@ -1,36 +1,96 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import '../../../../styles.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const Search = ({user, searchQuery, setSearchQuery}) => {
   const [query, setQuery] = useState('');
+  const [isUserTyping, setIsUserTyping] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const previousPath = useRef(location.pathname);
 
-  // Sync with external search query and auto-search
-  useEffect(() => {
-    if (searchQuery !== undefined && searchQuery !== null && searchQuery.trim()) {
-      // Only update local query if external query is non-empty
-      setQuery(searchQuery);
-      // Automatically perform search with the external query
-      navigate(`/search/${encodeURIComponent(searchQuery)}`);
-    } else if (searchQuery === '') {
-      // Only clear the external query when it's explicitly empty (like from All Mails)
-      setSearchQuery('');
+  // Helper function to add trailing space for display
+  const formatQueryForDisplay = (queryStr) => {
+    // Add trailing space for common search patterns if not already present
+    if (queryStr && !queryStr.endsWith(' ') && 
+        (queryStr.startsWith('in:') || queryStr.startsWith('label:'))) {
+      return queryStr + ' ';
     }
-  }, [searchQuery, setSearchQuery, navigate]);
+    return queryStr;
+  };
+
+  // Sync search bar with URL when navigating via sidebar or other means
+  useEffect(() => {
+    const path = location.pathname;
+    
+    // Only sync if the path actually changed (not just from typing)
+    if (previousPath.current !== path && !isUserTyping) {
+      previousPath.current = path;
+      
+      if (path.startsWith('/search/')) {
+        const urlQuery = path.split('/search/')[1];
+        if (urlQuery && !urlQuery.includes('/')) { // Make sure it's not a mail detail URL
+          // Safely decode the URL query with error handling
+          let decodedQuery;
+          try {
+            decodedQuery = decodeURIComponent(urlQuery);
+          } catch (error) {
+            console.warn('Failed to decode URL parameter:', urlQuery, error);
+            // Use the raw parameter if decoding fails
+            decodedQuery = urlQuery;
+          }
+          const displayQuery = formatQueryForDisplay(decodedQuery);
+          setQuery(displayQuery);
+          // Update the external search query to keep things in sync
+          if (setSearchQuery) {
+            setSearchQuery(displayQuery);
+          }
+        }
+      } else if (path === '/mails') {
+        // If someone navigates to /mails directly, redirect to /search/in:all
+        navigate('/search/in%3Aall', { replace: true });
+      }
+    }
+  }, [location.pathname, setSearchQuery, navigate, isUserTyping]);
+
+  // Handle external search query changes (for manual updates, not sidebar navigation)
+  useEffect(() => {
+    if (searchQuery !== undefined && searchQuery !== null && !isUserTyping) {
+      if (searchQuery === '') {
+        setQuery('');
+      } else if (searchQuery !== query) {
+        // Only update if it's different to avoid infinite loops
+        setQuery(searchQuery);
+      }
+    }
+  }, [searchQuery, query, isUserTyping]);
 
   const handleInputChange = (e) => {
+    setIsUserTyping(true);
     setQuery(e.target.value);
-    // Clear any external search query when user starts typing manually
-    if (searchQuery) {
-      setSearchQuery('');
-    }
   };
 
   const handleSearch = () => {
     if (!query.trim()) return; // Prevent empty searches
-    navigate(`/search/${encodeURIComponent(query)}`);
+    setIsUserTyping(false); // Reset typing flag
+    // Remove trailing space before encoding for URL
+    const trimmedQuery = query.trim();
+    navigate(`/search/${encodeURIComponent(trimmedQuery)}`);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  // Reset typing flag when user clicks outside or stops interacting
+  const handleBlur = () => {
+    // Small delay to allow for search button clicks
+    setTimeout(() => {
+      setIsUserTyping(false);
+    }, 100);
   };
 
   return (
@@ -41,7 +101,8 @@ const Search = ({user, searchQuery, setSearchQuery}) => {
         className='search-input'
         value={query}
         onChange={handleInputChange}
-        onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
       />
       <div className="nav-item" onClick={handleSearch}>
         <i className="bi bi-search"></i>

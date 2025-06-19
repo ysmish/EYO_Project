@@ -30,6 +30,11 @@ const search = (username, keywords, flags, labels) => {
         })
         .filter(mail => mail !== null)
         .filter(mail => {
+            // If 'all' flag is set, return all mails without filtering
+            if (flags.all) {
+                return true;
+            }
+
             // Check if the mail matches the flags
             if (flags.inbox && !mail.labels.includes('Inbox')) return false;
             if (flags.sent && !mail.labels.includes('Sent')) return false;

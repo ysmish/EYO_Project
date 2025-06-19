@@ -2,15 +2,19 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import '../../../../styles.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useAuth } from '../../../../context/AuthProvider';
+import { useNavigate } from 'react-router-dom';
 import AddLabelModal from './AddLabelModal';
 
-const Labels = ({ setSearchQuery }) => {
+const Labels = ({ activeSection }) => {
+  const navigate = useNavigate();
   const [labels, setLabels] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState('');
   const [showDropdown, setShowDropdown] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [showColorModal, setShowColorModal] = useState(null);
+  const [showNameModal, setShowNameModal] = useState(null);
+  const [nameInput, setNameInput] = useState('');
   const { token } = useAuth();
   const dropdownRef = useRef(null);
 
@@ -72,7 +76,7 @@ const Labels = ({ setSearchQuery }) => {
     if (event.target.closest('.label-menu-btn') || event.target.closest('.label-dropdown')) {
       return;
     }
-    setSearchQuery(`label:${labelName} `);
+    navigate(`/search/label%3A${encodeURIComponent(labelName)}`);
   };
 
   const handleMenuClick = (labelId, event) => {
@@ -118,6 +122,12 @@ const Labels = ({ setSearchQuery }) => {
     setShowDropdown(null);
   };
 
+  const handleChangeName = (label) => {
+    setShowNameModal(label);
+    setNameInput(label.name);
+    setShowDropdown(null);
+  };
+
   const handleColorChange = async (labelId, newColor) => {
     try {
       const label = labels.find(l => l.id === labelId);
@@ -146,6 +156,51 @@ const Labels = ({ setSearchQuery }) => {
     }
   };
 
+  const handleNameChange = async () => {
+    if (!nameInput.trim()) {
+      setError('Label name cannot be empty');
+      return;
+    }
+
+    // Check if name already exists (case insensitive)
+    const nameExists = labels.some(
+      label => label.id !== showNameModal.id && 
+      label.name.toLowerCase() === nameInput.trim().toLowerCase()
+    );
+
+    if (nameExists) {
+      setError('A label with this name already exists');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/labels/${showNameModal.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        },
+        body: JSON.stringify({ 
+          name: nameInput.trim(),
+          color: showNameModal.color
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update label name');
+      }
+
+      // Refresh labels list
+      fetchLabels();
+      setShowNameModal(null);
+      setNameInput('');
+      setError('');
+    } catch (error) {
+      console.error('Error updating label name:', error);
+      setError('Failed to update label name');
+    }
+  };
+
   const openModal = () => {
     setShowModal(true);
     setError('');
@@ -157,6 +212,12 @@ const Labels = ({ setSearchQuery }) => {
 
   const closeColorModal = () => {
     setShowColorModal(null);
+  };
+
+  const closeNameModal = () => {
+    setShowNameModal(null);
+    setNameInput('');
+    setError('');
   };
 
   const handleLabelAdded = () => {
@@ -189,12 +250,15 @@ const Labels = ({ setSearchQuery }) => {
 
         {/* Labels list */}
         <div className="labels-list">
-          {labels.map((label) => (
-            <div 
-              key={label.id} 
-              className="side-item label-item"
-              onClick={(e) => handleLabelClick(label.name, e)}
-            >
+          {labels.map((label) => {
+            const isActive = activeSection && activeSection.startsWith('label:') && 
+                           activeSection.split('label:')[1] === label.name;
+            return (
+              <div 
+                key={label.id} 
+                className={`side-item label-item ${isActive ? 'active' : ''}`}
+                onClick={(e) => handleLabelClick(label.name, e)}
+              >
               <div 
                 className="label-color-dot"
                 style={{ backgroundColor: label.color || '#4F46E5' }}
@@ -222,6 +286,13 @@ const Labels = ({ setSearchQuery }) => {
                 >
                   <button 
                     className="label-dropdown-item"
+                    onClick={() => handleChangeName(label)}
+                  >
+                    <i className="bi bi-pencil-square"></i>
+                    Change Name
+                  </button>
+                  <button 
+                    className="label-dropdown-item"
                     onClick={() => handleChangeColor(label)}
                   >
                     <i className="bi bi-palette"></i>
@@ -237,7 +308,8 @@ const Labels = ({ setSearchQuery }) => {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -247,6 +319,61 @@ const Labels = ({ setSearchQuery }) => {
           onClose={closeModal}
           onLabelAdded={handleLabelAdded}
         />
+      )}
+
+      {/* Change Name Modal */}
+      {showNameModal && (
+        <div className="label-modal-overlay">
+          <div className="label-modal">
+            <div className="label-modal-header">
+              <h3>Change Label Name</h3>
+              <button 
+                className="label-modal-close"
+                onClick={closeNameModal}
+                title="Close"
+              >
+                <i className="bi bi-x"></i>
+              </button>
+            </div>
+            
+            <div className="label-modal-content">
+              <div className="label-modal-field">
+                <label>Label Name</label>
+                <input
+                  type="text"
+                  className="label-modal-input"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleNameChange();
+                    } else if (e.key === 'Escape') {
+                      closeNameModal();
+                    }
+                  }}
+                  placeholder="Enter label name"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="label-modal-actions">
+              <button 
+                className="label-modal-btn label-modal-btn-cancel"
+                onClick={closeNameModal}
+              >
+                Cancel
+              </button>
+              <button 
+                className="label-modal-btn label-modal-btn-save"
+                onClick={handleNameChange}
+                disabled={!nameInput.trim()}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Change Color Modal */}

@@ -1,4 +1,4 @@
-import { generateToken } from '../models/tokens.js';
+import { generateToken, authorizeToken } from '../models/tokens.js';
 
 const createToken = (req, res) => {
     const { username, password } = req.body;
@@ -15,4 +15,21 @@ const createToken = (req, res) => {
     
     return res.status(201).json({ token: result.token });
 }
-export { createToken };
+
+const validateToken = (req, res) => {
+    const { token } = req.body;
+
+    if (!token) {
+        return res.status(401).json({ error: 'Token is required.' });
+    }
+
+    const result = authorizeToken(token);
+
+    if (result.error) {
+        return res.status(401).json({ error: result.error });
+    }
+
+    return res.status(200).json({ username: result.username });
+}
+
+export { createToken, validateToken };
