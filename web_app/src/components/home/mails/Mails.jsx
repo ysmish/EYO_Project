@@ -70,9 +70,16 @@ const Mails = ({mails, setMails}) => {
     setSelected(prev => prev.includes(mailId) ? prev.filter(id => id !== mailId) : [...prev, mailId]);
   };
 
-  const handleDelete = () => {
-    // Placeholder for delete logic
-    alert('Delete action for: ' + selected.join(', '));
+  const handleDelete = async () => {
+    for (const mailId of selected) {
+      await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token
+        }
+      });
+    }
+    setMails(prev => prev.filter(mail => !selected.includes(mail.id)));
     setSelected([]);
   };
 
@@ -147,10 +154,16 @@ const Mails = ({mails, setMails}) => {
                 <button
                   className="mail-delete-btn"
                   title="Delete"
-                  onClick={e => {
+                  onClick={async e => {
                     e.stopPropagation();
-                    setSelected([mail.id]);
-                    handleDelete();
+                    await fetch(`http://localhost:3000/api/mails/${mail.id}`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Authorization': token
+                      }
+                    });
+                    setMails(prev => prev.filter(m => m.id !== mail.id));
+                    setSelected(prev => prev.filter(id => id !== mail.id));
                   }}
                 >
                   <i className="bi bi-trash"></i>
