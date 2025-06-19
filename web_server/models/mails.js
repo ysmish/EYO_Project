@@ -149,27 +149,14 @@ const updateMail = (username, mailId, updates) => {
 
     // Only update allowed fields
     const allowedFields = ['subject', 'body', 'attachments', 'to', 'cc', 'read', 'labels'];
+    // System labels are managed by the application logic, not user input
     const systemLabels = ['Sent', 'Inbox', 'Drafts'];
     const updatedMail = { ...mails[username][mailId] };
     
     for (const field of allowedFields) {
         if (field in updates) {
             if (field === 'labels') {
-                // For drafts, allow Drafts label to be maintained
-                const isDraft = mails[username][mailId].labels.includes('Drafts');
-                if (isDraft) {
-                    // If it's a draft, preserve the Drafts label and add other allowed labels
-                    const newLabels = updates[field].filter(label => !disallowedLabels.includes(label) || label === 'Drafts');
-                    if (!newLabels.includes('Drafts')) {
-                        newLabels.push('Drafts');
-                    }
-                    updatedMail[field] = newLabels;
-                } else {
-                    // Normal mail, filter out disallowed labels
-                    const newLabels = updates[field].filter(label => !disallowedLabels.includes(label));
-                    updatedMail[field] = newLabels;
-                }
-                // Preserve system labels and merge with new labels
+                // Preserve system labels and merge with new user labels
                 const currentSystemLabels = (updatedMail[field] || []).filter(label => systemLabels.includes(label));
                 const newUserLabels = updates[field].filter(label => !systemLabels.includes(label));
                 updatedMail[field] = [...currentSystemLabels, ...newUserLabels];
