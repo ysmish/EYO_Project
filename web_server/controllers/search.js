@@ -30,22 +30,26 @@ const searchQuery = (req, res) => {
         'spam': false,
         'all': false,
     }
-    querys.forEach(q => {
+    for (let q of querys) {
         if (q.startsWith('label:')) {
             const labelName = q.substring(6).toLowerCase();
             const label = validLabels.find(label => label.name.toLowerCase() === labelName);
             if (label) {
                 labels.push(label.id);
+            } else {
+                return res.status(200).json([]); // Return empty array if label not found
             }
         } else if (q.startsWith('in:')) {
             const flag = q.substring(3).toLowerCase();
             if (flags.hasOwnProperty(flag)) {
                 flags[flag] = true;
+            } else {
+                return res.status(200).json([]); // Return empty array if flag is invalid
             }
         } else {
             keywords.push(q.toLowerCase());
         }
-    });
+    }
     try {
         const results = search(username, keywords, flags, labels);
         return res.status(200).json(results);
