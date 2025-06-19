@@ -7,6 +7,7 @@ import Sidebar from "./sidebar/Sidebar";
 const Layout = () => {
   const auth = useAuth();
   const [user, setUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,9 +43,9 @@ const Layout = () => {
   }
   return (
     <>
-      <Navbar user={user} setUser={setUser} />
+      <Navbar user={user} setUser={setUser} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="home-container">
-        <Sidebar />
+        <Sidebar setSearchQuery={setSearchQuery} />
         <Outlet />
       </div>
     </>

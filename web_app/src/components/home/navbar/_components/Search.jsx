@@ -1,11 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../../../styles.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-const Search = ({user}) => {
+const Search = ({user, searchQuery, setSearchQuery}) => {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
+
+  // Sync with external search query and auto-search
+  useEffect(() => {
+    if (searchQuery !== undefined && searchQuery !== null && searchQuery.trim()) {
+      // Only update local query if external query is non-empty
+      setQuery(searchQuery);
+      // Automatically perform search with the external query
+      navigate(`/search/${encodeURIComponent(searchQuery)}`);
+    } else if (searchQuery === '') {
+      // Only clear the external query when it's explicitly empty (like from All Mails)
+      setSearchQuery('');
+    }
+  }, [searchQuery, setSearchQuery, navigate]);
+
+  const handleInputChange = (e) => {
+    setQuery(e.target.value);
+    // Clear any external search query when user starts typing manually
+    if (searchQuery) {
+      setSearchQuery('');
+    }
+  };
 
   const handleSearch = () => {
     if (!query.trim()) return; // Prevent empty searches
@@ -19,7 +40,7 @@ const Search = ({user}) => {
         placeholder="Search..."
         className='search-input'
         value={query}
-        onChange={e => setQuery(e.target.value)}
+        onChange={handleInputChange}
         onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
       />
       <div className="nav-item" onClick={handleSearch}>

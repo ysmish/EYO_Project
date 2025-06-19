@@ -1,14 +1,18 @@
 import Inbox from './_components/Inbox';
-import Label from './_components/Label';
+import Sent from './_components/Sent';
+import AllMails from './_components/AllMails';
+import Labels from './_components/Label';
 import NewMail from './_components/NewMail';
 
-const Sidebar = () => {
+const Sidebar = ({setSearchQuery}) => {
 
   return (
     <div className='sidebar'>
         <NewMail />
-        <Inbox />
-        <Label />
+        <Inbox setSearchQuery={setSearchQuery} />
+        <Sent setSearchQuery={setSearchQuery} />
+        <AllMails setSearchQuery={setSearchQuery} />
+        <Labels setSearchQuery={setSearchQuery} />
     </div>
   );
 };

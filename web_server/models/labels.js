@@ -1,38 +1,8 @@
-let labels = {
-    "Mro": {
-        'Inbox': {
-            id: 'Inbox',
-            name: 'Inbox'
-        },
-        'Sent': {
-            id: 'Sent',
-            name: 'Sent'
-        },
-        'Starred': {
-            id: 'Starred',
-            name: 'Starred'
-        },
-        'Drafts': {
-            id: 'Drafts',
-            name: 'Drafts'
-        },
-        'Spam': {
-            id: 'Spam',
-            name: 'Spam'
-        },
-        1: {
-            id: 1,
-            name: 'Work'
-        },
-        2: {
-            id: 2,
-            name: 'Personal'
-        }
-    }
-};
+let labels = {};
+
 let labelIdCounter = 1;  // Counter for generating unique label IDs
 
-const createNewLabel = (username, name) => {
+const createNewLabel = (username, name, color) => {
     if (!name) {
         throw { error: 'Label name is required' };
     }
@@ -52,9 +22,10 @@ const createNewLabel = (username, name) => {
     labels[username][id] = {
         id: id,
         name: name,
+        color: color || '#4F46E5'  // Default color if none provided
     };
 
-    return { id, name };
+    return { id, name, color: color || '#4F46E5' };
 };
 
 const getLabel = (username, labelId) => {
@@ -74,7 +45,8 @@ const getLabel = (username, labelId) => {
     const label = labels[username][labelId];
     return {
         id: label.id,
-        name: label.name
+        name: label.name,
+        color: label.color
     };
 };
 
@@ -84,7 +56,8 @@ const getLabels = (username) => {
     }
     return Object.values(labels[username]).map(label => ({
         id: label.id,
-        name: label.name
+        name: label.name,
+        color: label.color
     })).filter(label => isNaN(label.id) === false); // Ensure IDs are valid numbers
 };
 
@@ -105,11 +78,15 @@ const changeLabel = (username, labelId, updates) => {
         return { error: 'Label name already exists' };
     }
 
-    // Update the label name
+    // Update the label name and color if provided
     labels[username][labelId].name = updates.name;
+    if (updates.color) {
+        labels[username][labelId].color = updates.color;
+    }
     return { 
         id: labelId,
-        name: updates.name 
+        name: updates.name,
+        color: labels[username][labelId].color
     };
 };
 

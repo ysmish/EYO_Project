@@ -75,18 +75,31 @@ const createMail = async (req, res) => {
         const { to, subject, body, attachments } = req.body;
         const cc = req.body.cc || [];
 
+        // Ensure 'to' is an array
+        const toUsers = Array.isArray(to) ? to : [to];
+        
         // Check if users exist
-        if (getUser(username).error || getUser(to).error) {
-            return res.status(400).json({error: 'User not found' });
+        const senderCheck = getUser(username);
+        if (senderCheck.error) {
+            return res.status(400).json({error: 'Sender user not found' });
         }
+        
+        for (const user of toUsers) {
+            const userCheck = getUser(user);
+            if (userCheck.error) {
+                return res.status(400).json({error: `User '${user}' not found` });
+            }
+        }
+        
         for (const user of cc) {
-            if (getUser(user).error) {
-                return res.status(400).json({error: 'User not found' });
+            const userCheck = getUser(user);
+            if (userCheck.error) {
+                return res.status(400).json({error: `User '${user}' not found` });
             }
         }
 
         // Basic validation
-        if (!to || !subject || !body) {
+        if (!toUsers.length || !subject || !body) {
             return res.status(400).json({error: 'Missing required fields' });
         }
 
@@ -119,7 +132,7 @@ const createMail = async (req, res) => {
         // Create the mail if all URLs are valid
         const mailId = createNewMail(
             username,
-            to,
+            toUsers,
             cc,
             subject,
             body,
