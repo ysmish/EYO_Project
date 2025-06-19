@@ -37,8 +37,8 @@ const search = (username, keywords, flags, labels) => {
             if (flags.drafts && !mail.labels.includes('Drafts')) return false;
             if (flags.spam && !mail.labels.includes('Spam')) return false;
 
-            // Check if the mail matches any of the labels
-            if (labels.length > 0 && !labels.some(label => mail.labels.includes(label))) {
+            // Check if the mail matches all of the labels
+            if (labels.length > 0 && !labels.every(label => mail.labels.includes(label))) {
                 return false;
             }
 
