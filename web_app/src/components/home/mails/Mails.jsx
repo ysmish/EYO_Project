@@ -76,7 +76,13 @@ const Mails = ({mails, setMails}) => {
     setSelected([]);
   };
 
-  const toolbarActions = selected.length > 0 ? [
+  const toolbarActions = 
+        
+        
+        
+        
+        
+        selected.length > 0 ? [
     {
       key: 'delete',
       iconClass: 'bi bi-trash',
