@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthProvider';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthProvider';
 import '../../../styles.css';
 import ActionToolbar from '../action_toolbar/ActionToolbar';
 
@@ -10,7 +9,6 @@ const Mail = () => {
   const [mail, setMail] = useState(null);
   const [fromPhoto, setFromPhoto] = useState(null);
   const [labels, setLabels] = useState([]);
-  const { token } = useAuth();
   const navigate = useNavigate();
   const { token } = useAuth();
 
@@ -128,78 +126,72 @@ const Mail = () => {
     }
     // Future actions can be added here
   ];
-
   return (
-    <div>
+    <>
       <ActionToolbar actions={toolbarActions} />
-      <button onClick={handleBack}>
-        ← Back to Mails
-      </button>
-      <h2>Mail ID: {mailId}</h2>
-      <p>Mail content will be implemented later...</p>
-    </div>
-    <div className="mail-view-container">
-      <div className="mail-view-card">
-        <div className="mail-view-header">
-          <button className="mail-back-btn" onClick={handleBack}>← Back</button>
-          <div className="mail-view-header-main">
-            <div className="mail-view-subject">{mail.subject}</div>
-            {mail.labels && mail.labels.length > 0 && (
-              <div className="mail-view-labels">
-                {labels.map((label, idx) => (
-                  <span className="mail-label-chip" key={idx}>{label}</span>
-                ))}
+      <div className="mail-view-container">
+        <div className="mail-view-card">
+          <div className="mail-view-header">
+            <button className="mail-back-btn" onClick={handleBack}>← Back</button>
+            <div className="mail-view-header-main">
+              <div className="mail-view-subject">{mail.subject}</div>
+              {mail.labels && mail.labels.length > 0 && (
+                <div className="mail-view-labels">
+                  {labels.map((label, idx) => (
+                    <span className="mail-label-chip" key={idx}>{label}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="mail-view-date">{new Date(mail.date).toLocaleString()}</div>
+          </div>
+          <div className="mail-view-meta">
+            <div className="mail-view-from">
+              {fromPhoto && (
+                <img
+                  src={fromPhoto}
+                  alt="From user"
+                  className="mail-from-photo"
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    marginRight: '0.75rem',
+                    verticalAlign: 'middle',
+                    border: '1px solid var(--shadow-color)'
+                  }}
+                />
+              )}
+            </div>
+            <span className="mail-label">From: {mail.from}</span>
+            <div className="mail-view-to">
+              <span className="mail-label">To:</span> {Array.isArray(mail.to) ? mail.to.join(', ') : mail.to}
+            </div>
+            {mail.cc && mail.cc.length > 0 && (
+              <div className="mail-view-cc">
+                <span className="mail-label">Cc:</span> {mail.cc.join(', ')}
               </div>
             )}
           </div>
-          <div className="mail-view-date">{new Date(mail.date).toLocaleString()}</div>
-        </div>
-        <div className="mail-view-meta">
-          <div className="mail-view-from">
-            {fromPhoto && (
-              <img
-                src={fromPhoto}
-                alt="From user"
-                className="mail-from-photo"
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  marginRight: '0.75rem',
-                  verticalAlign: 'middle',
-                  border: '1px solid var(--shadow-color)'
-                }}
-              />
-            )}
+          <div className="mail-view-body mail-view-body-indent">
+            {mail.body}
           </div>
-          <span className="mail-label">From: {mail.from}</span>
-          <div className="mail-view-to">
-            <span className="mail-label">To:</span> {Array.isArray(mail.to) ? mail.to.join(', ') : mail.to}
-          </div>
-          {mail.cc && mail.cc.length > 0 && (
-            <div className="mail-view-cc">
-              <span className="mail-label">Cc:</span> {mail.cc.join(', ')}
+          {mail.attachments && mail.attachments.length > 0 && (
+            <div className="mail-view-attachments">
+              <span className="mail-label">Attachments:</span>
+              <ul>
+                {mail.attachments.map((att, idx) => (
+                  <li key={idx}>
+                    <a href={att.url} target="_blank" rel="noopener noreferrer">{att.name}</a>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
-        <div className="mail-view-body mail-view-body-indent">
-          {mail.body}
-        </div>
-        {mail.attachments && mail.attachments.length > 0 && (
-          <div className="mail-view-attachments">
-            <span className="mail-label">Attachments:</span>
-            <ul>
-              {mail.attachments.map((att, idx) => (
-                <li key={idx}>
-                  <a href={att.url} target="_blank" rel="noopener noreferrer">{att.name}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
-    </div>
+    </>
   );
 };
 
