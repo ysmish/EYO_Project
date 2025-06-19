@@ -47,9 +47,6 @@ const Search = ({user, searchQuery, setSearchQuery}) => {
             setSearchQuery(displayQuery);
           }
         }
-      } else if (path === '/mails') {
-        // If someone navigates to /mails directly, redirect to /search/in:all
-        navigate('/search/in%3Aall', { replace: true });
       }
     }
   }, [location.pathname, setSearchQuery, navigate, isUserTyping]);
