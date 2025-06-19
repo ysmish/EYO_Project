@@ -45,7 +45,6 @@ const searchQuery = (req, res) => {
             keywords.push(q.toLowerCase());
         }
     });
-    console.log('Search query:', { username, keywords, flags, labels });
     try {
         const results = search(username, keywords, flags, labels);
         return res.status(200).json(results);

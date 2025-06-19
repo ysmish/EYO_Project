@@ -31,7 +31,6 @@ const Layout = () => {
         // Optionally handle the error, e.g., show a notification
       }
     };
-    console.log("auth", auth);
     if (!auth?.token || !auth?.user) {
       auth.logOut(); // Clear auth state if token or user is not available
       navigate('/login');
