@@ -3,6 +3,7 @@ import Inbox from './_components/Inbox';
 import Starred from './_components/Starred';
 import Sent from './_components/Sent';
 import Drafts from './_components/Drafts';
+import Spam from './_components/Spam';
 import AllMails from './_components/AllMails';
 import Labels from './_components/Label';
 import NewMail from './_components/NewMail';
@@ -23,6 +24,7 @@ const Sidebar = ({ onOpenCompose }) => {
           if (decodedQuery === 'in:starred') return 'starred';
           if (decodedQuery === 'in:sent') return 'sent';
           if (decodedQuery === 'in:drafts') return 'drafts';
+          if (decodedQuery === 'in:spam') return 'spam';
           if (decodedQuery === 'in:all') return 'allmails';
           if (decodedQuery.startsWith('label:') && decodedQuery.split(':').length === 2) {
             return `label:${decodedQuery.split('label:')[1]}`;
@@ -44,6 +46,7 @@ const Sidebar = ({ onOpenCompose }) => {
         <Starred isActive={activeSection === 'starred'} />
         <Sent isActive={activeSection === 'sent'} />
         <Drafts isActive={activeSection === 'drafts'} />
+        <Spam isActive={activeSection === 'spam'} />
         <AllMails isActive={activeSection === 'allmails'} />
         <Labels activeSection={activeSection} />
     </div>
