@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthProvider';
 import '../../../styles.css';
 import ActionToolbar from '../action_toolbar/ActionToolbar';
@@ -9,6 +9,20 @@ const Mails = ({mails, setMails}) => {
   const { token } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
+  const location = useLocation();
+
+  // Determine the current search context
+  const getCurrentSearchString = () => {
+    const path = location.pathname;
+    if (path === '/mails') {
+      // This should rarely happen due to redirect, but fallback to 'all'
+      return 'in%3Aall';
+    } else if (path.startsWith('/search/')) {
+      const searchQuery = path.split('/search/')[1];
+      return searchQuery || 'in%3Aall';
+    }
+    return 'in%3Aall';
+  };
 
   const formatDateTime = (dateString) => {
     const mailDate = new Date(dateString);
@@ -62,8 +76,9 @@ const Mails = ({mails, setMails}) => {
       markAsRead(mail.id);
     }
     
-    // Navigate to the mail detail page
-    navigate(`/mail/${mail.id}`);
+    // Navigate to the mail detail page with search context
+    const searchString = getCurrentSearchString();
+    navigate(`/search/${searchString}/${mail.id}`);
   };
 
   const handleSelect = (mailId) => {

@@ -2,16 +2,15 @@ import '../../../../styles.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useNavigate } from 'react-router-dom';
 
-const AllMails = ({setSearchQuery}) => {
+const AllMails = ({ isActive }) => {
   const navigate = useNavigate();
   
   const handleAllMailsClick = () => {
-    setSearchQuery(''); // Clear the search bar
-    navigate('/mails');
+    navigate('/search/in%3Aall');
   };
 
   return (
-    <div className='side-item' onClick={handleAllMailsClick}>
+    <div className={`side-item ${isActive ? 'active' : ''}`} onClick={handleAllMailsClick}>
       <i className="bi bi-envelope-fill"></i>
       <span>All Mails</span>
     </div>

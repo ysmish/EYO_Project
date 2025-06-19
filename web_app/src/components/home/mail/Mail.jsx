@@ -5,7 +5,7 @@ import '../../../styles.css';
 import ActionToolbar from '../action_toolbar/ActionToolbar';
 
 const Mail = () => {
-  const { mailId } = useParams();
+  const { mailId, searchString } = useParams();
   const [mail, setMail] = useState(null);
   const [fromPhoto, setFromPhoto] = useState(null);
   const [labels, setLabels] = useState([]);
@@ -37,9 +37,16 @@ const Mail = () => {
   }, [token, navigate, mailId]);
 
   const handleBack = () => {
-    navigate('/mails');
+    // Navigate back to the search results if we have a search string
+    if (searchString && searchString !== 'in%3Aall') {
+      navigate(`/search/${searchString}`);
+    } else {
+      // Navigate to all mails search if searchString is 'in:all' or not provided
+      navigate('/search/in%3Aall');
+    }
   };
-    useEffect(() => {
+
+  useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await fetch(`http://localhost:3000/api/users/${mail.from}`, {

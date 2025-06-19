@@ -1311,7 +1311,7 @@ body {
 
 .side-item.label-item {
     position: relative;
-    gap: 50px !important;
+    gap: 15px;
 }
 
 .side-item.label-item:hover .label-menu-btn {
@@ -1325,6 +1325,7 @@ body {
     white-space: nowrap;
     margin: 0 !important;
     padding: 0 !important;
+    text-align: left;
 }
 
 .label-menu-btn {

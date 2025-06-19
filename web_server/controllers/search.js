@@ -28,6 +28,7 @@ const searchQuery = (req, res) => {
         'starred': false,
         'drafts': false,
         'spam': false,
+        'all': false,
     }
     for (let q of querys) {
         if (q.startsWith('label:')) {
