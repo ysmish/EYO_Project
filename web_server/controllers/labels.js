@@ -72,7 +72,7 @@ const createLabel = (req, res) => {
 
     const username = authResult.username;
 
-    const { name } = req.body;
+    const { name, color } = req.body;
 
     // Basic validation
     if (!name) {
@@ -80,7 +80,7 @@ const createLabel = (req, res) => {
     }
 
     try {
-        const result = createNewLabel(username, name);
+        const result = createNewLabel(username, name, color);
         if (result.error) {
             return res.status(400).json({ error: result.error });
         }

@@ -10,14 +10,26 @@ const DefaultMails = () => {
     const auth = useAuth();
     useEffect(() => {
         const fetchMails = async () => {
-            const response = await fetch("http://localhost:3000/api/mails", {
-                headers: {
-                    "Authorization": `${auth.token}`
+            try {
+                const response = await fetch("http://localhost:3000/api/mails", {
+                    headers: {
+                        "Authorization": `${auth.token}`
+                    }
+                });
+                const data = await response.json();
+                console.log('Mails API response:', data);
+                
+                // Ensure data is an array, if not set empty array
+                if (Array.isArray(data)) {
+                    setMails(data);
+                } else {
+                    console.error('Expected array but got:', typeof data, data);
+                    setMails([]);
                 }
-            });
-            const data = await response.json();
-            console.log(data);
-            setMails(data);
+            } catch (error) {
+                console.error('Error fetching mails:', error);
+                setMails([]);
+            }
             setLoading(false);
         }
         fetchMails();

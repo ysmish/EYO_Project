@@ -3,7 +3,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 
 const Sent = ({setSearchQuery}) => {
   const handleSentClick = () => {
-    setSearchQuery('in:sent');
+    setSearchQuery('in:sent ');
   };
 
   return (
