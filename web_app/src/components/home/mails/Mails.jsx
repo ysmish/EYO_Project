@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthProvider';
 import '../../../styles.css';
+import ActionToolbar from '../action_toolbar/ActionToolbar';
 
 const Mails = ({mails, setMails}) => {
   const [error] = useState(null);
   const { token } = useAuth();
   const navigate = useNavigate();
+  const [selected, setSelected] = useState([]);
 
   const formatDateTime = (dateString) => {
     const mailDate = new Date(dateString);
@@ -64,6 +66,39 @@ const Mails = ({mails, setMails}) => {
     navigate(`/mail/${mail.id}`);
   };
 
+  const handleSelect = (mailId) => {
+    setSelected(prev => prev.includes(mailId) ? prev.filter(id => id !== mailId) : [...prev, mailId]);
+  };
+
+  const handleDelete = async () => {
+    for (const mailId of selected) {
+      await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token
+        }
+      });
+    }
+    setMails(prev => prev.filter(mail => !selected.includes(mail.id)));
+    setSelected([]);
+  };
+
+  const toolbarActions = 
+        
+        
+        
+        
+        
+        selected.length > 0 ? [
+    {
+      key: 'delete',
+      iconClass: 'bi bi-trash',
+      label: 'Delete',
+      onClick: handleDelete
+    }
+    // Future actions can be added here
+  ] : [];
+
   if (error) {
     return (
       <div className="error-container">
@@ -75,6 +110,7 @@ const Mails = ({mails, setMails}) => {
 
   return (
     <div className="mails-container">
+      {toolbarActions.length > 0 && <ActionToolbar actions={toolbarActions} />}
       {mails.length === 0 ? (
         <div className="mails-list">
           <div className="mails-header">
@@ -94,8 +130,19 @@ const Mails = ({mails, setMails}) => {
               <div 
                 key={mail.id} 
                 className={`mail-item ${!mail.read ? 'unread' : ''}`}
-                onClick={() => handleMailClick(mail)}
+                onClick={e => {
+                  // Prevent click if clicking checkbox or delete
+                  if (e.target.closest('.mail-delete-btn') || e.target.closest('.mail-select-checkbox')) return;
+                  handleMailClick(mail);
+                }}
               >
+                <input
+                  type="checkbox"
+                  className="mail-select-checkbox"
+                  checked={selected.includes(mail.id)}
+                  onChange={() => handleSelect(mail.id)}
+                  onClick={e => e.stopPropagation()}
+                />
                 <div className="mail-content">
                   <span className="mail-sender">{mail.from}</span>
                   <div className="mail-text-content">
@@ -104,6 +151,23 @@ const Mails = ({mails, setMails}) => {
                   </div>
                 </div>
                 <div className="mail-date">{formatDateTime(mail.date)}</div>
+                <button
+                  className="mail-delete-btn"
+                  title="Delete"
+                  onClick={async e => {
+                    e.stopPropagation();
+                    await fetch(`http://localhost:3000/api/mails/${mail.id}`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Authorization': token
+                      }
+                    });
+                    setMails(prev => prev.filter(m => m.id !== mail.id));
+                    setSelected(prev => prev.filter(id => id !== mail.id));
+                  }}
+                >
+                  <i className="bi bi-trash"></i>
+                </button>
               </div>
             ))}
           </div>
