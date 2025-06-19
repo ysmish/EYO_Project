@@ -1213,7 +1213,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: var(--bg-color);
+  background: transparent;
   border-bottom: 1px solid var(--shadow-color);
   z-index: 2;
 }
