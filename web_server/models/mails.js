@@ -149,7 +149,7 @@ const updateMail = (username, mailId, updates) => {
 
     // Only update allowed fields
     const allowedFields = ['subject', 'body', 'attachments', 'to', 'cc', 'read', 'labels'];
-    const disallowedLabels = ['Sent', 'Inbox', 'Starred', 'Drafts'];
+    const systemLabels = ['Sent', 'Inbox', 'Drafts'];
     const updatedMail = { ...mails[username][mailId] };
     
     for (const field of allowedFields) {
@@ -169,6 +169,10 @@ const updateMail = (username, mailId, updates) => {
                     const newLabels = updates[field].filter(label => !disallowedLabels.includes(label));
                     updatedMail[field] = newLabels;
                 }
+                // Preserve system labels and merge with new labels
+                const currentSystemLabels = (updatedMail[field] || []).filter(label => systemLabels.includes(label));
+                const newUserLabels = updates[field].filter(label => !systemLabels.includes(label));
+                updatedMail[field] = [...currentSystemLabels, ...newUserLabels];
             } else {
                 updatedMail[field] = updates[field];
             }
