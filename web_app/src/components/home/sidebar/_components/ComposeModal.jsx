@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../../../context/AuthProvider';
 import '../../../../styles.css';
 
-const ComposeModal = ({ onClose }) => {
+const ComposeModal = ({ onClose, draftData = null, isDraftEdit = false }) => {
   const { token } = useAuth();
   const [formData, setFormData] = useState({
     to: '',
@@ -17,12 +17,88 @@ const ComposeModal = ({ onClose }) => {
   const [showCC, setShowCC] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Pre-fill form data if editing a draft
+  useEffect(() => {
+    if (isDraftEdit && draftData) {
+      setFormData({
+        to: Array.isArray(draftData.to) ? draftData.to.join(', ') : draftData.to,
+        cc: Array.isArray(draftData.cc) ? draftData.cc.join(', ') : draftData.cc,
+        subject: draftData.subject || '',
+        body: draftData.body || '',
+        attachments: draftData.attachments || []
+      });
+      
+      // Show CC field if there's CC data
+      if (draftData.cc && draftData.cc.length > 0) {
+        setShowCC(true);
+      }
+    }
+  }, [isDraftEdit, draftData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+  };
+
+  const saveDraft = async () => {
+    // Only save draft if there's content
+    if (!formData.to.trim() && !formData.subject.trim() && !formData.body.trim()) {
+      return;
+    }
+
+    try {
+      const payload = {
+        to: formData.to ? formData.to.split(',').map(user => user.trim()).filter(user => user) : [],
+        subject: formData.subject.trim(),
+        body: formData.body.trim(),
+        cc: formData.cc ? formData.cc.split(',').map(user => user.trim()).filter(user => user) : [],
+        attachments: formData.attachments
+      };
+
+      if (isDraftEdit && draftData) {
+        // Update existing draft
+        const response = await fetch(`http://localhost:3000/api/mails/${draftData.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          console.log('Draft updated successfully');
+        } else {
+          console.error('Failed to update draft');
+        }
+      } else {
+        // Create new draft
+        const response = await fetch('http://localhost:3000/api/mails/drafts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          console.log('Draft saved successfully');
+        } else {
+          console.error('Failed to save draft');
+        }
+      }
+    } catch (err) {
+      console.error('Error saving draft:', err);
+    }
+  };
+
+  const handleClose = async () => {
+    await saveDraft();
+    onClose();
   };
 
   const handleSend = async (e) => {
@@ -46,14 +122,29 @@ const ComposeModal = ({ onClose }) => {
         attachments: formData.attachments
       };
 
-      const response = await fetch('http://localhost:3000/api/mails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token
-        },
-        body: JSON.stringify(payload)
-      });
+      let response;
+
+      if (isDraftEdit && draftData) {
+        // Send the draft using dedicated endpoint
+        response = await fetch(`http://localhost:3000/api/mails/drafts/${draftData.id}/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        // Send as regular mail
+        response = await fetch('http://localhost:3000/api/mails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify(payload)
+        });
+      }
 
       if (response.ok) {
         setSuccess(true);
@@ -72,10 +163,10 @@ const ComposeModal = ({ onClose }) => {
     }
   };
 
-  const handleModalClick = (e) => {
+  const handleModalClick = async (e) => {
     // Close modal when clicking outside (only when expanded)
     if (e.target === e.currentTarget && isExpanded) {
-      onClose();
+      await handleClose();
     }
   };
 
@@ -120,7 +211,7 @@ const ComposeModal = ({ onClose }) => {
             <button 
               type="button" 
               className="compose-btn-icon" 
-              onClick={onClose}
+              onClick={handleClose}
               title="Close"
             >
               <i className="bi bi-x"></i>
@@ -215,7 +306,7 @@ const ComposeModal = ({ onClose }) => {
             <button 
               type="button" 
               className="compose-btn-cancel"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isLoading}
             >
               Cancel

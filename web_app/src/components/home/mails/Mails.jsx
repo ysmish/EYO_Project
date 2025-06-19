@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthProvider';
 import '../../../styles.css';
 import ActionToolbar from '../action_toolbar/ActionToolbar';
@@ -10,6 +10,7 @@ const Mails = ({mails, setMails}) => {
   const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
   const location = useLocation();
+  const { onOpenCompose } = useOutletContext();
 
   // Determine the current search context
   const getCurrentSearchString = () => {
@@ -22,6 +23,48 @@ const Mails = ({mails, setMails}) => {
       return searchQuery || 'in%3Aall';
     }
     return 'in%3Aall';
+  };
+
+  // Check if we're currently viewing the sent folder
+  const isInSentFolder = () => {
+    const path = location.pathname;
+    if (path.startsWith('/search/')) {
+      const searchQuery = path.split('/search/')[1];
+      if (searchQuery) {
+        try {
+          const decodedQuery = decodeURIComponent(searchQuery.split('/')[0]).trim();
+          return decodedQuery === 'in:sent';
+        } catch (e) {
+          return false;
+        }
+      }
+    }
+    return false;
+  };
+
+  // Get display text for mail sender/recipient
+  const getMailDisplayText = (mail) => {
+    // If it's a draft, show "Draft"
+    if (mail.labels && mail.labels.includes('Drafts')) {
+      return 'Draft';
+    }
+    
+    // If we're in sent folder, show "To: [recipients]"
+    if (isInSentFolder()) {
+      const recipients = Array.isArray(mail.to) ? mail.to.join(', ') : mail.to;
+      return `To: ${recipients}`;
+    }
+    
+    // Otherwise show sender
+    return mail.from;
+  };
+
+  // Get CSS class for mail sender/recipient
+  const getMailSenderClass = (mail) => {
+    if (mail.labels && mail.labels.includes('Drafts')) {
+      return 'mail-sender mail-sender--draft';
+    }
+    return 'mail-sender';
   };
 
   const formatDateTime = (dateString) => {
@@ -71,6 +114,12 @@ const Mails = ({mails, setMails}) => {
   };
 
   const handleMailClick = (mail) => {
+    // If it's a draft, open compose modal for editing
+    if (mail.labels && mail.labels.includes('Drafts')) {
+      onOpenCompose(mail);
+      return;
+    }
+
     // Only mark as read if it's currently unread
     if (!mail.read) {
       markAsRead(mail.id);
@@ -200,7 +249,9 @@ const Mails = ({mails, setMails}) => {
                   onClick={e => e.stopPropagation()}
                 />
                 <div className="mail-content">
-                  <span className="mail-sender">{mail.from}</span>
+                  <span className={getMailSenderClass(mail)}>
+                    {getMailDisplayText(mail)}
+                  </span>
                   <div className="mail-text-content">
                     <span className="mail-subject">{mail.subject}</span>
                     <span className="mail-body"> - {mail.body}</span>

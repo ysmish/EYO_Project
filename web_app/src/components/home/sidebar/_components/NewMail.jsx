@@ -1,28 +1,15 @@
-import { useState } from 'react';
 import '../../../../styles.css';
-import ComposeModal from './ComposeModal';
 
-const NewMail = () => {
-  const [isComposeOpen, setIsComposeOpen] = useState(false);
-
+const NewMail = ({ onOpenCompose }) => {
   const handleOpenCompose = () => {
-    setIsComposeOpen(true);
-  };
-
-  const handleCloseCompose = () => {
-    setIsComposeOpen(false);
+    onOpenCompose();
   };
 
   return (
-    <>
-      <div className='new-mail-button' onClick={handleOpenCompose}>
-        <i className="bi bi-pencil-square"></i>
-        <span>New Mail</span>
-      </div>
-      {isComposeOpen && (
-        <ComposeModal onClose={handleCloseCompose} />
-      )}
-    </>
+    <div className='new-mail-button' onClick={handleOpenCompose}>
+      <i className="bi bi-pencil-square"></i>
+      <span>New Mail</span>
+    </div>
   );
 };
 
