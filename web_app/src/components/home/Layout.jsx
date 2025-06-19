@@ -4,15 +4,30 @@ import { useEffect, useState } from "react";
 import Navbar from "./navbar/Navbar";
 import Sidebar from "./sidebar/Sidebar";
 import Loading from "../loading/Loading";
+import ComposeModal from "./sidebar/_components/ComposeModal";
 
 const Layout = () => {
   const auth = useAuth();
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
+  const [composeData, setComposeData] = useState(null);
   const navigate = useNavigate();
   const params = useParams();
   const location = useLocation();
+
+  const handleOpenCompose = (draftData = null) => {
+    setComposeData(draftData);
+    setIsComposeOpen(true);
+  };
+
+  const handleCloseCompose = () => {
+    setIsComposeOpen(false);
+    setComposeData(null);
+    // Refresh the page to update mail lists
+    window.location.reload();
+  };
 
   // Handle search route loading and search query update
   useEffect(() => {
@@ -84,9 +99,17 @@ const Layout = () => {
     <>
       <Navbar user={user} setUser={setUser} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="home-container">
-        <Sidebar />
-        {isSearchLoading ? <Loading /> : <Outlet />}
+        <Sidebar onOpenCompose={handleOpenCompose} />
+        {isSearchLoading ? <Loading /> : <Outlet context={{onOpenCompose: handleOpenCompose}} />}
       </div>
+      
+      {isComposeOpen && (
+        <ComposeModal 
+          onClose={handleCloseCompose} 
+          draftData={composeData}
+          isDraftEdit={composeData !== null}
+        />
+      )}
     </>
   );
 };

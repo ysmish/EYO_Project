@@ -3,6 +3,31 @@ import { labels } from "./labels.js";
 let mails = {};
 let nextId = 1;
 
+const createNewDraft = (from, to, cc, subject, body, attachments) => {
+    // Ensure 'to' is an array and remove duplicates
+    const toUsers = Array.isArray(to) ? [...new Set(to)] : [to];
+    const ccUsers = [...new Set(cc)];
+    
+    const newDraft = {
+        from,
+        to: toUsers,
+        cc: ccUsers,
+        subject,
+        body,
+        date: new Date(),
+        read: true,
+        attachments,
+        labels: ['Drafts']
+    };
+    const draftId = nextId++;
+    
+    // Add to sender's Drafts folder only
+    mails[from] = mails[from] || {};
+    mails[from][draftId] = JSON.parse(JSON.stringify(newDraft));
+    
+    return draftId;
+};
+
 const createNewMail = (from, to, cc, subject, body, attachments) => {
     // Ensure 'to' is an array and remove duplicates
     const toUsers = Array.isArray(to) ? [...new Set(to)] : [to];
@@ -130,17 +155,34 @@ const updateMail = (username, mailId, updates) => {
     for (const field of allowedFields) {
         if (field in updates) {
             if (field === 'labels') {
-                // Ensure labels do not include disallowed ones
-                const newLabels = updates[field].filter(label => !disallowedLabels.includes(label));
-                updatedMail[field] = newLabels;
+                // For drafts, allow Drafts label to be maintained
+                const isDraft = mails[username][mailId].labels.includes('Drafts');
+                if (isDraft) {
+                    // If it's a draft, preserve the Drafts label and add other allowed labels
+                    const newLabels = updates[field].filter(label => !disallowedLabels.includes(label) || label === 'Drafts');
+                    if (!newLabels.includes('Drafts')) {
+                        newLabels.push('Drafts');
+                    }
+                    updatedMail[field] = newLabels;
+                } else {
+                    // Normal mail, filter out disallowed labels
+                    const newLabels = updates[field].filter(label => !disallowedLabels.includes(label));
+                    updatedMail[field] = newLabels;
+                }
             } else {
                 updatedMail[field] = updates[field];
             }
         }
     }
 
+    // Ensure drafts remain marked as read
+    const isDraft = updatedMail.labels && updatedMail.labels.includes('Drafts');
+    if (isDraft) {
+        updatedMail.read = true;
+    }
+
     mails[username][mailId] = updatedMail;
     return true;
 };
 
-export { mails, getLatestMails, createNewMail, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail };
+export { mails, getLatestMails, createNewMail, createNewDraft, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail };
