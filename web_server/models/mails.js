@@ -149,13 +149,13 @@ const updateMail = (username, mailId, updates) => {
 
     // Only update allowed fields
     const allowedFields = ['subject', 'body', 'attachments', 'to', 'cc', 'read', 'labels'];
+    // System labels are managed by the application logic, not user input
     const systemLabels = ['Sent', 'Inbox', 'Drafts'];
     const updatedMail = { ...mails[username][mailId] };
     
     for (const field of allowedFields) {
         if (field in updates) {
             if (field === 'labels') {
-                // Preserve system labels and merge with new labels
                 const currentSystemLabels = (updatedMail[field] || []).filter(label => systemLabels.includes(label));
                 const newUserLabels = updates[field].filter(label => !systemLabels.includes(label));
                 updatedMail[field] = [...currentSystemLabels, ...newUserLabels];
