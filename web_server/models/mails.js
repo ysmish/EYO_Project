@@ -156,7 +156,6 @@ const updateMail = (username, mailId, updates) => {
     for (const field of allowedFields) {
         if (field in updates) {
             if (field === 'labels') {
-                // Preserve system labels and merge with new user labels
                 const currentSystemLabels = (updatedMail[field] || []).filter(label => systemLabels.includes(label));
                 const newUserLabels = updates[field].filter(label => !systemLabels.includes(label));
                 updatedMail[field] = [...currentSystemLabels, ...newUserLabels];

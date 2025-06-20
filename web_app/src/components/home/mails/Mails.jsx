@@ -190,12 +190,6 @@ const Mails = ({mails, setMails}) => {
 
   const toolbarActions = selected.length > 0 ? [
     {
-      key: 'star',
-      iconClass: allSelectedStarred ? 'bi bi-star-fill' : 'bi bi-star',
-      label: allSelectedStarred ? 'Unstar' : 'Star',
-      onClick: handleStar
-    },
-    {
       key: 'delete',
       iconClass: 'bi bi-trash',
       label: 'Delete',
@@ -215,7 +209,6 @@ const Mails = ({mails, setMails}) => {
 
   return (
     <div className="mails-container">
-      {toolbarActions.length > 0 && <ActionToolbar actions={toolbarActions} />}
       {mails.length === 0 ? (
         <div className="mails-list">
           <div className="mails-header">
@@ -228,7 +221,7 @@ const Mails = ({mails, setMails}) => {
       ) : (
         <div className="mails-list">
           <div className="mails-header">
-            <h2>Your Mails</h2>
+            {toolbarActions.length > 0 ? <ActionToolbar actions={toolbarActions} /> : <h2>Your Mails</h2>}
           </div>
           <div className="mails-items-container">
             {mails.map(mail => (
@@ -248,18 +241,9 @@ const Mails = ({mails, setMails}) => {
                   onChange={() => handleSelect(mail.id)}
                   onClick={e => e.stopPropagation()}
                 />
-                <div className="mail-content">
-                  <span className={getMailSenderClass(mail)}>
-                    {getMailDisplayText(mail)}
-                  </span>
-                  <div className="mail-text-content">
-                    <span className="mail-subject">{mail.subject}</span>
-                    <span className="mail-body"> - {mail.body}</span>
-                  </div>
-                </div>
-                <div className="mail-date">{formatDateTime(mail.date)}</div>
                 <button
                   className="mail-star-btn"
+                  style={{ backgroundColor: '10px' }}
                   title={mail.labels && mail.labels.includes('Starred') ? 'Unstar' : 'Star'}
                   onClick={async e => {
                     e.stopPropagation();
@@ -292,6 +276,16 @@ const Mails = ({mails, setMails}) => {
                 >
                   <i className={`bi ${mail.labels && mail.labels.includes('Starred') ? 'bi-star-fill' : 'bi-star'}`}></i>
                 </button>
+                <div className="mail-content">
+                  <span className={getMailSenderClass(mail)}>
+                    {getMailDisplayText(mail)}
+                  </span>
+                  <div className="mail-text-content">
+                    <span className="mail-subject">{mail.subject}</span>
+                    <span className="mail-body"> - {mail.body}</span>
+                  </div>
+                </div>
+                <div className="mail-date">{formatDateTime(mail.date)}</div>
                 <button
                   className="mail-delete-btn"
                   title="Delete"
