@@ -1247,6 +1247,10 @@ body {
   background-color: var(--shadow-color);
 }
 
+.mails-header {
+    height: 50px;
+}
+
 /* Mail item delete button on hover */
 .mail-item .mail-delete-btn {
   display: none;
@@ -1270,15 +1274,14 @@ body {
 }
 
 .mail-star-btn {
-  display: none;
   background: none;
   border: none;
   color: var(--text-color);
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px 0px;
   border-radius: 4px;
   transition: background-color 0.2s;
-  margin-right: 4px;
+  margin-right: 2px;
 }
 
 .mail-star-btn:hover {
@@ -1287,6 +1290,11 @@ body {
 
 .mail-star-btn .bi-star-fill {
   color: #f4b400;
+}
+
+.mail-select-checkbox {
+  margin-right: 0px;
+  flex-shrink: 0;
 }
 
 .mail-item:hover .mail-star-btn {
