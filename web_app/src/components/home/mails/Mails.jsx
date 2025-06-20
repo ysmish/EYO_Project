@@ -4,14 +4,19 @@ import { useAuth } from '../../../context/AuthProvider';
 import '../../../styles.css';
 import ActionToolbar from '../action_toolbar/ActionToolbar';
 
+const PAGE_SIZE = 50; // Number of mails per page
+
 const Mails = ({mails, setMails}) => {
   const [error] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
   const { token } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
   const location = useLocation();
   const { onOpenCompose } = useOutletContext();
 
+   const totalPages = Math.ceil(mails.length / PAGE_SIZE);
+   const pagedMails = mails.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
   // Determine the current search context
   const getCurrentSearchString = () => {
     const path = location.pathname;
@@ -209,6 +214,40 @@ const Mails = ({mails, setMails}) => {
 
   return (
     <div className="mails-container">
+            {mails.length > 0 && (
+        <div className="pagination-bar" style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+          <button
+            onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+            disabled={currentPage === 0}
+            style={{ marginRight: 8 }}
+          >
+            &lt;
+          </button>
+          <span>
+            {currentPage * PAGE_SIZE + 1} - {Math.min((currentPage + 1) * PAGE_SIZE, mails.length)} of {mails.length}
+          </span>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+            disabled={currentPage >= totalPages - 1}
+            style={{ marginLeft: 8 }}
+          >
+            &gt;
+          </button>
+          {/* Quick range select like Gmail */}
+          <select
+            value={currentPage}
+            onChange={e => setCurrentPage(Number(e.target.value))}
+            style={{ marginLeft: 16 }}
+          >
+            {Array.from({ length: totalPages }).map((_, idx) => (
+              <option key={idx} value={idx}>
+                {idx * PAGE_SIZE + 1} - {Math.min((idx + 1) * PAGE_SIZE, mails.length)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {toolbarActions.length > 0 && <ActionToolbar actions={toolbarActions} />}
       {mails.length === 0 ? (
         <div className="mails-list">
           <div className="mails-header">
@@ -224,7 +263,7 @@ const Mails = ({mails, setMails}) => {
             {toolbarActions.length > 0 ? <ActionToolbar actions={toolbarActions} /> : <h2>Your Mails</h2>}
           </div>
           <div className="mails-items-container">
-            {mails.map(mail => (
+            {pagedMails.map(mail => (
               <div 
                 key={mail.id} 
                 className={`mail-item ${!mail.read ? 'unread' : ''}`}
