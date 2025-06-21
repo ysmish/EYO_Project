@@ -385,7 +385,7 @@ const Mails = ({mails, setMails}) => {
 
   return (
     <div className="mails-container">
-            {mails.length > 0 && (
+      {mails.length > 0 && (
         <div className="pagination-bar" style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
           <button
             onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
@@ -418,7 +418,6 @@ const Mails = ({mails, setMails}) => {
           </select>
         </div>
       )}
-      {toolbarActions.length > 0 && <ActionToolbar actions={toolbarActions} />}
       {mails.length === 0 ? (
         <div className="mails-list">
           <div className="mails-header">
