@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthProvider';
 import '../../../styles.css';
 import ActionToolbar from '../action_toolbar/ActionToolbar';
 
+const PAGE_SIZE = 50; // Number of mails per page
+
 const Mails = ({mails, setMails}) => {
   const [error] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
   const { token } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
@@ -13,6 +16,9 @@ const Mails = ({mails, setMails}) => {
   const [labelButtonPosition, setLabelButtonPosition] = useState(null);
   const [labels, setLabels] = useState([]);
   const location = useLocation();
+  const { onOpenCompose } = useOutletContext();
+  const totalPages = Math.ceil(mails.length / PAGE_SIZE);
+  const pagedMails = mails.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
   // Fetch labels on component mount
   useEffect(() => {
@@ -66,6 +72,48 @@ const Mails = ({mails, setMails}) => {
     return 'in%3Aall';
   };
 
+  // Check if we're currently viewing the sent folder
+  const isInSentFolder = () => {
+    const path = location.pathname;
+    if (path.startsWith('/search/')) {
+      const searchQuery = path.split('/search/')[1];
+      if (searchQuery) {
+        try {
+          const decodedQuery = decodeURIComponent(searchQuery.split('/')[0]).trim();
+          return decodedQuery === 'in:sent';
+        } catch (e) {
+          return false;
+        }
+      }
+    }
+    return false;
+  };
+
+  // Get display text for mail sender/recipient
+  const getMailDisplayText = (mail) => {
+    // If it's a draft, show "Draft"
+    if (mail.labels && mail.labels.includes('Drafts')) {
+      return 'Draft';
+    }
+    
+    // If we're in sent folder, show "To: [recipients]"
+    if (isInSentFolder()) {
+      const recipients = Array.isArray(mail.to) ? mail.to.join(', ') : mail.to;
+      return `To: ${recipients}`;
+    }
+    
+    // Otherwise show sender
+    return mail.from;
+  };
+
+  // Get CSS class for mail sender/recipient
+  const getMailSenderClass = (mail) => {
+    if (mail.labels && mail.labels.includes('Drafts')) {
+      return 'mail-sender mail-sender--draft';
+    }
+    return 'mail-sender';
+  };
+
   const formatDateTime = (dateString) => {
     const mailDate = new Date(dateString);
     const today = new Date();
@@ -113,6 +161,12 @@ const Mails = ({mails, setMails}) => {
   };
 
   const handleMailClick = (mail) => {
+    // If it's a draft, open compose modal for editing
+    if (mail.labels && mail.labels.includes('Drafts')) {
+      onOpenCompose(mail);
+      return;
+    }
+
     // Only mark as read if it's currently unread
     if (!mail.read) {
       markAsRead(mail.id);
@@ -300,12 +354,6 @@ const Mails = ({mails, setMails}) => {
 
   const toolbarActions = selected.length > 0 ? [
     {
-      key: 'star',
-      iconClass: allSelectedStarred ? 'bi bi-star-fill' : 'bi bi-star',
-      label: allSelectedStarred ? 'Unstar' : 'Star',
-      onClick: handleStar
-    },
-    {
       key: 'label',
       iconClass: 'bi bi-tag',
       label: 'Add to Label',
@@ -337,6 +385,39 @@ const Mails = ({mails, setMails}) => {
 
   return (
     <div className="mails-container">
+            {mails.length > 0 && (
+        <div className="pagination-bar" style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+          <button
+            onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+            disabled={currentPage === 0}
+            style={{ marginRight: 8 }}
+          >
+            &lt;
+          </button>
+          <span>
+            {currentPage * PAGE_SIZE + 1} - {Math.min((currentPage + 1) * PAGE_SIZE, mails.length)} of {mails.length}
+          </span>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+            disabled={currentPage >= totalPages - 1}
+            style={{ marginLeft: 8 }}
+          >
+            &gt;
+          </button>
+          {/* Quick range select like Gmail */}
+          <select
+            value={currentPage}
+            onChange={e => setCurrentPage(Number(e.target.value))}
+            style={{ marginLeft: 16 }}
+          >
+            {Array.from({ length: totalPages }).map((_, idx) => (
+              <option key={idx} value={idx}>
+                {idx * PAGE_SIZE + 1} - {Math.min((idx + 1) * PAGE_SIZE, mails.length)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       {toolbarActions.length > 0 && <ActionToolbar actions={toolbarActions} />}
       {mails.length === 0 ? (
         <div className="mails-list">
@@ -350,10 +431,10 @@ const Mails = ({mails, setMails}) => {
       ) : (
         <div className="mails-list">
           <div className="mails-header">
-            <h2>Your Mails</h2>
+            {toolbarActions.length > 0 ? <ActionToolbar actions={toolbarActions} /> : <h2>Your Mails</h2>}
           </div>
           <div className="mails-items-container">
-            {mails.map(mail => (
+            {pagedMails.map(mail => (
               <div 
                 key={mail.id} 
                 className={`mail-item ${!mail.read ? 'unread' : ''}`}
@@ -370,16 +451,9 @@ const Mails = ({mails, setMails}) => {
                   onChange={() => handleSelect(mail.id)}
                   onClick={e => e.stopPropagation()}
                 />
-                <div className="mail-content">
-                  <span className="mail-sender">{mail.from}</span>
-                  <div className="mail-text-content">
-                    <span className="mail-subject">{mail.subject}</span>
-                    <span className="mail-body"> - {mail.body}</span>
-                  </div>
-                </div>
-                <div className="mail-date">{formatDateTime(mail.date)}</div>
                 <button
                   className="mail-star-btn"
+                  style={{ backgroundColor: '10px' }}
                   title={mail.labels && mail.labels.includes('Starred') ? 'Unstar' : 'Star'}
                   onClick={async e => {
                     e.stopPropagation();
@@ -412,6 +486,16 @@ const Mails = ({mails, setMails}) => {
                 >
                   <i className={`bi ${mail.labels && mail.labels.includes('Starred') ? 'bi-star-fill' : 'bi-star'}`}></i>
                 </button>
+                <div className="mail-content">
+                  <span className={getMailSenderClass(mail)}>
+                    {getMailDisplayText(mail)}
+                  </span>
+                  <div className="mail-text-content">
+                    <span className="mail-subject">{mail.subject}</span>
+                    <span className="mail-body"> - {mail.body}</span>
+                  </div>
+                </div>
+                <div className="mail-date">{formatDateTime(mail.date)}</div>
                 <button
                   className="mail-label-btn"
                   title="Add to Label"

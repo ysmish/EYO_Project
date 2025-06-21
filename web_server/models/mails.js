@@ -3,6 +3,31 @@ import { labels } from "./labels.js";
 let mails = {};
 let nextId = 1;
 
+const createNewDraft = (from, to, cc, subject, body, attachments) => {
+    // Ensure 'to' is an array and remove duplicates
+    const toUsers = Array.isArray(to) ? [...new Set(to)] : [to];
+    const ccUsers = [...new Set(cc)];
+    
+    const newDraft = {
+        from,
+        to: toUsers,
+        cc: ccUsers,
+        subject,
+        body,
+        date: new Date(),
+        read: true,
+        attachments,
+        labels: ['Drafts']
+    };
+    const draftId = nextId++;
+    
+    // Add to sender's Drafts folder only
+    mails[from] = mails[from] || {};
+    mails[from][draftId] = JSON.parse(JSON.stringify(newDraft));
+    
+    return draftId;
+};
+
 const createNewMail = (from, to, cc, subject, body, attachments) => {
     // Ensure 'to' is an array and remove duplicates
     const toUsers = Array.isArray(to) ? [...new Set(to)] : [to];
@@ -124,6 +149,7 @@ const updateMail = (username, mailId, updates) => {
 
     // Only update allowed fields
     const allowedFields = ['subject', 'body', 'attachments', 'to', 'cc', 'read', 'labels'];
+    // System labels are managed by the application logic, not user input
     const systemLabels = ['Sent', 'Inbox', 'Drafts'];
     const updatedMail = { ...mails[username][mailId] };
     
@@ -144,8 +170,14 @@ const updateMail = (username, mailId, updates) => {
         }
     }
 
+    // Ensure drafts remain marked as read
+    const isDraft = updatedMail.labels && updatedMail.labels.includes('Drafts');
+    if (isDraft) {
+        updatedMail.read = true;
+    }
+
     mails[username][mailId] = updatedMail;
     return true;
 };
 
-export { mails, getLatestMails, createNewMail, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail };
+export { mails, getLatestMails, createNewMail, createNewDraft, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail };
