@@ -156,8 +156,13 @@ const updateMail = (username, mailId, updates) => {
     for (const field of allowedFields) {
         if (field in updates) {
             if (field === 'labels') {
-                const currentSystemLabels = (updatedMail[field] || []).filter(label => systemLabels.includes(label));
-                const newUserLabels = updates[field].filter(label => !systemLabels.includes(label));
+                // Preserve system labels and merge with new labels
+                const currentSystemLabels = (updatedMail[field] || []).filter(label => 
+                    typeof label === 'string' && systemLabels.includes(label)
+                );
+                const newUserLabels = updates[field].filter(label => 
+                    typeof label === 'number' || (typeof label === 'string' && !systemLabels.includes(label))
+                );
                 updatedMail[field] = [...currentSystemLabels, ...newUserLabels];
             } else {
                 updatedMail[field] = updates[field];

@@ -518,6 +518,7 @@ body {
     align-items: center;
     gap: 1rem;
     min-height: 35px;
+    position: relative;
 }
 
 .mail-item:hover {
@@ -1284,7 +1285,20 @@ body {
   margin-right: 2px;
 }
 
-.mail-star-btn:hover {
+.mail-label-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  margin-right: 4px;
+}
+
+.mail-star-btn:hover,
+.mail-label-btn:hover {
   background-color: var(--hover-color);
 }
 
@@ -1297,7 +1311,8 @@ body {
   flex-shrink: 0;
 }
 
-.mail-item:hover .mail-star-btn {
+.mail-item:hover .mail-star-btn,
+.mail-item:hover .mail-label-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1759,6 +1774,102 @@ body {
 .labels-list::-webkit-scrollbar-thumb:hover {
     background: var(--text-color);
     opacity: var(--opacity-small);
+}
+
+/* Label dropdown positioning for individual mail items */
+.mail-item {
+  position: relative;
+}
+
+.mail-item .label-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--bg-color);
+  border: 1px solid var(--shadow-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  min-width: 140px;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* Bulk label dropdown positioning */
+.bulk-label-dropdown {
+  position: absolute;
+  background-color: var(--bg-color);
+  border: 1px solid var(--shadow-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+  z-index: 10000;
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  animation: slideIn 0.2s ease-out;
+}
+
+[data-theme="dark"] .mail-item .label-dropdown,
+[data-theme="dark"] .bulk-label-dropdown {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--shadow-color);
+}
+
+/* Single mail label dropdown positioning */
+.single-mail-label-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--bg-color);
+  border: 1px solid var(--shadow-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  min-width: 140px;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+[data-theme="dark"] .single-mail-label-dropdown {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--shadow-color);
+}
+
+.mail-view-card {
+  position: relative;
+}
+
+.label-dropdown-item:hover {
+  background-color: var(--shadow-color);
+}
+
+.label-dropdown-item.applied {
+  background-color: rgba(79, 70, 229, 0.1);
+  color: #4F46E5;
+  font-weight: 500;
+}
+
+.label-dropdown-item.applied:hover {
+  background-color: rgba(79, 70, 229, 0.2);
+}
+
+.label-dropdown-item.applied .bi-check {
+  margin-left: auto;
+  font-size: 14px;
+  color: #4F46E5;
+}
+
+[data-theme="dark"] .label-dropdown-item.applied {
+  background-color: rgba(79, 70, 229, 0.2);
+  color: #c7d2fe;
+}
+
+[data-theme="dark"] .label-dropdown-item.applied:hover {
+  background-color: rgba(79, 70, 229, 0.3);
+}
+
+[data-theme="dark"] .label-dropdown-item.applied .bi-check {
+  color: #c7d2fe;
 }
 
 .pagination-bar {
