@@ -9,6 +9,9 @@ const Mail = () => {
   const [mail, setMail] = useState(null);
   const [fromPhoto, setFromPhoto] = useState(null);
   const [labels, setLabels] = useState([]);
+  const [availableLabels, setAvailableLabels] = useState([]);
+  const [showLabelDropdown, setShowLabelDropdown] = useState(false);
+  const [labelButtonPosition, setLabelButtonPosition] = useState(null);
   const navigate = useNavigate();
   const { token } = useAuth();
 
@@ -103,6 +106,47 @@ const Mail = () => {
       fetchLabels();
     }
   }, [token, mail]);
+
+  // Fetch available labels for the dropdown
+  useEffect(() => {
+    const fetchAvailableLabels = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/labels`, {
+          headers: {
+            'Authorization': `${token}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch available labels');
+        }
+        const data = await response.json();
+        setAvailableLabels(data);
+      } catch (error) {
+        console.error('Error fetching available labels:', error);
+      }
+    };
+    if (token) {
+      fetchAvailableLabels();
+    }
+  }, [token]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.label-dropdown') && !event.target.closest('.action-toolbar-btn')) {
+        setShowLabelDropdown(false);
+        setLabelButtonPosition(null);
+      }
+    };
+
+    if (showLabelDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showLabelDropdown]);
+
   if (!mail) {
     return (
       <div className="mail-view-container">
@@ -158,6 +202,74 @@ const Mail = () => {
     }
   };
 
+  const handleAddToLabel = async (labelName) => {
+    // Find the label by name to get its ID
+    const label = availableLabels.find(l => l.name === labelName);
+    if (label) {
+      const newLabels = [...(mail.labels || []), label.id];
+
+      try {
+        const response = await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify({ labels: newLabels })
+        });
+
+        if (response.ok) {
+          setMail(prev => ({
+            ...prev,
+            labels: newLabels
+          }));
+          // Update labels display
+          setLabels(prevLabels => [...new Set([...prevLabels, labelName])]);
+        }
+      } catch (error) {
+        console.error('Error adding label:', error);
+      }
+    }
+    setShowLabelDropdown(false);
+    setLabelButtonPosition(null);
+  };
+
+  const handleRemoveLabel = async (labelId) => {
+    const newLabels = (mail.labels || []).filter(label => label !== labelId);
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token
+        },
+        body: JSON.stringify({ labels: newLabels })
+      });
+
+      if (response.ok) {
+        setMail(prev => ({
+          ...prev,
+          labels: newLabels
+        }));
+        // Update labels display
+        const labelName = availableLabels.find(l => l.id === labelId)?.name;
+        if (labelName) {
+          setLabels(prevLabels => prevLabels.filter(label => label !== labelName));
+        }
+      }
+    } catch (error) {
+      console.error('Error removing label:', error);
+    }
+    setShowLabelDropdown(false);
+    setLabelButtonPosition(null);
+  };
+
+  // Helper function to check if a label is applied to the mail
+  const isLabelApplied = (labelId) => {
+    return mail.labels && mail.labels.includes(labelId);
+  };
+
   const isStarred = mail.labels && mail.labels.includes('Starred');
   const toolbarActions = [
     {
@@ -165,6 +277,19 @@ const Mail = () => {
       iconClass: isStarred ? 'bi bi-star-fill' : 'bi bi-star',
       label: isStarred ? 'Unstar' : 'Star',
       onClick: handleStar
+    },
+    {
+      key: 'label',
+      iconClass: 'bi bi-tag',
+      label: 'Add to Label',
+      onClick: (event) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        setLabelButtonPosition({
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX
+        });
+        setShowLabelDropdown(true);
+      }
     },
     {
       key: 'delete',
@@ -238,6 +363,39 @@ const Mail = () => {
           )}
         </div>
       </div>
+      {showLabelDropdown && (
+        <div 
+          className="label-dropdown"
+          style={labelButtonPosition ? {
+            position: 'absolute',
+            top: `${labelButtonPosition.top}px`,
+            left: `${labelButtonPosition.left}px`
+          } : {}}
+        >
+          {availableLabels.map(label => (
+            <button
+              key={label.id}
+              className={`label-dropdown-item ${isLabelApplied(label.id) ? 'applied' : ''}`}
+              onClick={() => {
+                if (isLabelApplied(label.id)) {
+                  handleRemoveLabel(label.id);
+                } else {
+                  handleAddToLabel(label.name);
+                }
+              }}
+            >
+              <div 
+                className="label-color-dot"
+                style={{ backgroundColor: label.color || '#4F46E5' }}
+              />
+              {label.name}
+              {isLabelApplied(label.id) && (
+                <i className="bi bi-check"></i>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </>
   );
 };

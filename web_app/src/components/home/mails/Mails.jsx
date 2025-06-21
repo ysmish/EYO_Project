@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthProvider';
 import '../../../styles.css';
@@ -9,7 +9,49 @@ const Mails = ({mails, setMails}) => {
   const { token } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
+  const [showLabelDropdown, setShowLabelDropdown] = useState(null);
+  const [labelButtonPosition, setLabelButtonPosition] = useState(null);
+  const [labels, setLabels] = useState([]);
   const location = useLocation();
+
+  // Fetch labels on component mount
+  useEffect(() => {
+    const fetchLabels = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/labels', {
+          headers: {
+            'Authorization': token
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setLabels(data);
+        }
+      } catch (error) {
+        console.error('Error fetching labels:', error);
+      }
+    };
+    if (token) {
+      fetchLabels();
+    }
+  }, [token]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.label-dropdown') && !event.target.closest('.mail-label-btn') && !event.target.closest('.action-toolbar-btn')) {
+        setShowLabelDropdown(null);
+        setLabelButtonPosition(null);
+      }
+    };
+
+    if (showLabelDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showLabelDropdown]);
 
   // Determine the current search context
   const getCurrentSearchString = () => {
@@ -139,6 +181,123 @@ const Mails = ({mails, setMails}) => {
     setSelected([]);
   };
 
+  const handleAddToLabel = async (mailId, labelName) => {
+    const mailIndex = mails.findIndex(m => m.id === mailId);
+    if (mailIndex !== -1) {
+      const mail = mails[mailIndex];
+      // Find the label by name to get its ID
+      const label = labels.find(l => l.name === labelName);
+      if (label) {
+        const newLabels = [...(mail.labels || []), label.id];
+
+        try {
+          const response = await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token
+            },
+            body: JSON.stringify({ labels: newLabels })
+          });
+
+          if (response.ok) {
+            setMails(prevMails =>
+              prevMails.map(m =>
+                m.id === mailId ? { ...m, labels: newLabels } : m
+              )
+            );
+          }
+        } catch (error) {
+          console.error('Error adding label:', error);
+        }
+      }
+    }
+    setShowLabelDropdown(null);
+    setLabelButtonPosition(null);
+  };
+
+  const handleBulkAddToLabel = async (labelName) => {
+    const updatedMails = [...mails];
+    // Find the label by name to get its ID
+    const label = labels.find(l => l.name === labelName);
+    
+    if (label) {
+      for (const mailId of selected) {
+        const mailIndex = updatedMails.findIndex(m => m.id === mailId);
+        if (mailIndex !== -1) {
+          const mail = updatedMails[mailIndex];
+          const newLabels = [...(mail.labels || []), label.id];
+
+          try {
+            const response = await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+              },
+              body: JSON.stringify({ labels: newLabels })
+            });
+
+            if (response.ok) {
+              updatedMails[mailIndex] = { ...mail, labels: newLabels };
+            }
+          } catch (error) {
+            console.error('Error adding label:', error);
+          }
+        }
+      }
+      
+      setMails(updatedMails);
+      setSelected([]);
+    }
+  };
+
+  const handleRemoveLabel = async (mailId, labelId) => {
+    const mailIndex = mails.findIndex(m => m.id === mailId);
+    if (mailIndex !== -1) {
+      const mail = mails[mailIndex];
+      const newLabels = (mail.labels || []).filter(label => label !== labelId);
+
+      try {
+        const response = await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify({ labels: newLabels })
+        });
+
+        if (response.ok) {
+          setMails(prevMails =>
+            prevMails.map(m =>
+              m.id === mailId ? { ...m, labels: newLabels } : m
+            )
+          );
+        }
+      } catch (error) {
+        console.error('Error removing label:', error);
+      }
+    }
+  };
+
+  // Helper function to get label name by ID
+  const getLabelNameById = (labelId) => {
+    const label = labels.find(l => l.id === labelId);
+    return label ? label.name : labelId;
+  };
+
+  // Helper function to get label color by ID
+  const getLabelColorById = (labelId) => {
+    const label = labels.find(l => l.id === labelId);
+    return label ? label.color : '#4F46E5';
+  };
+
+  // Helper function to check if a label is applied to a mail
+  const isLabelApplied = (mail, labelId) => {
+    return mail.labels && mail.labels.includes(labelId);
+  };
+
   const toolbarActions = selected.length > 0 ? [
     {
       key: 'star',
@@ -147,12 +306,24 @@ const Mails = ({mails, setMails}) => {
       onClick: handleStar
     },
     {
+      key: 'label',
+      iconClass: 'bi bi-tag',
+      label: 'Add to Label',
+      onClick: (event) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        setLabelButtonPosition({
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX
+        });
+        setShowLabelDropdown('bulk');
+      }
+    },
+    {
       key: 'delete',
       iconClass: 'bi bi-trash',
       label: 'Delete',
       onClick: handleDelete
     }
-    // Future actions can be added here
   ] : [];
 
   if (error) {
@@ -187,8 +358,8 @@ const Mails = ({mails, setMails}) => {
                 key={mail.id} 
                 className={`mail-item ${!mail.read ? 'unread' : ''}`}
                 onClick={e => {
-                  // Prevent click if clicking checkbox, star button, or delete button
-                  if (e.target.closest('.mail-delete-btn') || e.target.closest('.mail-star-btn') || e.target.closest('.mail-select-checkbox')) return;
+                  // Prevent click if clicking checkbox, star button, label button, or delete button
+                  if (e.target.closest('.mail-delete-btn') || e.target.closest('.mail-star-btn') || e.target.closest('.mail-label-btn') || e.target.closest('.mail-select-checkbox')) return;
                   handleMailClick(mail);
                 }}
               >
@@ -242,6 +413,16 @@ const Mails = ({mails, setMails}) => {
                   <i className={`bi ${mail.labels && mail.labels.includes('Starred') ? 'bi-star-fill' : 'bi-star'}`}></i>
                 </button>
                 <button
+                  className="mail-label-btn"
+                  title="Add to Label"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setShowLabelDropdown(mail.id);
+                  }}
+                >
+                  <i className="bi bi-tag"></i>
+                </button>
+                <button
                   className="mail-delete-btn"
                   title="Delete"
                   onClick={async e => {
@@ -258,9 +439,78 @@ const Mails = ({mails, setMails}) => {
                 >
                   <i className="bi bi-trash"></i>
                 </button>
+                {showLabelDropdown === mail.id && (
+                  <div className="label-dropdown">
+                    {labels.map(label => (
+                      <button
+                        key={label.id}
+                        className={`label-dropdown-item ${isLabelApplied(mail, label.id) ? 'applied' : ''}`}
+                        onClick={() => {
+                          if (isLabelApplied(mail, label.id)) {
+                            handleRemoveLabel(mail.id, label.id);
+                          } else {
+                            handleAddToLabel(mail.id, label.name);
+                          }
+                        }}
+                      >
+                        <div 
+                          className="label-color-dot"
+                          style={{ backgroundColor: label.color || '#4F46E5' }}
+                        />
+                        {label.name}
+                        {isLabelApplied(mail, label.id) && (
+                          <i className="bi bi-check"></i>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
+        </div>
+      )}
+      {showLabelDropdown === 'bulk' && (
+        <div 
+          className="label-dropdown bulk-label-dropdown"
+          style={labelButtonPosition ? {
+            position: 'absolute',
+            top: `${labelButtonPosition.top}px`,
+            left: `${labelButtonPosition.left}px`
+          } : {}}
+        >
+          {labels.map(label => {
+            // Check if all selected emails have this label
+            const allSelectedHaveLabel = selected.length > 0 && selected.every(mailId => {
+              const mail = mails.find(m => m.id === mailId);
+              return mail && isLabelApplied(mail, label.id);
+            });
+            
+            return (
+              <button
+                key={label.id}
+                className={`label-dropdown-item ${allSelectedHaveLabel ? 'applied' : ''}`}
+                onClick={() => {
+                  if (allSelectedHaveLabel) {
+                    // Remove label from all selected emails
+                    selected.forEach(mailId => handleRemoveLabel(mailId, label.id));
+                  } else {
+                    // Add label to all selected emails
+                    handleBulkAddToLabel(label.name);
+                  }
+                }}
+              >
+                <div 
+                  className="label-color-dot"
+                  style={{ backgroundColor: label.color || '#4F46E5' }}
+                />
+                {label.name}
+                {allSelectedHaveLabel && (
+                  <i className="bi bi-check"></i>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
