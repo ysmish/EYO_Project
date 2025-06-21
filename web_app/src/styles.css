@@ -1870,6 +1870,7 @@ body {
 
 [data-theme="dark"] .label-dropdown-item.applied .bi-check {
   color: #c7d2fe;
+}
 
 .pagination-bar {
   display: flex;
