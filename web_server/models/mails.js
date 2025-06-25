@@ -89,7 +89,7 @@ const createNewMail = (from, to, cc, subject, body, attachments) => {
 
 const extractUrlsFromString = (text) => {
     if (!text || typeof text !== 'string') return [];
-    const urlRegex = /((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?$/g;
+    const urlRegex = /((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?/g;
     return text.match(urlRegex) || [];
 };
 
