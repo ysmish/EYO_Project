@@ -82,14 +82,14 @@ const addUser = (firstName, lastName, birthday, username, password, photo=null) 
 }
 
 const changePhoto = (username, photo) => {
-    if (!username || !photo) {
+    if (!username) {
         return { error: 'Username and photo are required' }
     }
     const user = users.find(user => user.id === username);
     if (!user) {
         return { error: 'User not found' }
     }
-    user.photo = photo;
+    user.photo = photo || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSIjOUNBM0FGIi8+CjxwYXRoIGQ9Ik0yMCA4MEM3NS4wNzY5IDc5LjIzMDggMjQgNzUuMDc2OSAyNCA3MEMyNCA2NC45MjMxIDc1LjA3NjkgNjAgODAgNjAiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+'; // Default placeholder avatar
     return { message: 'Photo updated successfully' };
 }
 

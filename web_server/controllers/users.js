@@ -72,10 +72,18 @@ const changeUserPhoto = (req, res) => {
         return res.status(401).json({ error: authResult.error });
     }
     const username = authResult.username;
-    const photo = req.body.photo;
-    if (!photo) {
-        return res.status(400).json({ error: 'Photo is required.' });
+    let photo = "";
+    // Use multer: req.file contains the uploaded file
+    if (!req.file) {
+        photo = "";
+    } else {
+        // Convert buffer to base64 Data URL (assuming image)
+        const mimeType = req.file.mimetype;
+        const base64 = req.file.buffer.toString('base64');
+        photo = `data:${mimeType};base64,${base64}`;
     }
+
+
 
     try {
         const result = changePhoto(username, photo);

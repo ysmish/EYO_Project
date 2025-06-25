@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFormValidation } from './hooks/useFormValidation';
-import { useImageUpload } from './hooks/useImageUpload';
 import FormField from './components/FormField';
-import ImageUploadField from './components/ImageUploadField';
 import Settings from '../../home/navbar/_components/Settings';
 import { useAuth } from '../../../context/AuthProvider';
 import { useEffect } from 'react';
@@ -24,7 +22,6 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   
   const { errors, validateForm, clearError, setGeneralError, clearAllErrors } = useFormValidation();
-  const { imagePreview, imageData, handleImageUpload, removeImage } = useImageUpload();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -39,12 +36,6 @@ const Register = () => {
     clearError(name);
   };
 
-  const handleImageChange = (file) => {
-    handleImageUpload(file, (error) => {
-      setGeneralError(error);
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -56,7 +47,6 @@ const Register = () => {
     try {
       const registrationData = {
         ...formData,
-        photo: imageData || null
       };
 
       const response = await fetch('http://localhost:3000/api/users', {
@@ -170,13 +160,6 @@ const Register = () => {
               required
             />
           </div>
-
-          <ImageUploadField
-            imagePreview={imagePreview}
-            onImageUpload={handleImageChange}
-            onRemoveImage={removeImage}
-            error={errors.photo}
-          />
 
           <button 
             type="submit" 
