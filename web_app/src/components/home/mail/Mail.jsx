@@ -309,9 +309,22 @@ const Mail = () => {
               <div className="mail-view-subject">{mail.subject}</div>
               {mail.labels && mail.labels.length > 0 && (
                 <div className="mail-view-labels">
-                  {labels.map((label, idx) => (
-                    <span className="mail-label-chip" key={idx}>{label}</span>
-                  ))}
+                  {mail.labels && mail.labels.length > 0 && (
+                    <div className="mail-view-labels">
+                      {mail.labels.map((labelId, idx) => {
+                        const labelObj = availableLabels.find(l => l.id === labelId);
+                        return (
+                          <span
+                            className="mail-label-chip"
+                            key={idx}
+                            style={labelObj?.color ? { backgroundColor: labelObj.color, color: '#fff', borderColor: labelObj.color } : {}}
+                          >
+                            {labelObj ? labelObj.name : labelId}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

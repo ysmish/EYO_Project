@@ -5,7 +5,7 @@ import { useAuth } from '../../../../context/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import AddLabelModal from './AddLabelModal';
 
-const Labels = ({ activeSection }) => {
+const Labels = ({ activeSection, collapsed }) => {
   const navigate = useNavigate();
   const [labels, setLabels] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -263,19 +263,18 @@ const Labels = ({ activeSection }) => {
                 className="label-color-dot"
                 style={{ backgroundColor: label.color || '#4F46E5' }}
               />
-              <span className="label-name">{label.name}</span>
-              
-              {/* 3-dots menu button */}
-              <button 
-                className="label-menu-btn"
-                onClick={(e) => handleMenuClick(label.id, e)}
-                title="Label options"
-              >
-                <i className="bi bi-three-dots"></i>
-              </button>
-
+              {!collapsed && <span className="label-name">{label.name}</span>}
+              {!collapsed && (
+                <button 
+                  className="label-menu-btn"
+                  onClick={(e) => handleMenuClick(label.id, e)}
+                  title="Label options"
+                >
+                  <i className="bi bi-three-dots"></i>
+                </button>
+              )}
               {/* Dropdown menu */}
-              {showDropdown === label.id && (
+              {showDropdown === label.id && !collapsed && (
                 <div 
                   className="label-dropdown" 
                   ref={dropdownRef}

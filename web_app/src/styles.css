@@ -115,6 +115,29 @@ body {
     flex-shrink: 0;
 }
 
+.sidebar.collapsed {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    transition: width 0.2s;
+}
+.sidebar .side-item span,
+.sidebar .label-name {
+    transition: opacity 0.2s, width 0.2s;
+}
+.sidebar.collapsed .side-item span,
+.sidebar.collapsed .label-name,
+.sidebar.collapsed .labels-title {
+    display: none !important;
+}
+.sidebar.collapsed .label-menu-btn {
+    display: none !important;
+}
+
+.sidebar.collapsed .labels-header {
+    margin-left: 8px;
+}
+
 .side-item {
     padding: 0 12px 0 26px;
     height: 32px;
@@ -133,6 +156,33 @@ body {
     background-color: var(--shadow-color);
     font-weight: 500;
 }
+
+.sidebar.collapsed .side-item.label-item {
+    padding-left: 36px;
+}
+
+.sidebar.collapsed .new-mail-button {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+    margin: 1rem auto 1.25rem auto;
+    border-radius: 50%;
+    font-size: 0;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.sidebar.collapsed .new-mail-button i {
+    font-size: 20px;
+    margin: 0;
+}
+
+.sidebar.collapsed .new-mail-button span {
+    display: none;
+}
+
 
 /* Authentication Styles */
 .auth-container {
@@ -1321,7 +1371,6 @@ body {
 /* Labels Component Styles */
 .labels-container {
     margin: 0.5rem 0;
-    padding: 0 12px;
     overflow: visible;
 }
 

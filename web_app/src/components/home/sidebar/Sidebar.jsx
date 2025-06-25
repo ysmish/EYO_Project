@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Inbox from './_components/Inbox';
 import Starred from './_components/Starred';
@@ -7,10 +8,12 @@ import Spam from './_components/Spam';
 import AllMails from './_components/AllMails';
 import Labels from './_components/Label';
 import NewMail from './_components/NewMail';
+import CollapseButton from './_components/CollapsButton';
 
 const Sidebar = ({ onOpenCompose }) => {
   const location = useLocation();
-  
+  const [collapsed, setCollapsed] = useState(false);
+
   // Helper function to determine active section from URL
   const getActiveSection = () => {
     const path = location.pathname;
@@ -40,15 +43,18 @@ const Sidebar = ({ onOpenCompose }) => {
   const activeSection = getActiveSection();
 
   return (
-    <div className='sidebar'>
-        <NewMail onOpenCompose={onOpenCompose} />
-        <Inbox isActive={activeSection === 'inbox'} />
-        <Starred isActive={activeSection === 'starred'} />
-        <Sent isActive={activeSection === 'sent'} />
-        <Drafts isActive={activeSection === 'drafts'} />
-        <Spam isActive={activeSection === 'spam'} />
-        <AllMails isActive={activeSection === 'allmails'} />
-        <Labels activeSection={activeSection} />
+    <div className={`sidebar${collapsed ? ' collapsed' : ''}`}>
+      <CollapseButton collapsed={collapsed} setCollapsed={() => setCollapsed(!collapsed)} />
+      <div>
+        <NewMail onOpenCompose={onOpenCompose} collapsed={collapsed}/>
+      </div>
+      <Inbox isActive={activeSection === 'inbox'} />
+      <Starred isActive={activeSection === 'starred'} />
+      <Sent isActive={activeSection === 'sent'} />
+      <Drafts isActive={activeSection === 'drafts'} />
+      <Spam isActive={activeSection === 'spam'} />
+      <AllMails isActive={activeSection === 'allmails'} />
+      <Labels activeSection={activeSection} collapsed={collapsed}/>
     </div>
   );
 };
