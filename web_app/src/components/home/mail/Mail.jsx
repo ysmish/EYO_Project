@@ -168,6 +168,35 @@ const Mail = () => {
     navigate('/mails');
   };
 
+  const handleSpam = async () => {
+    const isSpam = mail.labels && mail.labels.includes('Spam');
+    try {
+      await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token
+        },
+        body: JSON.stringify({ reportSpam: !isSpam })
+      });
+      
+      // Update the mail state to reflect the change
+      setMail(prev => ({
+        ...prev,
+        labels: isSpam 
+          ? (prev.labels || []).filter(label => label !== 'Spam').concat('Inbox')
+          : (prev.labels || []).filter(label => label !== 'Inbox').concat('Spam')
+      }));
+      
+      // Navigate back after marking as spam
+      if (!isSpam) {
+        handleBack();
+      }
+    } catch (error) {
+      console.error('Error toggling spam status:', error);
+    }
+  };
+
   const handleStar = async () => {
     const isStarred = mail.labels && mail.labels.includes('Starred');
     const newLabels = isStarred
@@ -271,12 +300,19 @@ const Mail = () => {
   };
 
   const isStarred = mail.labels && mail.labels.includes('Starred');
+  const isSpam = mail.labels && mail.labels.includes('Spam');
   const toolbarActions = [
     {
       key: 'star',
       iconClass: isStarred ? 'bi bi-star-fill' : 'bi bi-star',
       label: isStarred ? 'Unstar' : 'Star',
       onClick: handleStar
+    },
+    {
+      key: 'spam',
+      iconClass: isSpam ? 'bi bi-check-circle' : 'bi bi-exclamation-triangle',
+      label: isSpam ? 'Not Spam' : 'Report Spam',
+      onClick: handleSpam
     },
     {
       key: 'label',

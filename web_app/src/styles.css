@@ -1336,20 +1336,31 @@ body {
 }
 
 .mail-label-btn {
-  display: none;
   background: none;
   border: none;
   color: var(--text-color);
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  margin-right: 4px;
+  padding: 8px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.mail-spam-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
 }
 
 .mail-star-btn:hover,
-.mail-label-btn:hover {
-  background-color: var(--hover-color);
+.mail-label-btn:hover,
+.mail-spam-btn:hover {
+  background-color: var(--shadow-color);
 }
 
 .mail-star-btn .bi-star-fill {
@@ -1362,10 +1373,9 @@ body {
 }
 
 .mail-item:hover .mail-star-btn,
-.mail-item:hover .mail-label-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.mail-item:hover .mail-label-btn,
+.mail-item:hover .mail-spam-btn {
+  opacity: 1;
 }
 
 /* Labels Component Styles */
