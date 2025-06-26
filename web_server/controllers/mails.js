@@ -1,5 +1,5 @@
-import { getLatestMails, createNewMail, createNewDraft, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail } from '../models/mails.js';
-import { checkUrl } from '../models/blacklist.js';
+import { getLatestMails, createNewMail, createNewDraft, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail, updateMailSpamStatus } from '../models/mails.js';
+import { checkUrl, addUrl, deleteUrl } from '../models/blacklist.js';
 import { getUser } from '../models/users.js';
 import { authorizeToken } from '../models/tokens.js';
 
@@ -115,21 +115,37 @@ const createMail = async (req, res) => {
             });
 
             // Check all URLs against the URL server
+            let hasBlacklistedUrls = false;
             for (const url of urls) {
                 const isBlacklisted = await checkUrl(url);
                 if (isBlacklisted) {
-                    return res.status(400).json({ 
-                        error: `URL ${url} is blacklisted`,
-                        message: 'Found blacklisted URL in mail content'
-                    });
+                    hasBlacklistedUrls = true;
+                    break; // Found at least one blacklisted URL
                 }
+            }
+
+            // If blacklisted URLs found, create mail and tag as SPAM for recipients
+            if (hasBlacklistedUrls) {
+                const mailId = createNewMail(
+                    username,
+                    toUsers,
+                    cc,
+                    subject,
+                    body,
+                    attachments || []
+                );
+                
+                // Tag as SPAM for all recipients (but not for sender)
+                updateMailSpamStatus(mailId, true, username);
+                
+                return res.status(201).location(`/api/mails/${mailId}`).end();
             }
         } catch (error) {
             console.error('Error checking URLs:', error);
             return res.status(500).json({ error: 'Failed to validate URLs' });
         }
 
-        // Create the mail if all URLs are valid
+        // Create the mail if all URLs are valid (no blacklisted URLs found)
         const mailId = createNewMail(
             username,
             toUsers,
@@ -259,14 +275,40 @@ const sendDraft = async (req, res) => {
         });
 
         // Check all URLs against the URL server
+        let hasBlacklistedUrls = false;
         for (const url of urls) {
             const isBlacklisted = await checkUrl(url);
             if (isBlacklisted) {
-                return res.status(400).json({ 
-                    error: `URL ${url} is blacklisted`,
-                    message: 'Found blacklisted URL in mail content'
-                });
+                hasBlacklistedUrls = true;
+                break; // Found at least one blacklisted URL
             }
+        }
+
+        // If blacklisted URLs found, create mail and tag as SPAM for recipients
+        if (hasBlacklistedUrls) {
+            // Delete the draft first
+            const deleteSuccess = deleteMailOfUser(username, draftId);
+            if (!deleteSuccess) {
+                return res.status(500).json({ error: 'Failed to delete draft' });
+            }
+
+            // Create the mail with blacklisted URLs
+            const mailId = createNewMail(
+                username,
+                finalTo,
+                finalCc,
+                finalSubject,
+                finalBody,
+                finalAttachments
+            );
+            
+            // Tag as SPAM for all recipients (but not for sender)
+            updateMailSpamStatus(mailId, true, username);
+            
+            return res.status(201).json({ 
+                id: mailId, 
+                message: 'Draft sent successfully (marked as spam due to blacklisted URLs)' 
+            });
         }
     } catch (error) {
         console.error('Error checking URLs:', error);
@@ -279,7 +321,7 @@ const sendDraft = async (req, res) => {
         return res.status(500).json({ error: 'Failed to delete draft' });
     }
 
-    // Create the mail
+    // Create the mail (URLs are valid)
     try {
         const mailId = createNewMail(
             username,
@@ -347,23 +389,55 @@ const patchMail = async (req, res) => {
 
     const updates = req.body;
     
-    // Extract URLs from the updates to check against blacklist
-    try {
-        const urls = extractUrlsFromMail(updates);
-        
-        // Check all URLs against the URL server
-        for (const url of urls) {
-            const isBlacklisted = await checkUrl(url);
-            if (isBlacklisted) {
-                return res.status(400).json({ 
-                    error: `URL ${url} is blacklisted`,
-                    message: 'Found blacklisted URL in mail content'
-                });
+    // Handle spam/not spam reporting
+    if (updates.reportSpam !== undefined) {
+        try {
+            const urls = extractUrlsFromMail(mail);
+            
+            if (updates.reportSpam) {
+                // Report as spam: add URLs to blacklist
+                for (const url of urls) {
+                    await addUrl(url);
+                }
+                // Update spam status for ALL users who have this email
+                updateMailSpamStatus(mailId, true, username);
+            } else {
+                // Report as not spam: remove URLs from blacklist
+                for (const url of urls) {
+                    await deleteUrl(url);
+                }
+                // Update spam status for ALL users who have this email
+                updateMailSpamStatus(mailId, false, username);
             }
+            
+            // Remove reportSpam from updates since it's not a mail field
+            delete updates.reportSpam;
+            
+            // Return success immediately since we've handled the spam update globally
+            return res.status(204).end();
+        } catch (error) {
+            console.error('Error handling spam report:', error);
+            return res.status(500).json({ error: 'Failed to process spam report' });
         }
-    } catch (error) {
-        console.error('Error checking URLs:', error);
-        return res.status(500).json({ error: 'Failed to validate URLs' });
+    } else {
+        // Regular mail update - check URLs against blacklist
+        try {
+            const urls = extractUrlsFromMail(updates);
+            
+            // Check all URLs against the URL server
+            for (const url of urls) {
+                const isBlacklisted = await checkUrl(url);
+                if (isBlacklisted) {
+                    return res.status(400).json({ 
+                        error: `URL ${url} is blacklisted`,
+                        message: 'Found blacklisted URL in mail content'
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error checking URLs:', error);
+            return res.status(500).json({ error: 'Failed to validate URLs' });
+        }
     }
 
     // Update the mail

@@ -194,6 +194,43 @@ const Mails = ({mails, setMails}) => {
     setSelected([]);
   };
 
+  const handleMarkAsSpam = async () => {
+    for (const mailId of selected) {
+      try {
+        // Use the new backend logic to report as spam
+        await fetch(`http://localhost:3000/api/mails/${mailId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify({ reportSpam: true })
+        });
+      } catch (error) {
+        console.error('Error marking as spam:', error);
+      }
+    }
+    
+    // Refresh the data from server to properly handle all views (inbox, labels, etc.)
+    // This ensures that emails are properly filtered out from label views
+    const currentSearchString = getCurrentSearchString();
+    try {
+      const response = await fetch(`http://localhost:3000/api/search/${currentSearchString}`, {
+        headers: {
+          'Authorization': token
+        }
+      });
+      if (response.ok) {
+        const refreshedMails = await response.json();
+        setMails(refreshedMails);
+      }
+    } catch (error) {
+      console.error('Error refreshing mails after spam action:', error);
+    }
+    
+    setSelected([]);
+  };
+
   // Determine if all selected mails are starred
   const allSelectedStarred = selected.length > 0 && selected.every(id => {
     const mail = mails.find(m => m.id === id);
@@ -354,6 +391,12 @@ const Mails = ({mails, setMails}) => {
 
   const toolbarActions = selected.length > 0 ? [
     {
+      key: 'spam',
+      iconClass: 'bi bi-exclamation-triangle',
+      label: 'Report Spam',
+      onClick: handleMarkAsSpam
+    },
+    {
       key: 'label',
       iconClass: 'bi bi-tag',
       label: 'Add to Label',
@@ -438,8 +481,8 @@ const Mails = ({mails, setMails}) => {
                 key={mail.id} 
                 className={`mail-item ${!mail.read ? 'unread' : ''}`}
                 onClick={e => {
-                  // Prevent click if clicking checkbox, star button, label button, or delete button
-                  if (e.target.closest('.mail-delete-btn') || e.target.closest('.mail-star-btn') || e.target.closest('.mail-label-btn') || e.target.closest('.mail-select-checkbox')) return;
+                  // Prevent click if clicking checkbox, star button, spam button, label button, or delete button
+                  if (e.target.closest('.mail-delete-btn') || e.target.closest('.mail-star-btn') || e.target.closest('.mail-spam-btn') || e.target.closest('.mail-label-btn') || e.target.closest('.mail-select-checkbox')) return;
                   handleMailClick(mail);
                 }}
               >
@@ -495,6 +538,41 @@ const Mails = ({mails, setMails}) => {
                   </div>
                 </div>
                 <div className="mail-date">{formatDateTime(mail.date)}</div>
+                <button
+                  className="mail-spam-btn"
+                  title={mail.labels && mail.labels.includes('Spam') ? 'Not Spam' : 'Report Spam'}
+                  onClick={async e => {
+                    e.stopPropagation();
+                    const isSpam = mail.labels && mail.labels.includes('Spam');
+                    try {
+                      await fetch(`http://localhost:3000/api/mails/${mail.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': token
+                        },
+                        body: JSON.stringify({ reportSpam: !isSpam })
+                      });
+                      
+                      // Refresh the data from server to properly handle all views (inbox, labels, etc.)
+                      // This ensures that emails are properly filtered out from label views
+                      const currentSearchString = getCurrentSearchString();
+                      const response = await fetch(`http://localhost:3000/api/search/${currentSearchString}`, {
+                        headers: {
+                          'Authorization': token
+                        }
+                      });
+                      if (response.ok) {
+                        const refreshedMails = await response.json();
+                        setMails(refreshedMails);
+                      }
+                    } catch (error) {
+                      console.error('Error toggling spam status:', error);
+                    }
+                  }}
+                >
+                  <i className={`bi ${mail.labels && mail.labels.includes('Spam') ? 'bi-check-circle' : 'bi-exclamation-triangle'}`}></i>
+                </button>
                 <button
                   className="mail-label-btn"
                   title="Add to Label"

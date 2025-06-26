@@ -89,7 +89,7 @@ const createNewMail = (from, to, cc, subject, body, attachments) => {
 
 const extractUrlsFromString = (text) => {
     if (!text || typeof text !== 'string') return [];
-    const urlRegex = /((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?$/g;
+    const urlRegex = /((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?/g;
     return text.match(urlRegex) || [];
 };
 
@@ -156,14 +156,24 @@ const updateMail = (username, mailId, updates) => {
     for (const field of allowedFields) {
         if (field in updates) {
             if (field === 'labels') {
-                // Preserve system labels and merge with new labels
-                const currentSystemLabels = (updatedMail[field] || []).filter(label => 
-                    typeof label === 'string' && systemLabels.includes(label)
+                // Check if this is a spam-related update (contains 'Spam' or 'Inbox' manipulation)
+                const hasSpamUpdate = updates[field].some(label => 
+                    label === 'Spam' || label === 'Inbox'
                 );
-                const newUserLabels = updates[field].filter(label => 
-                    typeof label === 'number' || (typeof label === 'string' && !systemLabels.includes(label))
-                );
-                updatedMail[field] = [...currentSystemLabels, ...newUserLabels];
+                
+                if (hasSpamUpdate) {
+                    // For spam updates, allow full control over labels
+                    updatedMail[field] = updates[field];
+                } else {
+                    // For regular updates, preserve system labels and merge with new labels
+                    const currentSystemLabels = (updatedMail[field] || []).filter(label => 
+                        typeof label === 'string' && systemLabels.includes(label)
+                    );
+                    const newUserLabels = updates[field].filter(label => 
+                        typeof label === 'number' || (typeof label === 'string' && !systemLabels.includes(label))
+                    );
+                    updatedMail[field] = [...currentSystemLabels, ...newUserLabels];
+                }
             } else {
                 updatedMail[field] = updates[field];
             }
@@ -180,4 +190,55 @@ const updateMail = (username, mailId, updates) => {
     return true;
 };
 
-export { mails, getLatestMails, createNewMail, createNewDraft, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail };
+const updateMailSpamStatus = (mailId, isSpam, reportingUsername) => {
+    // Find all users who have this email
+    const usersWithMail = [];
+    for (const username in mails) {
+        if (mails[username] && mails[username][mailId]) {
+            usersWithMail.push(username);
+        }
+    }
+    
+    // Update the spam status for all users who have this email
+    for (const username of usersWithMail) {
+        const mail = mails[username][mailId];
+        if (mail) {
+            if (isSpam) {
+                // Mark as spam: remove 'Inbox' and all custom labels (label IDs), add 'Spam'
+                // Keep only system labels that should persist (Sent, Drafts)
+                const systemLabels = ['Sent', 'Drafts']; // Keep these system labels
+                mail.labels = (mail.labels || []).filter(label => 
+                    systemLabels.includes(label) || label === 'Spam'
+                );
+                
+                // Only add SPAM label to the reporting user (requirement 2.3)
+                if (username === reportingUsername) {
+                    mail.labels.push('Spam');
+                }
+            } else {
+                // Unmark as spam: remove 'Spam' and add appropriate label based on user role
+                const systemLabels = ['Sent', 'Drafts']; // Keep these system labels
+                mail.labels = (mail.labels || []).filter(label => 
+                    systemLabels.includes(label) || label === 'Inbox'
+                );
+                
+                // Tag as INBOX/SENT depending on if user is sender or recipient (requirement 3.2)
+                if (username === mail.from) {
+                    // User is the sender - add 'Sent' label
+                    if (!mail.labels.includes('Sent')) {
+                        mail.labels.push('Sent');
+                    }
+                } else {
+                    // User is a recipient - add 'Inbox' label
+                    if (!mail.labels.includes('Inbox')) {
+                        mail.labels.push('Inbox');
+                    }
+                }
+            }
+        }
+    }
+    
+    return usersWithMail.length > 0;
+};
+
+export { mails, getLatestMails, createNewMail, createNewDraft, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail, updateMailSpamStatus };
