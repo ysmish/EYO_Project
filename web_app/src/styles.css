@@ -1992,3 +1992,47 @@ body {
     padding: 0.18rem 0.5rem;
   }
 }
+
+.mail-item-actions {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  min-width: 120px;
+  width: 120px;
+  gap: 0;
+}
+
+/* Remove margin from mail-delete-btn for equal spacing */
+.mail-item-actions .mail-delete-btn {
+  margin-left: 0;
+}
+
+.mail-item-actions button {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mail-item-actions button:hover {
+  background-color: var(--hover-color);
+}
+
+.mail-spam-btn,
+.mail-label-btn,
+.mail-delete-btn {
+  border-radius: 6px !important;
+  background: none;
+}
+
+.mail-spam-btn:hover,
+.mail-label-btn:hover,
+.mail-delete-btn:hover {
+  background-color: var(--hover-color) !important;
+}
