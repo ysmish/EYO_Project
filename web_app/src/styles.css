@@ -119,12 +119,8 @@ body {
     width: 60px;
     min-width: 60px;
     max-width: 60px;
-    transition: width 0.2s;
 }
-.sidebar .side-item span,
-.sidebar .label-name {
-    transition: opacity 0.2s, width 0.2s;
-}
+
 .sidebar.collapsed .side-item span,
 .sidebar.collapsed .label-name,
 .sidebar.collapsed .labels-title {
@@ -167,9 +163,11 @@ body {
     align-items: center;
     width: 44px;
     min-width: 44px;
+    height: 68px;
+    min-height: 68px;
     padding: 0;
     margin: 1rem auto 1.25rem auto;
-    border-radius: 50%;
+    border-radius: 22px;
     font-size: 0;
     box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
 }
@@ -1231,7 +1229,7 @@ body {
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
     border: none;
     white-space: nowrap;
@@ -1276,8 +1274,19 @@ body {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: transparent;
-  border-bottom: 1px solid var(--shadow-color);
+  position: relative;
   z-index: 2;
+}
+
+.action-toolbar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background-color: var(--shadow-color);
 }
 
 .action-toolbar-btn {

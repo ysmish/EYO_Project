@@ -428,39 +428,6 @@ const Mails = ({mails, setMails}) => {
 
   return (
     <div className="mails-container">
-      {mails.length > 0 && (
-        <div className="pagination-bar" style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-          <button
-            onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
-            disabled={currentPage === 0}
-            style={{ marginRight: 8 }}
-          >
-            &lt;
-          </button>
-          <span>
-            {currentPage * PAGE_SIZE + 1} - {Math.min((currentPage + 1) * PAGE_SIZE, mails.length)} of {mails.length}
-          </span>
-          <button
-            onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
-            disabled={currentPage >= totalPages - 1}
-            style={{ marginLeft: 8 }}
-          >
-            &gt;
-          </button>
-          {/* Quick range select like Gmail */}
-          <select
-            value={currentPage}
-            onChange={e => setCurrentPage(Number(e.target.value))}
-            style={{ marginLeft: 16 }}
-          >
-            {Array.from({ length: totalPages }).map((_, idx) => (
-              <option key={idx} value={idx}>
-                {idx * PAGE_SIZE + 1} - {Math.min((idx + 1) * PAGE_SIZE, mails.length)}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
       {mails.length === 0 ? (
         <div className="mails-list">
           <div className="mails-header">
@@ -472,8 +439,41 @@ const Mails = ({mails, setMails}) => {
         </div>
       ) : (
         <div className="mails-list">
-          <div className="mails-header">
-            {toolbarActions.length > 0 ? <ActionToolbar actions={toolbarActions} /> : <h2>Your Mails</h2>}
+          <div className="mails-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '14px', flexWrap: 'nowrap', minWidth: 0 }}>
+            <div>
+              {toolbarActions.length > 0 && <ActionToolbar actions={toolbarActions} />}
+            </div>
+            <div className="pagination-bar" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, whiteSpace: 'nowrap', flexWrap: 'nowrap' }}>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                disabled={currentPage === 0}
+                style={{ marginRight: 8 }}
+              >
+                &lt;
+              </button>
+              <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+                {currentPage * PAGE_SIZE + 1} - {Math.min((currentPage + 1) * PAGE_SIZE, mails.length)} of {mails.length}
+              </span>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={currentPage >= totalPages - 1}
+                style={{ marginLeft: 8 }}
+              >
+                &gt;
+              </button>
+              {/* Quick range select like Gmail */}
+              <select
+                value={currentPage}
+                onChange={e => setCurrentPage(Number(e.target.value))}
+                style={{ marginLeft: 16, flexShrink: 0, minWidth: 'auto' }}
+              >
+                {Array.from({ length: totalPages }).map((_, idx) => (
+                  <option key={idx} value={idx}>
+                    {idx * PAGE_SIZE + 1} - {Math.min((idx + 1) * PAGE_SIZE, mails.length)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="mails-items-container">
             {pagedMails.map(mail => (
