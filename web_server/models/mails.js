@@ -204,14 +204,10 @@ const updateMailSpamStatus = (mailId, isSpam, reportingUsername) => {
         const mail = mails[username][mailId];
         if (mail) {
             if (isSpam) {
-                // Mark as spam: remove 'Inbox' and all custom labels (label IDs), add 'Spam'
-                // Keep only system labels that should persist (Sent, Drafts)
-                const systemLabels = ['Sent', 'Drafts']; // Keep these system labels
-                mail.labels = (mail.labels || []).filter(label => 
-                    systemLabels.includes(label) || label === 'Spam'
-                );
+                // Mark as spam: remove ALL labels and add only 'Spam'
+                mail.labels = [];
                 
-                // Only add SPAM label to the reporting user (requirement 2.3)
+                // Only add SPAM label to the reporting user 
                 if (username === reportingUsername) {
                     mail.labels.push('Spam');
                 }
