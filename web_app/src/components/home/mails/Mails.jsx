@@ -428,39 +428,6 @@ const Mails = ({mails, setMails}) => {
 
   return (
     <div className="mails-container">
-      {mails.length > 0 && (
-        <div className="pagination-bar" style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-          <button
-            onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
-            disabled={currentPage === 0}
-            style={{ marginRight: 8 }}
-          >
-            &lt;
-          </button>
-          <span>
-            {currentPage * PAGE_SIZE + 1} - {Math.min((currentPage + 1) * PAGE_SIZE, mails.length)} of {mails.length}
-          </span>
-          <button
-            onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
-            disabled={currentPage >= totalPages - 1}
-            style={{ marginLeft: 8 }}
-          >
-            &gt;
-          </button>
-          {/* Quick range select like Gmail */}
-          <select
-            value={currentPage}
-            onChange={e => setCurrentPage(Number(e.target.value))}
-            style={{ marginLeft: 16 }}
-          >
-            {Array.from({ length: totalPages }).map((_, idx) => (
-              <option key={idx} value={idx}>
-                {idx * PAGE_SIZE + 1} - {Math.min((idx + 1) * PAGE_SIZE, mails.length)}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
       {mails.length === 0 ? (
         <div className="mails-list">
           <div className="mails-header">
@@ -472,8 +439,41 @@ const Mails = ({mails, setMails}) => {
         </div>
       ) : (
         <div className="mails-list">
-          <div className="mails-header">
-            {toolbarActions.length > 0 ? <ActionToolbar actions={toolbarActions} /> : <h2>Your Mails</h2>}
+          <div className="mails-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '14px', flexWrap: 'nowrap', minWidth: 0 }}>
+            <div>
+              {toolbarActions.length > 0 && <ActionToolbar actions={toolbarActions} />}
+            </div>
+            <div className="pagination-bar" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, whiteSpace: 'nowrap', flexWrap: 'nowrap' }}>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                disabled={currentPage === 0}
+                style={{ marginRight: 8 }}
+              >
+                &lt;
+              </button>
+              <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+                {currentPage * PAGE_SIZE + 1} - {Math.min((currentPage + 1) * PAGE_SIZE, mails.length)} of {mails.length}
+              </span>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={currentPage >= totalPages - 1}
+                style={{ marginLeft: 8 }}
+              >
+                &gt;
+              </button>
+              {/* Quick range select like Gmail */}
+              <select
+                value={currentPage}
+                onChange={e => setCurrentPage(Number(e.target.value))}
+                style={{ marginLeft: 16, flexShrink: 0, minWidth: 'auto' }}
+              >
+                {Array.from({ length: totalPages }).map((_, idx) => (
+                  <option key={idx} value={idx}>
+                    {idx * PAGE_SIZE + 1} - {Math.min((idx + 1) * PAGE_SIZE, mails.length)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="mails-items-container">
             {pagedMails.map(mail => (
@@ -538,68 +538,67 @@ const Mails = ({mails, setMails}) => {
                   </div>
                 </div>
                 <div className="mail-date">{formatDateTime(mail.date)}</div>
-                <button
-                  className="mail-spam-btn"
-                  title={mail.labels && mail.labels.includes('Spam') ? 'Not Spam' : 'Report Spam'}
-                  onClick={async e => {
-                    e.stopPropagation();
-                    const isSpam = mail.labels && mail.labels.includes('Spam');
-                    try {
+                <div className="mail-item-actions">
+                  <button
+                    className="mail-spam-btn"
+                    title={mail.labels && mail.labels.includes('Spam') ? 'Not Spam' : 'Report Spam'}
+                    onClick={async e => {
+                      e.stopPropagation();
+                      const isSpam = mail.labels && mail.labels.includes('Spam');
+                      try {
+                        await fetch(`http://localhost:3000/api/mails/${mail.id}`, {
+                          method: 'PATCH',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': token
+                          },
+                          body: JSON.stringify({ reportSpam: !isSpam })
+                        });
+                        const currentSearchString = getCurrentSearchString();
+                        const response = await fetch(`http://localhost:3000/api/search/${currentSearchString}`, {
+                          headers: {
+                            'Authorization': token
+                          }
+                        });
+                        if (response.ok) {
+                          const refreshedMails = await response.json();
+                          setMails(refreshedMails);
+                        }
+                      } catch (error) {
+                        console.error('Error toggling spam status:', error);
+                      }
+                    }}
+                  >
+                    <i className={`bi ${mail.labels && mail.labels.includes('Spam') ? 'bi-check-circle' : 'bi-exclamation-triangle'}`}></i>
+                  </button>
+                  <button
+                    className="mail-label-btn"
+                    title="Add to Label"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setShowLabelDropdown(mail.id);
+                    }}
+                  >
+                    <i className="bi bi-tag"></i>
+                  </button>
+                  <button
+                    className="mail-delete-btn"
+                    title="Delete"
+                    onClick={async e => {
+                      e.stopPropagation();
                       await fetch(`http://localhost:3000/api/mails/${mail.id}`, {
-                        method: 'PATCH',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'Authorization': token
-                        },
-                        body: JSON.stringify({ reportSpam: !isSpam })
-                      });
-                      
-                      // Refresh the data from server to properly handle all views (inbox, labels, etc.)
-                      // This ensures that emails are properly filtered out from label views
-                      const currentSearchString = getCurrentSearchString();
-                      const response = await fetch(`http://localhost:3000/api/search/${currentSearchString}`, {
+                        method: 'DELETE',
                         headers: {
                           'Authorization': token
                         }
                       });
-                      if (response.ok) {
-                        const refreshedMails = await response.json();
-                        setMails(refreshedMails);
-                      }
-                    } catch (error) {
-                      console.error('Error toggling spam status:', error);
-                    }
-                  }}
-                >
-                  <i className={`bi ${mail.labels && mail.labels.includes('Spam') ? 'bi-check-circle' : 'bi-exclamation-triangle'}`}></i>
-                </button>
-                <button
-                  className="mail-label-btn"
-                  title="Add to Label"
-                  onClick={e => {
-                    e.stopPropagation();
-                    setShowLabelDropdown(mail.id);
-                  }}
-                >
-                  <i className="bi bi-tag"></i>
-                </button>
-                <button
-                  className="mail-delete-btn"
-                  title="Delete"
-                  onClick={async e => {
-                    e.stopPropagation();
-                    await fetch(`http://localhost:3000/api/mails/${mail.id}`, {
-                      method: 'DELETE',
-                      headers: {
-                        'Authorization': token
-                      }
-                    });
-                    setMails(prev => prev.filter(m => m.id !== mail.id));
-                    setSelected(prev => prev.filter(id => id !== mail.id));
-                  }}
-                >
-                  <i className="bi bi-trash"></i>
-                </button>
+                      setMails(prev => prev.filter(m => m.id !== mail.id));
+                      setSelected(prev => prev.filter(id => id !== mail.id));
+                    }}
+                  >
+                    <i className="bi bi-trash"></i>
+                  </button>
+                </div>
                 {showLabelDropdown === mail.id && (
                   <div className="label-dropdown">
                     {labels.map(label => (

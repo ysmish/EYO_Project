@@ -119,12 +119,8 @@ body {
     width: 60px;
     min-width: 60px;
     max-width: 60px;
-    transition: width 0.2s;
 }
-.sidebar .side-item span,
-.sidebar .label-name {
-    transition: opacity 0.2s, width 0.2s;
-}
+
 .sidebar.collapsed .side-item span,
 .sidebar.collapsed .label-name,
 .sidebar.collapsed .labels-title {
@@ -167,9 +163,11 @@ body {
     align-items: center;
     width: 44px;
     min-width: 44px;
+    height: 68px;
+    min-height: 68px;
     padding: 0;
     margin: 1rem auto 1.25rem auto;
-    border-radius: 50%;
+    border-radius: 22px;
     font-size: 0;
     box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
 }
@@ -1231,7 +1229,7 @@ body {
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
     border: none;
     white-space: nowrap;
@@ -1276,8 +1274,19 @@ body {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: transparent;
-  border-bottom: 1px solid var(--shadow-color);
+  position: relative;
   z-index: 2;
+}
+
+.action-toolbar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background-color: var(--shadow-color);
 }
 
 .action-toolbar-btn {
@@ -1991,4 +2000,56 @@ body {
     font-size: 0.93rem;
     padding: 0.18rem 0.5rem;
   }
+}
+
+.mail-item-actions {
+  display: none;
+  justify-content: space-evenly;
+  align-items: center;
+  min-width: 120px;
+  width: 120px;
+  gap: 0;
+}
+
+.mail-item:hover .mail-item-actions {
+  display: flex;
+}
+
+.mail-item:hover .mail-date {
+  display: none;
+}
+
+/* Remove margin from mail-delete-btn for equal spacing */
+.mail-item-actions .mail-delete-btn {
+  margin-left: 0;
+}
+
+.mail-item-actions button {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mail-item-actions button:hover {
+  background-color: var(--hover-color);
+}
+
+.mail-spam-btn,
+.mail-label-btn,
+.mail-delete-btn {
+  border-radius: 6px !important;
+  background: none;
+}
+
+.mail-spam-btn:hover,
+.mail-label-btn:hover,
+.mail-delete-btn:hover {
+  background-color: var(--hover-color) !important;
 }

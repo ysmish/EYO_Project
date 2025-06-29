@@ -132,7 +132,7 @@ const UserButton = ({ user, setUser }) => {
   };
 
   return (
-    <div className="nav-item" style={{ position: 'relative' }}>
+    <div className="nav-item" style={{ position: 'relative', marginRight: '15px' }}>
       <button
         className="nav-item"
         aria-label="User menu"
@@ -149,8 +149,8 @@ const UserButton = ({ user, setUser }) => {
           src={user?.photo}
           alt="User"
           style={{
-            width: 25,
-            height: 25,
+            width: 35,
+            height: 35,
             borderRadius: '50%',
             objectFit: 'cover',
             border: '1px solid var(--shadow-color)',
@@ -252,7 +252,7 @@ const UserButton = ({ user, setUser }) => {
             <div style={{ fontWeight: 600, marginTop: 8 }}>
               {user.firstName} {user.lastName}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-color)', opacity: 0.7 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-color)', opacity: 0.7, marginTop: 4 }}>
               {user.email}
             </div>
           </div>

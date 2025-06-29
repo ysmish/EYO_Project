@@ -10,12 +10,13 @@ const Logo = () => {
       variant="link"
       href="/"
       className='logo'
+      style={{ margin: '0 15px' }}
     >
       <Image
         src={darkMode ? '/logo_w.svg' : '/logo_b.svg'}
         alt="Logo"
-        width={40}
-        height={40}
+        width={70}
+        height={70}
         roundedCircle
       />
     </Button>
