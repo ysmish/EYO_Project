@@ -83,6 +83,7 @@ const AddLabelModal = ({ onClose, onLabelAdded }) => {
       setError(error.message);
     } finally {
       setLoading(false);
+      window.location.reload();
     }
   };
 

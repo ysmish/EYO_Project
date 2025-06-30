@@ -12,6 +12,9 @@ IsFilteredCommand::IsFilteredCommand(BloomFilter* bloomFilter) {
 std::string IsFilteredCommand::execute(std::string url) {
     try
     {
+        if(url.empty()) { // fix bug from last exercise
+            throw std::invalid_argument("URL cannot be empty");
+        }
         bool isFiltered = bloomFilter->contains(url);
         bool isBlacklisted = bloomFilter->isBlacklisted(url);
         std::string response = "200 OK\n\n";

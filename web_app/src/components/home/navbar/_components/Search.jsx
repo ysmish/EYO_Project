@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import '../../../../styles.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-const Search = ({user, searchQuery, setSearchQuery}) => {
+const Search = ({searchQuery, setSearchQuery}) => {
   const [query, setQuery] = useState('');
   const [isUserTyping, setIsUserTyping] = useState(false);
   const navigate = useNavigate();

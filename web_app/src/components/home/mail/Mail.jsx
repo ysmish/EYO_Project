@@ -292,6 +292,7 @@ const Mail = () => {
     }
     setShowLabelDropdown(false);
     setLabelButtonPosition(null);
+    window.location.reload();
   };
 
   // Helper function to check if a label is applied to the mail
@@ -421,7 +422,7 @@ const Mail = () => {
             left: `${labelButtonPosition.left}px`
           } : {}}
         >
-          {availableLabels.map(label => (
+          { availableLabels.map(label => (
             <button
               key={label.id}
               className={`label-dropdown-item ${isLabelApplied(label.id) ? 'applied' : ''}`}

@@ -1,11 +1,18 @@
-# ASP Project: Bloom Filter Application
+# ASP Project: Bloom Filter Mail Application
 
 ## Overview
-This project provides a **mailbox-like** application that uses a RESTful web server to manage user authentication, mailbox operations, and a Bloom Filter for URL blacklisting. The application is designed to efficiently check membership of URLs in a blacklist, ensuring that unwanted URLs are filtered out from mails.
+This project provides a **mailbox-like** application with a modern web interface that uses a RESTful web server to manage user authentication, mailbox operations, and a Bloom Filter for URL blacklisting. The application is designed to check membership of URLs in a blacklist, ensuring that unwanted URLs are filtered out from mails. The project includes a React-based web application for user interaction and a Node.js backend API server.
 
 ---
 
 ## Features
+- **Modern Web Interface**
+  - React-based application.
+  - User-friendly interface for mailbox management.
+  - Authentication system with login and registration.
+  - Real-time interaction with the backend API.
+  - Responsive design for desktop and mobile devices.
+
 - **Bloom Filter Implementation**  
   - Efficient membership checking for URLs.
   - Utilizes multiple hash functions.
@@ -21,10 +28,11 @@ This project provides a **mailbox-like** application that uses a RESTful web ser
 - **Persistence**  
   - Blacklisted URLs are stored in `data/bloom_filter_data.txt` and reloaded at startup.
 
-- **Web Server**
-  - Provides a RESTful API for interacting with the Bloom Filter.
+- **Web Server (Backend API)**
+  - Provides a RESTful API for interacting with the Bloom Filter and managing mails.
   - Built using Node.js and Express.
-  - Supports basic operations like adding, checking, and deleting URLs.
+  - Supports user authentication, mail operations, and URL blacklisting.
+  - Token-based authentication system.
 
 - **Unit Testing**  
   - Extensive tests using Google Test (`gtest`).
@@ -37,9 +45,17 @@ This project provides a **mailbox-like** application that uses a RESTful web ser
 
 ## Project Structure
 
+  - **web_app/**:  
+    - `src/`: React application source code.
+    - `public/`: Static assets and HTML template.
+    - `src/components/`: Reusable UI components (auth, home, mail, etc.).
+    - `src/context/`: React context providers for authentication and theming.
+    - `package.json`: Frontend dependencies and build scripts.
+    - `Dockerfile`: Docker configuration for the web application.
+
   - **web_server/**:  
     - `controllers/`: Contains the web server controllers.
-    - `modles/`: Contains the data models.
+    - `models/`: Contains the data models.
     - `routes/`: Defines the routes for the web server.
     - `app.js`: Main entry point for the web server.
   
@@ -74,6 +90,7 @@ This project provides a **mailbox-like** application that uses a RESTful web ser
 - CMake (if building locally).
 
 ### Build and Run with Docker
+**to run the project use steps 1 and 6 only!**
 1. **Build the Docker Images**:
    ```sh
    docker-compose build
@@ -94,13 +111,73 @@ This project provides a **mailbox-like** application that uses a RESTful web ser
    docker-compose run url_tests
    ```
 
-5. **Run the Web Server**:
+5. **Run the Web Server (Backend API)**:
    ```sh
     docker-compose run --service-ports web_server
     ```
+
+6. **Run the Web Application (Frontend)**:
+   ```sh
+    docker-compose run --service-ports web_app
+    ```
+
+### Development Mode
+For development with hot-reload:
+
+1. **Start the Web Server**:
+   ```sh
+   cd web_server
+   npm install
+   npm start
+   ```
+
+2. **Start the Web Application**:
+   ```sh
+   cd web_app
+   npm install
+   npm start
+   ```
+
+The web application will be available at `http://localhost:8080` and will communicate with the API server at `http://localhost:3000`.
 ---
 
-## Example Usage
+## API Usage Examples
+
+### Web Interface
+The web application provides a user-friendly interface for:
+- User registration and login
+- Viewing and managing emails
+- Composing and sending messages
+- Managing blacklisted URLs
+- Searching through emails
+
+#### Main Application Pages
+
+1. **Authentication Pages** (`/login`, `/register`)
+   - User login interface with username/password authentication
+   - User registration form for creating new accounts
+   - Token-based authentication with automatic validation
+   - Responsive design with modern UI components
+   
+   ![Login Page](images/login_page.png)
+
+2. **Home/Dashboard Page** (`/`)
+   - Main mailbox interface with email list view
+   - Navigation sidebar with categories
+   - Action toolbar for email operations (compose, delete, search)
+   - Real-time email management and interaction
+   
+   ![Home Dashboard](images/home_dashboard.png)
+
+3. **Mail Management Pages**
+   - Individual email view with full content display
+   - Compose email interface for creating new messages
+   - Responsive layout for optimal viewing experience
+   
+   ![Mail Management](images/mail_management.png)
+
+### REST API Examples
+The following examples show direct API usage via curl commands:
 
 ![run example](images/run_example.png)
 
@@ -242,8 +319,11 @@ docker-compose run url_tests
 ---
 
 ## Future Improvements
-- Add UI for the web server like Gmail.
-- Add a database for more better data management.
+- Enhance the React UI with more advanced features like drag-and-drop email management.
+- Add real-time notifications for new emails.
+- Implement email attachments handling in the web interface.
+- Add a database for better data management and scalability.
+- Implement email templates and formatting options.
 
 ---
 

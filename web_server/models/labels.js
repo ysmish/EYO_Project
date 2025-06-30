@@ -1,3 +1,4 @@
+import { mails } from './mails.js';  // Import mails model to manage mail-label relationships
 let labels = {};
 
 let labelIdCounter = 1;  // Counter for generating unique label IDs
@@ -22,6 +23,7 @@ const createNewLabel = (username, name, color) => {
     labels[username][id] = {
         id: id,
         name: name,
+        mails: [],  // Initialize with an empty array for mails
         color: color || '#4F46E5'  // Default color if none provided
     };
 
@@ -86,6 +88,7 @@ const changeLabel = (username, labelId, updates) => {
     return { 
         id: labelId,
         name: updates.name,
+        mails: labels[username][labelId].mails,
         color: labels[username][labelId].color
     };
 };
@@ -95,7 +98,14 @@ const removeLabel = (username, labelId) => {
     if (!labels[username] || !labels[username][labelId]) {
         return false;
     }
-    
+    for (const mailId of labels[username][labelId].mails) {
+        // Remove this label from each mail's labels
+        if (mails[username] && mails[username][mailId]) {
+            const mail = mails[username][mailId];
+            mail.labels = mail.labels.filter(label => label !== labelId);
+        }
+    }
+    // Delete the label from the user's labels
     delete labels[username][labelId];
     return true;
 };
