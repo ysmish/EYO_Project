@@ -41,7 +41,7 @@ services:
       context: ./web_app
       dockerfile: Dockerfile
     working_dir: /app
-    command: npm start
+    command: serve -s build -l 8080
     ports:
       - "8080:8080"
     depends_on:

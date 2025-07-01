@@ -115,6 +115,9 @@ const Labels = ({ activeSection, collapsed }) => {
       console.error('Error deleting label:', error);
       setError('Failed to delete label');
     }
+    finally {
+      window.location.reload();
+    }
   };
 
   const handleChangeColor = (label) => {

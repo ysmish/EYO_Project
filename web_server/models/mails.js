@@ -3,7 +3,7 @@ import { labels } from "./labels.js";
 let mails = {};
 let nextId = 1;
 
-const createNewDraft = (from, to, cc, subject, body, attachments) => {
+const createNewDraft = (from, to, cc, subject, body, attachments, userLabels = []) => {
     // Ensure 'to' is an array and remove duplicates
     const toUsers = Array.isArray(to) ? [...new Set(to)] : [to];
     const ccUsers = [...new Set(cc)];
@@ -17,7 +17,7 @@ const createNewDraft = (from, to, cc, subject, body, attachments) => {
         date: new Date(),
         read: true,
         attachments,
-        labels: ['Drafts']
+        labels: ['Drafts', ...userLabels]
     };
     const draftId = nextId++;
     
@@ -25,10 +25,19 @@ const createNewDraft = (from, to, cc, subject, body, attachments) => {
     mails[from] = mails[from] || {};
     mails[from][draftId] = JSON.parse(JSON.stringify(newDraft));
     
+    // Update the mails field in numeric labels
+    userLabels.filter(label => typeof label === 'number').forEach(labelId => {
+        if (labels[from] && labels[from][labelId]) {
+            if (!labels[from][labelId].mails.includes(draftId)) {
+                labels[from][labelId].mails.push(draftId);
+            }
+        }
+    });
+    
     return draftId;
 };
 
-const createNewMail = (from, to, cc, subject, body, attachments) => {
+const createNewMail = (from, to, cc, subject, body, attachments, userLabels = []) => {
     // Ensure 'to' is an array and remove duplicates
     const toUsers = Array.isArray(to) ? [...new Set(to)] : [to];
     const ccUsers = [...new Set(cc)];
@@ -42,7 +51,7 @@ const createNewMail = (from, to, cc, subject, body, attachments) => {
         date: new Date(),
         read: false,
         attachments,
-        labels: []
+        labels: [...userLabels]
     };
     const mailId = nextId++;
     
@@ -50,6 +59,15 @@ const createNewMail = (from, to, cc, subject, body, attachments) => {
     mails[from] = mails[from] || {};
     mails[from][mailId] = JSON.parse(JSON.stringify(newMail));
     mails[from][mailId].labels.push('Sent');
+    
+    // Update the mails field in numeric labels for sender
+    userLabels.filter(label => typeof label === 'number').forEach(labelId => {
+        if (labels[from] && labels[from][labelId]) {
+            if (!labels[from][labelId].mails.includes(mailId)) {
+                labels[from][labelId].mails.push(mailId);
+            }
+        }
+    });
     
     // Add to each recipient's Inbox
     toUsers.forEach(user => {
@@ -61,6 +79,15 @@ const createNewMail = (from, to, cc, subject, body, attachments) => {
             mails[user] = mails[user] || {};
             mails[user][mailId] = JSON.parse(JSON.stringify(newMail));
             mails[user][mailId].labels.push('Inbox');
+            
+            // Update the mails field in numeric labels for recipient
+            userLabels.filter(label => typeof label === 'number').forEach(labelId => {
+                if (labels[user] && labels[user][labelId]) {
+                    if (!labels[user][labelId].mails.includes(mailId)) {
+                        labels[user][labelId].mails.push(mailId);
+                    }
+                }
+            });
         }
     });
     
@@ -81,6 +108,15 @@ const createNewMail = (from, to, cc, subject, body, attachments) => {
             mails[user] = mails[user] || {};
             mails[user][mailId] = JSON.parse(JSON.stringify(newMail));
             mails[user][mailId].labels.push('Inbox');
+            
+            // Update the mails field in numeric labels for CC recipient
+            userLabels.filter(label => typeof label === 'number').forEach(labelId => {
+                if (labels[user] && labels[user][labelId]) {
+                    if (!labels[user][labelId].mails.includes(mailId)) {
+                        labels[user][labelId].mails.push(mailId);
+                    }
+                }
+            });
         }
     });
     
@@ -137,6 +173,21 @@ const deleteMailOfUser = (username, mailId) => {
     if (!mails[username] || !mails[username][mailId]) {
         return false;
     }
+    
+    // Get the mail's labels before deleting
+    const mail = mails[username][mailId];
+    const mailLabels = mail.labels || [];
+    
+    // Remove this mail from all numeric labels' mails arrays
+    mailLabels.filter(label => typeof label === 'number').forEach(labelId => {
+        if (labels[username] && labels[username][labelId]) {
+            const mailIndex = labels[username][labelId].mails.indexOf(parseInt(mailId));
+            if (mailIndex > -1) {
+                labels[username][labelId].mails.splice(mailIndex, 1);
+            }
+        }
+    });
+    
     // Only delete the mail from the user's list
     delete mails[username][mailId];
     return true;
@@ -152,6 +203,9 @@ const updateMail = (username, mailId, updates) => {
     // System labels are managed by the application logic, not user input
     const systemLabels = ['Sent', 'Inbox', 'Drafts'];
     const updatedMail = { ...mails[username][mailId] };
+    
+    // Track old labels before updating to manage label-mail relationships
+    const oldLabels = updatedMail.labels || [];
     
     for (const field of allowedFields) {
         if (field in updates) {
@@ -174,6 +228,33 @@ const updateMail = (username, mailId, updates) => {
                     );
                     updatedMail[field] = [...currentSystemLabels, ...newUserLabels];
                 }
+                
+                // Update the mails field in labels when labels are updated
+                const newLabels = updatedMail[field] || [];
+                
+                // Remove mailId from old numeric labels that are no longer assigned
+                const oldNumericLabels = oldLabels.filter(label => typeof label === 'number');
+                const newNumericLabels = newLabels.filter(label => typeof label === 'number');
+                
+                oldNumericLabels.forEach(labelId => {
+                    if (!newNumericLabels.includes(labelId) && labels[username] && labels[username][labelId]) {
+                        // Remove mailId from this label's mails array
+                        const mailIndex = labels[username][labelId].mails.indexOf(parseInt(mailId));
+                        if (mailIndex > -1) {
+                            labels[username][labelId].mails.splice(mailIndex, 1);
+                        }
+                    }
+                });
+                
+                // Add mailId to new numeric labels that weren't previously assigned
+                newNumericLabels.forEach(labelId => {
+                    if (!oldNumericLabels.includes(labelId) && labels[username] && labels[username][labelId]) {
+                        // Add mailId to this label's mails array if not already present
+                        if (!labels[username][labelId].mails.includes(parseInt(mailId))) {
+                            labels[username][labelId].mails.push(parseInt(mailId));
+                        }
+                    }
+                });
             } else {
                 updatedMail[field] = updates[field];
             }
@@ -204,8 +285,8 @@ const updateMailSpamStatus = (mailId, isSpam, reportingUsername) => {
         const mail = mails[username][mailId];
         if (mail) {
             if (isSpam) {
-                // Mark as spam: remove ALL labels and add only 'Spam'
-                mail.labels = [];
+                // Mark as spam: remove the inbox label and add spam label
+                mail.labels = (mail.labels || []).filter(label => label !== 'Inbox' && label !== 'Sent');
                 
                 // Only add SPAM label to the reporting user 
                 if (username === reportingUsername) {
@@ -213,21 +294,14 @@ const updateMailSpamStatus = (mailId, isSpam, reportingUsername) => {
                 }
             } else {
                 // Unmark as spam: remove 'Spam' and add appropriate label based on user role
-                const systemLabels = ['Sent', 'Drafts']; // Keep these system labels
-                mail.labels = (mail.labels || []).filter(label => 
-                    systemLabels.includes(label) || label === 'Inbox'
-                );
-                
-                // Tag as INBOX/SENT depending on if user is sender or recipient (requirement 3.2)
-                if (username === mail.from) {
-                    // User is the sender - add 'Sent' label
-                    if (!mail.labels.includes('Sent')) {
-                        mail.labels.push('Sent');
-                    }
+                mail.labels = (mail.labels || []).filter(label => label !== 'Spam');
+                if (username === reportingUsername) {
+                    // If the user is the reporting user, add 'Inbox' label
+                    mail.labels.push('Inbox');
                 } else {
-                    // User is a recipient - add 'Inbox' label
-                    if (!mail.labels.includes('Inbox')) {
-                        mail.labels.push('Inbox');
+                    // For other users, add 'Sent' label if it was sent by them
+                    if (mail.from === username) {
+                        mail.labels.push('Sent');
                     }
                 }
             }

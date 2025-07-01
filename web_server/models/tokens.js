@@ -1,9 +1,12 @@
 import jwt from 'jsonwebtoken';
 import { users } from './users.js';
+import dotenv from 'dotenv';
 
-// Secret key for JWT signing (change it later to a strong secret key in production)
-const JWT_SECRET = 'your-secret-key-here';
+// Load environment variables
+dotenv.config();
 
+
+const JWT_SECRET = process.env.JWT_SECRET;
 const generateToken = (username, password) => {
     if (!username || !password) {
         return { error: 'Username and password are required.' };

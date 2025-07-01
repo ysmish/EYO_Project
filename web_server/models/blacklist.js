@@ -24,7 +24,7 @@ const createTcpRequest = (method, url) => {
         });
 
         try {
-            client.connect(12345, 'localhost', () => { 
+            client.connect(12345, 'url_server', () => { 
                 client.write(`${method} ${url}\n`);
             });
         } catch (err) {

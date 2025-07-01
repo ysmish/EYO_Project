@@ -1,8 +1,12 @@
 import express from 'express';
+import dotenv from 'dotenv';
 import apiRouter from './routes/api.js';
 
+// Load environment variables
+dotenv.config();
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 // Enable CORS for all routes
 app.use((req, res, next) => {

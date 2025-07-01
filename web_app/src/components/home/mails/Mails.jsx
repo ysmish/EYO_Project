@@ -231,46 +231,7 @@ const Mails = ({mails, setMails}) => {
     setSelected([]);
   };
 
-  // Determine if all selected mails are starred
-  const allSelectedStarred = selected.length > 0 && selected.every(id => {
-    const mail = mails.find(m => m.id === id);
-    return mail && mail.labels && mail.labels.includes('Starred');
-  });
 
-  const handleStar = async () => {
-    const updatedMails = [...mails];
-    
-    for (const mailId of selected) {
-      const mailIndex = updatedMails.findIndex(m => m.id === mailId);
-      if (mailIndex !== -1) {
-        const mail = updatedMails[mailIndex];
-        const isStarred = mail.labels && mail.labels.includes('Starred');
-        const newLabels = isStarred
-          ? (mail.labels || []).filter(label => label !== 'Starred')
-          : [...(mail.labels || []), 'Starred'];
-
-        try {
-          const response = await fetch(`http://localhost:3000/api/mails/${mailId}`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': token
-            },
-            body: JSON.stringify({ labels: newLabels })
-          });
-
-          if (response.ok) {
-            updatedMails[mailIndex] = { ...mail, labels: newLabels };
-          }
-        } catch (error) {
-          console.error('Error updating star status:', error);
-        }
-      }
-    }
-    
-    setMails(updatedMails);
-    setSelected([]);
-  };
 
   const handleAddToLabel = async (mailId, labelName) => {
     const mailIndex = mails.findIndex(m => m.id === mailId);
@@ -372,17 +333,6 @@ const Mails = ({mails, setMails}) => {
     }
   };
 
-  // Helper function to get label name by ID
-  const getLabelNameById = (labelId) => {
-    const label = labels.find(l => l.id === labelId);
-    return label ? label.name : labelId;
-  };
-
-  // Helper function to get label color by ID
-  const getLabelColorById = (labelId) => {
-    const label = labels.find(l => l.id === labelId);
-    return label ? label.color : '#4F46E5';
-  };
 
   // Helper function to check if a label is applied to a mail
   const isLabelApplied = (mail, labelId) => {

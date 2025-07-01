@@ -1,4 +1,4 @@
-import { useContext, createContext, useState, useEffect } from "react";
+import { useContext, createContext, useState, useEffect, useCallback } from "react";
 
 const AuthContext = createContext();
 
@@ -65,7 +65,7 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const validateToken = async (tokenToValidate) => {
+  const validateToken = useCallback(async (tokenToValidate) => {
     if (!tokenToValidate) {
       setValidated(false);
       return false;
@@ -98,14 +98,14 @@ const AuthProvider = ({ children }) => {
     } finally {
       setIsValidating(false);
     }
-  };
+  }, []);
 
   // Automatically validate token on mount if it exists
   useEffect(() => {
     if (token && !validated) {
       validateToken(token);
     }
-  }, [token, validated]);
+  }, [token, validated, validateToken]);
 
   return (
     <AuthContext.Provider value={{ 
@@ -134,7 +134,7 @@ export const useAuth = () => {
     if (context.token && !context.validated && !context.isValidating) {
       context.validateToken(context.token);
     }
-  }, [context.token, context.validated, context.isValidating, context.validateToken]);
+  }, [context]);
   
   return context;
 };
