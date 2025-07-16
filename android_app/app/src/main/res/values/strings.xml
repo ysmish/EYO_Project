@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">EYO_mail</string>
+    
+    <!-- Registration screen -->
+    <string name="register_title">Create Account</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="birthday">Birthday (YYYY-MM-DD)</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="register_button">Register</string>
+    <string name="registration_success">Registration successful!</string>
+</resources>
