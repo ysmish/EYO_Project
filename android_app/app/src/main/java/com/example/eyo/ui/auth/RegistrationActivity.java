@@ -1,5 +1,6 @@
 package com.example.eyo.ui.auth;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
@@ -21,7 +22,7 @@ public class RegistrationActivity extends AppCompatActivity {
     private TextInputEditText etFirstName, etLastName, etBirthday, etUsername, etPassword;
     private Button btnRegister;
     private ProgressBar progressBar;
-    private TextView tvMessage;
+    private TextView tvMessage, tvLogin;
     private RegistrationViewModel viewModel;
 
     @Override
@@ -44,6 +45,7 @@ public class RegistrationActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
         progressBar = findViewById(R.id.progressBar);
         tvMessage = findViewById(R.id.tvMessage);
+        tvLogin = findViewById(R.id.tvLogin);
     }
 
     private void setupViewModel() {
@@ -68,6 +70,12 @@ public class RegistrationActivity extends AppCompatActivity {
             });
             
             datePickerHelper.setMaxDateToToday().showDatePicker();
+        });
+
+        tvLogin.setOnClickListener(v -> {
+            Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish(); // Close registration activity
         });
     }
 
