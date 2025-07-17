@@ -14,6 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.EYO_mail"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
         <activity
@@ -27,6 +28,10 @@
         
         <activity
             android:name=".ui.auth.RegistrationActivity"
+            android:exported="false" />
+        
+        <activity
+            android:name=".ui.home.HomeActivity"
             android:exported="false" />
 
     </application>

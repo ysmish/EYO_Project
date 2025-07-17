@@ -10,4 +10,14 @@
     <string name="password">Password</string>
     <string name="register_button">Register</string>
     <string name="registration_success">Registration successful!</string>
+    
+    <!-- Navigation -->
+    <string name="nav_header_title">EYO Mail</string>
+    <string name="nav_header_subtitle">user@example.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    
+    <!-- Home Activity -->
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 </resources>

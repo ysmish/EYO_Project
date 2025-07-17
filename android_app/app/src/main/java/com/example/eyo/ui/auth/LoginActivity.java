@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.eyo.R;
+import com.example.eyo.ui.home.HomeActivity;
 import com.example.eyo.viewmodel.LoginViewModel;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -81,9 +82,10 @@ public class LoginActivity extends AppCompatActivity {
                 tvMessage.setVisibility(View.VISIBLE);
                 Toast.makeText(this, "Welcome back!", Toast.LENGTH_LONG).show();
                 
-                // TODO: Navigate to main app activity
-                // For now, just show success message
-                // You can add navigation to main activity here
+                // Navigate to home activity
+                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                startActivity(intent);
+                finish(); // Close login activity
             }
         });
 

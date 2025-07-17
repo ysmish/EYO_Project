@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_inbox"
+            android:icon="@drawable/ic_inbox"
+            android:title="Inbox" />
+        <item
+            android:id="@+id/nav_sent"
+            android:icon="@drawable/ic_send"
+            android:title="Sent" />
+        <item
+            android:id="@+id/nav_drafts"
+            android:icon="@drawable/ic_drafts"
+            android:title="Drafts" />
+        <item
+            android:id="@+id/nav_starred"
+            android:icon="@drawable/ic_star"
+            android:title="Starred" />
+        <item
+            android:id="@+id/nav_spam"
+            android:icon="@drawable/ic_report"
+            android:title="Spam" />
+        <item
+            android:id="@+id/nav_trash"
+            android:icon="@drawable/ic_delete"
+            android:title="Trash" />
+    </group>
+
+    <item android:title="Labels">
+        <menu>
+            <item
+                android:id="@+id/nav_important"
+                android:icon="@drawable/ic_label"
+                android:title="Important" />
+            <item
+                android:id="@+id/nav_personal"
+                android:icon="@drawable/ic_label"
+                android:title="Personal" />
+            <item
+                android:id="@+id/nav_work"
+                android:icon="@drawable/ic_label"
+                android:title="Work" />
+        </menu>
+    </item>
+
+    <item android:title="Settings">
+        <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_settings"
+                android:title="Settings" />
+            <item
+                android:id="@+id/nav_logout"
+                android:icon="@drawable/ic_logout"
+                android:title="Logout" />
+        </menu>
+    </item>
+
+</menu> 
