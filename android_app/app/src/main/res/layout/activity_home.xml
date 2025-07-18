@@ -65,8 +65,7 @@
                 android:id="@+id/mails_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginHorizontal="12dp"
-                android:layout_marginBottom="8dp"
+                android:layout_margin="12dp"
                 android:background="@android:color/transparent"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_mail" />

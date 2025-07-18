@@ -58,10 +58,15 @@ public class Mail {
 
     // Helper methods
     public String getPreviewText() {
-        if (body != null && body.length() > 100) {
-            return body.substring(0, 100) + "...";
+        if (body == null || body.isEmpty()) {
+            return "";
         }
-        return body;
+        
+        // Replace all whitespace characters (including newlines) with single spaces
+        String cleanedBody = body.replaceAll("\\s+", " ").trim();
+        
+        // Return the cleaned text (maxLines and ellipsize in layout will handle truncation)
+        return cleanedBody;
     }
 
     public String getFormattedDate() {
@@ -76,6 +81,22 @@ public class Mail {
             return android.text.format.DateFormat.format("h:mm a", date).toString();
         }
         return "";
+    }
+    
+    // Helper method to get clean subject (remove extra whitespace)
+    public String getCleanSubject() {
+        if (subject == null || subject.isEmpty()) {
+            return "";
+        }
+        return subject.replaceAll("\\s+", " ").trim();
+    }
+    
+    // Helper method to get clean sender name (remove extra whitespace)
+    public String getCleanFrom() {
+        if (from == null || from.isEmpty()) {
+            return "";
+        }
+        return from.replaceAll("\\s+", " ").trim();
     }
 
     public boolean isStarred() {

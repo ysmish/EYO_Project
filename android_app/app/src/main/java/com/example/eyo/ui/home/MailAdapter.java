@@ -5,8 +5,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.graphics.Typeface;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eyo.R;
@@ -104,16 +106,16 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
         }
         
         public void bind(Mail mail) {
-            // Set sender name
-            senderName.setText(mail.getFrom());
+            // Set sender name (cleaned)
+            senderName.setText(mail.getCleanFrom());
             
             // Set time
             mailTime.setText(mail.getFormattedTime());
             
-            // Set subject
-            mailSubject.setText(mail.getSubject());
+            // Set subject (cleaned)
+            mailSubject.setText(mail.getCleanSubject());
             
-            // Set preview text
+            // Set preview text (cleaned)
             mailPreview.setText(mail.getPreviewText());
             
             // Handle starred state
@@ -124,13 +126,25 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
                 starIcon.setVisibility(View.GONE);
             }
             
-            // Set read/unread state
+                                // Set read/unread state
             if (mail.isRead()) {
-                senderName.setTextColor(itemView.getContext().getColor(android.R.color.darker_gray));
-                mailSubject.setTextColor(itemView.getContext().getColor(android.R.color.darker_gray));
+                // READ MAIL STYLING - All unbold and same gray color
+                senderName.setTypeface(null, Typeface.NORMAL);
+                mailSubject.setTypeface(null, Typeface.NORMAL);
+                mailPreview.setTypeface(null, Typeface.NORMAL);
+                
+                senderName.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_read_all));
+                mailSubject.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_read_all));
+                mailPreview.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_read_all));
             } else {
-                senderName.setTextColor(itemView.getContext().getColor(android.R.color.black));
-                mailSubject.setTextColor(itemView.getContext().getColor(android.R.color.black));
+                // UNREAD MAIL STYLING - Sender and subject bold white, body gray
+                senderName.setTypeface(null, Typeface.BOLD);
+                mailSubject.setTypeface(null, Typeface.BOLD);
+                mailPreview.setTypeface(null, Typeface.NORMAL);
+                
+                senderName.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_unread_text));
+                mailSubject.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_unread_subject));
+                mailPreview.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_preview_text));
             }
             
             // Set sender avatar (simple placeholder for now)

@@ -34,9 +34,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="John Doe"
-                    android:textColor="@android:color/black"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
+                    android:textColor="@color/mail_unread_text"
+                    android:textSize="15sp"
                     android:maxLines="1"
                     android:ellipsize="end" />
 
@@ -45,7 +44,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="2:30 PM"
-                    android:textColor="@android:color/darker_gray"
+                    android:textColor="@color/mail_preview_text"
                     android:textSize="11sp"
                     android:layout_marginStart="8dp" />
 
@@ -57,8 +56,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="Subject of the email"
-                android:textColor="@android:color/black"
-                android:textSize="13sp"
+                android:textColor="@color/mail_unread_subject"
+                android:textSize="14sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -70,7 +69,7 @@
                 android:maxLines="1"
                 android:ellipsize="end"
                 android:text="This is a preview of the email content..."
-                android:textColor="@android:color/darker_gray"
+                android:textColor="@color/mail_preview_text"
                 android:textSize="12sp" />
 
         </LinearLayout>
