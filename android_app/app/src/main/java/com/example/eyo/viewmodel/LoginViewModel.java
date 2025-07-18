@@ -7,10 +7,12 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.LiveData;
 
 import com.example.eyo.repository.UserRepository;
+import com.example.eyo.utils.TokenManager;
 
 public class LoginViewModel extends AndroidViewModel {
     
     private UserRepository userRepository;
+    private TokenManager tokenManager;
     private MutableLiveData<Boolean> loginResult;
     private MutableLiveData<String> errorMessage;
     private MutableLiveData<Boolean> isLoading;
@@ -18,6 +20,7 @@ public class LoginViewModel extends AndroidViewModel {
     public LoginViewModel(@NonNull Application application) {
         super(application);
         userRepository = new UserRepository();
+        tokenManager = TokenManager.getInstance(application);
         loginResult = new MutableLiveData<>();
         errorMessage = new MutableLiveData<>();
         isLoading = new MutableLiveData<>();
@@ -57,9 +60,11 @@ public class LoginViewModel extends AndroidViewModel {
         
         userRepository.loginUser(username, password, new UserRepository.LoginCallback() {
             @Override
-            public void onSuccess(boolean userExists) {
+            public void onSuccess(String token) {
                 isLoading.setValue(false);
-                loginResult.setValue(userExists);
+                // Save the token and username to SharedPreferences
+                tokenManager.saveToken(token, username);
+                loginResult.setValue(true);
             }
             
             @Override

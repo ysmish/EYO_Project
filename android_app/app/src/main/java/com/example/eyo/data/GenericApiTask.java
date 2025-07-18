@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
 
 public class GenericApiTask<T> extends AsyncTask<Void, Void, ApiResponse<T>> {
     
@@ -27,6 +28,14 @@ public class GenericApiTask<T> extends AsyncTask<Void, Void, ApiResponse<T>> {
             // Set request method and headers
             connection.setRequestMethod(request.getMethod());
             connection.setRequestProperty("Content-Type", "application/json");
+            
+            // Add custom headers if provided
+            Map<String, String> headers = request.getHeaders();
+            if (headers != null) {
+                for (Map.Entry<String, String> header : headers.entrySet()) {
+                    connection.setRequestProperty(header.getKey(), header.getValue());
+                }
+            }
             
             // Send request body if not GET
             if (!request.getMethod().equals("GET")) {

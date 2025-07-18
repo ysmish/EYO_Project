@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mail item colors - Dark mode -->
+    <color name="mail_background">#121212</color>
+    <color name="mail_divider">#2C2C2C</color>
+    <color name="mail_unread_text">#FFFFFF</color>
+    <color name="mail_unread_subject">#FFFFFF</color>
+    <color name="mail_preview_text">#AAAAAA</color>
+    <color name="mail_read_all">#AAAAAA</color>
+</resources> 
