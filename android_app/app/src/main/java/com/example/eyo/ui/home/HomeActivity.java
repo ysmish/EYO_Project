@@ -8,41 +8,61 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.eyo.R;
+import com.example.eyo.data.Mail;
 import com.example.eyo.viewmodel.HomeViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.textfield.TextInputEditText;
+
+import android.widget.ImageButton;
+import android.widget.EditText;
+import android.text.TextWatcher;
+import android.text.Editable;
+
+import java.util.List;
+import android.content.Intent;
+import com.example.eyo.ui.auth.LoginActivity;
+import com.example.eyo.utils.TokenManager;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    private Toolbar toolbar;
+    private ImageButton btnSidebar;
     private FloatingActionButton fabCompose;
     private RecyclerView mailsRecyclerView;
     private View emptyState;
-    private TextInputEditText searchEditText;
+    private EditText searchEditText;
     
     private HomeViewModel viewModel;
-    private ActionBarDrawerToggle drawerToggle;
+    private MailAdapter mailAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Check if user is logged in
+        TokenManager tokenManager = TokenManager.getInstance(this);
+        if (!tokenManager.isLoggedIn()) {
+            // Redirect to login activity
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+            return;
+        }
+        
         setContentView(R.layout.activity_home);
 
         initViews();
-        setupToolbar();
         setupNavigationDrawer();
         setupViewModel();
         setupClickListeners();
@@ -55,42 +75,14 @@ public class HomeActivity extends AppCompatActivity
     private void initViews() {
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_view);
-        toolbar = findViewById(R.id.toolbar);
+        btnSidebar = findViewById(R.id.btn_sidebar);
         fabCompose = findViewById(R.id.fab_compose);
         mailsRecyclerView = findViewById(R.id.mails_recycler_view);
         emptyState = findViewById(R.id.empty_state);
         searchEditText = findViewById(R.id.search_edit_text);
     }
 
-    private void setupToolbar() {
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Inbox");
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-    }
-
     private void setupNavigationDrawer() {
-        drawerToggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar,
-                R.string.drawer_open, R.string.drawer_close) {
-            
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-                // You can add code here to handle drawer closed
-            }
-            
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                // You can add code here to handle drawer opened
-            }
-        };
-        
-        drawerLayout.addDrawerListener(drawerToggle);
-        drawerToggle.syncState();
-        
         navigationView.setNavigationItemSelectedListener(this);
         
         // Update navigation header with user info
@@ -99,9 +91,37 @@ public class HomeActivity extends AppCompatActivity
 
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        
+        // Initialize mail adapter
+        mailAdapter = new MailAdapter(new MailAdapter.OnMailClickListener() {
+            @Override
+            public void onMailClick(Mail mail) {
+                // TODO: Handle mail click (open mail detail)
+                Toast.makeText(HomeActivity.this, "Mail clicked: " + mail.getSubject(), Toast.LENGTH_SHORT).show();
+            }
+            
+            @Override
+            public void onStarClick(Mail mail) {
+                // TODO: Handle star click (toggle star)
+                Toast.makeText(HomeActivity.this, "Star clicked for: " + mail.getSubject(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        // Setup RecyclerView
+        mailsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mailsRecyclerView.setAdapter(mailAdapter);
     }
 
     private void setupClickListeners() {
+        // Sidebar button click
+        btnSidebar.setOnClickListener(v -> {
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+        
         fabCompose.setOnClickListener(v -> {
             viewModel.openCompose();
             Toast.makeText(this, "Compose clicked", Toast.LENGTH_SHORT).show();
@@ -113,21 +133,37 @@ public class HomeActivity extends AppCompatActivity
             viewModel.performSearch(query);
             return true;
         });
+        
+        // Add text change listener for real-time search
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            
+            @Override
+            public void afterTextChanged(Editable s) {
+                String query = s.toString().trim();
+                viewModel.performSearch(query);
+            }
+        });
     }
 
     private void observeViewModel() {
         viewModel.getCurrentFilter().observe(this, filter -> {
-            if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle(viewModel.getTitleForFilter(filter));
+            // Filter changed, clear search if needed
+            if (searchEditText.getText().toString().trim().isEmpty()) {
+                // If no search query, show empty state
+                showEmptyState();
             }
-            updateMailsList(filter);
         });
         
         viewModel.getIsLoading().observe(this, isLoading -> {
-            // TODO: Show/hide loading indicator
             if (isLoading) {
                 emptyState.setVisibility(View.GONE);
                 mailsRecyclerView.setVisibility(View.GONE);
+                // TODO: Show loading indicator
             }
         });
         
@@ -138,26 +174,39 @@ public class HomeActivity extends AppCompatActivity
         });
         
         viewModel.getSearchQuery().observe(this, query -> {
-            // Update search results
-            updateMailsList(viewModel.getCurrentFilter().getValue());
+            // Update search edit text if needed
+            if (!searchEditText.getText().toString().equals(query)) {
+                searchEditText.setText(query);
+            }
+        });
+        
+        viewModel.getMails().observe(this, mails -> {
+            updateMailsList(mails);
         });
     }
 
     private void updateNavigationHeader() {
-        View headerView = navigationView.getHeaderView(0);
-        TextView nameTextView = headerView.findViewById(R.id.nav_header_name);
-        TextView emailTextView = headerView.findViewById(R.id.nav_header_email);
-        
-        // TODO: Get actual user info from preferences or user repository
-        nameTextView.setText("EYO Mail");
-        emailTextView.setText("user@example.com");
+        // Logo is now handled in the layout - no dynamic updates needed
     }
 
-    private void updateMailsList(String filter) {
-        // TODO: Implement actual mail loading based on filter
-        // For now, just show empty state
+    private void updateMailsList(List<Mail> mails) {
+        if (mails == null || mails.isEmpty()) {
+            showEmptyState();
+        } else {
+            showMailList(mails);
+        }
+    }
+    
+    private void showEmptyState() {
         mailsRecyclerView.setVisibility(View.GONE);
         emptyState.setVisibility(View.VISIBLE);
+        mailAdapter.clearMails();
+    }
+    
+    private void showMailList(List<Mail> mails) {
+        emptyState.setVisibility(View.GONE);
+        mailsRecyclerView.setVisibility(View.VISIBLE);
+        mailAdapter.setMails(mails);
     }
 
     @Override
@@ -174,14 +223,8 @@ public class HomeActivity extends AppCompatActivity
             viewModel.navigateToStarred();
         } else if (id == R.id.nav_spam) {
             viewModel.navigateToSpam();
-        } else if (id == R.id.nav_trash) {
-            viewModel.navigateToTrash();
-        } else if (id == R.id.nav_important) {
-            viewModel.navigateToImportant();
-        } else if (id == R.id.nav_personal) {
-            viewModel.navigateToPersonal();
-        } else if (id == R.id.nav_work) {
-            viewModel.navigateToWork();
+        } else if (id == R.id.nav_example) {
+            viewModel.navigateToExample();
         } else if (id == R.id.nav_settings) {
             Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_logout) {
@@ -193,8 +236,14 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void handleLogout() {
-        // TODO: Implement logout functionality
-        Toast.makeText(this, "Logout functionality will be implemented later", Toast.LENGTH_SHORT).show();
+        // Clear the token and navigate back to login
+        viewModel.logout();
+        
+        // Navigate to login activity
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     @Override
@@ -206,9 +255,6 @@ public class HomeActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (drawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -221,9 +267,5 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        drawerToggle.syncState();
-    }
+
 } 

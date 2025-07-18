@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mail item colors - Dark mode -->
+    <color name="mail_background">#1E1E1E</color>
+    <color name="mail_divider">#2C2C2C</color>
+</resources> 

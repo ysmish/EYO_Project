@@ -3,7 +3,7 @@ package com.example.eyo.data.requests;
 import com.example.eyo.data.ApiRequest;
 import org.json.JSONObject;
 
-public class LoginRequest implements ApiRequest<Boolean> {
+public class LoginRequest implements ApiRequest<String> {
     private String username;
     private String password;
     
@@ -35,8 +35,16 @@ public class LoginRequest implements ApiRequest<Boolean> {
     }
     
     @Override
-    public Boolean parseResponse(int responseCode, String responseBody) {
-        return responseCode == 201; // HTTP_CREATED
+    public String parseResponse(int responseCode, String responseBody) {
+        if (responseCode == 201) { // HTTP_CREATED
+            try {
+                JSONObject jsonResponse = new JSONObject(responseBody);
+                return jsonResponse.getString("token");
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to parse token from response: " + e.getMessage());
+            }
+        }
+        return null;
     }
     
     @Override

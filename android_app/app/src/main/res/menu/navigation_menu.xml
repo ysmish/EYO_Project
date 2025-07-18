@@ -22,26 +22,14 @@
             android:id="@+id/nav_spam"
             android:icon="@drawable/ic_report"
             android:title="Spam" />
-        <item
-            android:id="@+id/nav_trash"
-            android:icon="@drawable/ic_delete"
-            android:title="Trash" />
     </group>
 
     <item android:title="Labels">
         <menu>
             <item
-                android:id="@+id/nav_important"
+                android:id="@+id/nav_example"
                 android:icon="@drawable/ic_label"
-                android:title="Important" />
-            <item
-                android:id="@+id/nav_personal"
-                android:icon="@drawable/ic_label"
-                android:title="Personal" />
-            <item
-                android:id="@+id/nav_work"
-                android:icon="@drawable/ic_label"
-                android:title="Work" />
+                android:title="EXAMPLE" />
         </menu>
     </item>
 

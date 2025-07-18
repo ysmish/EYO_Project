@@ -9,4 +9,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="app_primary">#FF4F46E5</color>
     <color name="app_primary_dark">#FF3730A3</color>
+    
+    <!-- Mail item colors - Light mode -->
+    <color name="mail_background">#FFFFFF</color>
+    <color name="mail_divider">#F0F0F0</color>
 </resources>

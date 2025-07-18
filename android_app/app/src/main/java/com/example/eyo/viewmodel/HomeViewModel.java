@@ -6,15 +6,26 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.LiveData;
 
+import com.example.eyo.data.Mail;
+import com.example.eyo.repository.UserRepository;
+import com.example.eyo.utils.TokenManager;
+
+import java.util.List;
+
 public class HomeViewModel extends AndroidViewModel {
     
     private MutableLiveData<String> currentFilter;
     private MutableLiveData<String> searchQuery;
     private MutableLiveData<Boolean> isLoading;
     private MutableLiveData<String> errorMessage;
+    private MutableLiveData<List<Mail>> mails;
     
     // Navigation states
     private MutableLiveData<String> selectedNavItem;
+    
+    // Repository
+    private UserRepository userRepository;
+    private TokenManager tokenManager;
     
     public HomeViewModel(@NonNull Application application) {
         super(application);
@@ -27,12 +38,18 @@ public class HomeViewModel extends AndroidViewModel {
         isLoading = new MutableLiveData<>();
         errorMessage = new MutableLiveData<>();
         selectedNavItem = new MutableLiveData<>();
+        mails = new MutableLiveData<>();
+        
+        // Initialize repository
+        userRepository = new UserRepository();
+        tokenManager = TokenManager.getInstance(getApplication());
         
         // Set default values
         currentFilter.setValue("inbox");
         searchQuery.setValue("");
         isLoading.setValue(false);
         selectedNavItem.setValue("inbox");
+        mails.setValue(null);
     }
     
     // Getters for LiveData
@@ -54,6 +71,10 @@ public class HomeViewModel extends AndroidViewModel {
     
     public LiveData<String> getSelectedNavItem() {
         return selectedNavItem;
+    }
+    
+    public LiveData<List<Mail>> getMails() {
+        return mails;
     }
     
     // Methods to update state
@@ -95,21 +116,9 @@ public class HomeViewModel extends AndroidViewModel {
         setCurrentFilter("spam");
     }
     
-    public void navigateToTrash() {
-        setCurrentFilter("trash");
-    }
-    
     // Label navigation methods
-    public void navigateToImportant() {
-        setCurrentFilter("important");
-    }
-    
-    public void navigateToPersonal() {
-        setCurrentFilter("personal");
-    }
-    
-    public void navigateToWork() {
-        setCurrentFilter("work");
+    public void navigateToExample() {
+        setCurrentFilter("example");
     }
     
     // Compose action
@@ -123,17 +132,65 @@ public class HomeViewModel extends AndroidViewModel {
     public void performSearch(String query) {
         setSearchQuery(query);
         setLoading(true);
+        setErrorMessage(null);
         
-        // TODO: Implement actual search functionality
-        // For now, just simulate loading
-        new android.os.Handler().postDelayed(() -> {
+        if (query.trim().isEmpty()) {
+            // If query is empty, clear results
+            mails.setValue(null);
             setLoading(false);
-            if (query.trim().isEmpty()) {
-                setErrorMessage(null);
-            } else {
-                setErrorMessage("Search results for: " + query);
+            return;
+        }
+        
+        // Build search query with current filter
+        String searchQuery = buildSearchQuery(query);
+        
+        // Get the actual auth token from TokenManager
+        String authToken = tokenManager.getBearerToken();
+        
+        if (authToken == null) {
+            setErrorMessage("Authentication required. Please login again.");
+            setLoading(false);
+            return;
+        }
+        
+        userRepository.searchMails(searchQuery, authToken, new UserRepository.SearchCallback() {
+            @Override
+            public void onSuccess(List<Mail> searchResults) {
+                mails.setValue(searchResults);
+                setLoading(false);
             }
-        }, 1000);
+            
+            @Override
+            public void onError(String error) {
+                setErrorMessage("Search failed: " + error);
+                setLoading(false);
+            }
+        });
+    }
+    
+    private String buildSearchQuery(String query) {
+        // Build search query based on current filter
+        String currentFilterValue = currentFilter.getValue();
+        if (currentFilterValue == null) {
+            return query;
+        }
+        
+        switch (currentFilterValue) {
+            case "inbox":
+                return query + " in:inbox";
+            case "sent":
+                return query + " in:sent";
+            case "starred":
+                return query + " in:starred";
+            case "drafts":
+                return query + " in:drafts";
+            case "spam":
+                return query + " in:spam";
+            case "example":
+                return query + " label:example";
+            default:
+                return query;
+        }
     }
     
     // Get title for current filter
@@ -144,11 +201,18 @@ public class HomeViewModel extends AndroidViewModel {
             case "drafts": return "Drafts";
             case "starred": return "Starred";
             case "spam": return "Spam";
-            case "trash": return "Trash";
-            case "important": return "Important";
-            case "personal": return "Personal";
-            case "work": return "Work";
+            case "example": return "EXAMPLE";
             default: return "EYO Mail";
         }
+    }
+    
+    // Logout functionality
+    public void logout() {
+        tokenManager.clearToken();
+        // Clear current data
+        mails.setValue(null);
+        setSearchQuery("");
+        setErrorMessage(null);
+        setLoading(false);
     }
 } 
