@@ -32,6 +32,7 @@ public class LabelSelectionAdapter extends RecyclerView.Adapter<LabelSelectionAd
 
     public void setLabels(List<Label> labels) {
         this.labels = labels != null ? labels : new ArrayList<>();
+        this.labels.removeIf(label -> label.getId() <= 5);
         notifyDataSetChanged();
     }
 

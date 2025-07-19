@@ -3,6 +3,7 @@ package com.example.eyo.ui.home;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.graphics.Typeface;
@@ -93,7 +94,7 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
         private TextView mailTime;
         private TextView mailSubject;
         private TextView mailPreview;
-        private ImageView starIcon;
+        private ImageButton starIcon;
         private ImageView senderAvatar;
         
         public MailViewHolder(@NonNull View itemView) {
@@ -140,10 +141,11 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
             
             // Handle starred state
             if (mail.isStarred()) {
-                starIcon.setVisibility(View.VISIBLE);
-                starIcon.setImageResource(R.drawable.ic_star);
+                starIcon.setImageResource(R.drawable.ic_star_filled);
+                starIcon.setContentDescription("Remove from starred");
             } else {
-                starIcon.setVisibility(View.GONE);
+                starIcon.setImageResource(R.drawable.ic_star);
+                starIcon.setContentDescription("Add to starred");
             }
             
                                 // Set read/unread state
@@ -195,12 +197,12 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
         }
         
         private boolean isDraftMail(Mail mail) {
-            // Check if mail has draft label
-            if (mail.getLabels() != null) {
-                return mail.getLabels().contains("Drafts");
+            // Use the built-in isDraft() method from Mail class (checks for "Drafts" or "4")
+            if (mail.isDraft()) {
+                return true;
             }
             
-            // Also check if we're in drafts category
+            // Also check if we're in drafts category as fallback
             if ("drafts".equals(currentCategory)) {
                 return true;
             }

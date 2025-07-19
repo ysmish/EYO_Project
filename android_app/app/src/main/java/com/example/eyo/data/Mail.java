@@ -1,9 +1,12 @@
 package com.example.eyo.data;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class Mail {
+public class Mail implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private int id;
     private String from;
     private List<String> to;
@@ -100,7 +103,7 @@ public class Mail {
     }
 
     public boolean isStarred() {
-        return labels != null && labels.contains("Starred");
+        return labels != null && (labels.contains("3") || labels.contains("Starred"));
     }
 
     public boolean isInInbox() {
@@ -112,7 +115,7 @@ public class Mail {
     }
 
     public boolean isDraft() {
-        return labels != null && labels.contains("Drafts");
+        return labels != null && (labels.contains("Drafts") || labels.contains("4"));
     }
 
     public boolean isSpam() {
