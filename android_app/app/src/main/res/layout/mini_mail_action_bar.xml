@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:background="@color/mail_background"
+    android:gravity="center_vertical">
+
+    <!-- Report Spam Button -->
+    <ImageButton
+        android:id="@+id/btn_report_spam"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/search_background"
+        android:src="@drawable/ic_report"
+        android:contentDescription="Report as spam"
+        android:scaleType="centerInside"
+        android:padding="8dp" />
+
+    <!-- Label Button -->
+    <ImageButton
+        android:id="@+id/btn_label"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/search_background"
+        android:src="@drawable/ic_label"
+        android:contentDescription="Manage labels"
+        android:scaleType="centerInside"
+        android:padding="8dp" />
+
+    <!-- Delete Button -->
+    <ImageButton
+        android:id="@+id/btn_delete"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/search_background"
+        android:src="@drawable/ic_delete"
+        android:contentDescription="Delete mail"
+        android:scaleType="centerInside"
+        android:padding="8dp" />
+
+    <!-- Spacer -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" />
+
+    <!-- Status Text -->
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="12sp"
+        android:textColor="@color/mail_preview_text"
+        android:visibility="gone" />
+
+</LinearLayout>
