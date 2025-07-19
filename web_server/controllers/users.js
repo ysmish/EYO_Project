@@ -1,7 +1,7 @@
 import { addUser, getUser, changePhoto } from '../models/users.js';
 import { authorizeToken } from '../models/tokens.js';
 
-const createNewUser = (req, res) => {
+const createNewUser = async (req, res) => {
     const userData = req.body;
     if (!userData || !userData.firstName || !userData.lastName || !userData.birthday || !userData.username || !userData.password) {
         return res.status(400).json({
@@ -9,7 +9,7 @@ const createNewUser = (req, res) => {
         });
     }
     try {
-        const newUser = addUser(
+        const newUser = await addUser(
             userData.firstName,
             userData.lastName,
             userData.birthday,
@@ -36,7 +36,7 @@ const createNewUser = (req, res) => {
     }
 }
 
-const getUserById = (req, res) => {
+const getUserById = async (req, res) => {
     const username = req.params.id;
     if (!username) {
         return res.status(400).json({
@@ -44,7 +44,7 @@ const getUserById = (req, res) => {
         });
     }
     try {
-        const user = getUser(username);
+        const user = await getUser(username);
         if (user.error) {
             return res.status(404).json({
                 message: 'User not found',
@@ -60,7 +60,7 @@ const getUserById = (req, res) => {
     }
 }
 
-const changeUserPhoto = (req, res) => {
+const changeUserPhoto = async (req, res) => {
     const token = req.headers.authorization;
     if (!token) {
         return res.status(400).json({ error: 'Authorization token is required.' });
@@ -83,10 +83,8 @@ const changeUserPhoto = (req, res) => {
         photo = `data:${mimeType};base64,${base64}`;
     }
 
-
-
     try {
-        const result = changePhoto(username, photo);
+        const result = await changePhoto(username, photo);
         if (result.error) {
             return res.status(404).json({ error: result.error });
         }

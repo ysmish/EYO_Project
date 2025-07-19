@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllMails, getMailById, createMail, createDraft, sendDraft, patchMail, deleteMail } from '../../controllers/mails.js';
+import { getAllMails, getMailById, createMail, createDraft, sendDraft, patchMail, deleteMailController } from '../../controllers/mails.js';
 const router = express.Router();
 
 router.route('/')
@@ -12,6 +12,6 @@ router.route('/drafts/:id/send')
 router.route('/:id')
         .get(getMailById)
         .patch(patchMail)
-        .delete(deleteMail);
+        .delete(deleteMailController);
 
 export default router;

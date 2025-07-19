@@ -1,113 +1,149 @@
-import { mails } from './mails.js';  // Import mails model to manage mail-label relationships
-let labels = {};
+import Label from '../service/Label.js';
+import Mail from '../service/Mail.js';
 
 let labelIdCounter = 1;  // Counter for generating unique label IDs
 
-const createNewLabel = (username, name, color) => {
+const createNewLabel = async (username, name, color) => {
     if (!name) {
         throw { error: 'Label name is required' };
     }
 
-    // Initialize user's labels if they don't exist
-    if (!labels[username]) {
-        labels[username] = {};
+    try {
+        // Check if label name already exists for this user
+        const existingLabel = await Label.findOne({ username, name });
+        if (existingLabel) {
+            return { error: 'Label name already exists' };
+        }
+
+        // Find the highest labelId for this user and increment
+        const highestLabel = await Label.findOne({ username }).sort({ id: -1 });
+        const newId = highestLabel ? highestLabel.id + 1 : labelIdCounter++;
+
+        // Create new label
+        const newLabel = new Label({
+            id: newId,
+            name: name,
+            username: username,
+            color: color || '#4F46E5'
+        });
+
+        const savedLabel = await newLabel.save();
+        return { id: savedLabel.id, name: savedLabel.name, color: savedLabel.color };
+    } catch (error) {
+        return { error: 'Database error: ' + error.message };
     }
-
-    // Check if label name already exists
-    if (Object.values(labels[username]).some(label => label.name === name)) {
-        return { error: 'Label name already exists' };
-    }
-
-    // Create new label with unique ID
-    const id = labelIdCounter++;
-    labels[username][id] = {
-        id: id,
-        name: name,
-        mails: [],  // Initialize with an empty array for mails
-        color: color || '#4F46E5'  // Default color if none provided
-    };
-
-    return { id, name, color: color || '#4F46E5' };
 };
 
-const getLabel = (username, labelId) => {
-    if (!labels[username]) {
-        return null;
+const getLabel = async (username, labelId) => {
+    try {
+        labelId = parseInt(labelId);
+        if (isNaN(labelId)) {
+            return { error: 'Invalid label ID' };
+        }
+        
+        // Exclude default labels (1-5)
+        if (labelId >= 1 && labelId <= 5) {
+            return null;
+        }
+        
+        const label = await Label.findOne({ username, id: labelId });
+        if (!label) {
+            return null;
+        }
+        
+        return {
+            id: label.id,
+            name: label.name,
+            color: label.color
+        };
+    } catch (error) {
+        return { error: 'Database error: ' + error.message };
     }
-    
-    labelId = parseInt(labelId);
-    if (!labels[username][labelId]) {
-        return null;
-    }
-
-    if (isNaN(labelId)) {
-        return { error: 'Invalid label ID' };
-    }
-    
-    const label = labels[username][labelId];
-    return {
-        id: label.id,
-        name: label.name,
-        color: label.color
-    };
 };
 
-const getLabels = (username) => {
-    if (!labels[username]) {
+const getLabels = async (username) => {
+    try {
+        // Exclude default labels (1-5)
+        const labels = await Label.find({ 
+            username, 
+        });
+        return labels.map(label => ({
+            id: label.id,
+            name: label.name,
+            color: label.color
+        }));
+    } catch (error) {
         return [];
     }
-    return Object.values(labels[username]).map(label => ({
-        id: label.id,
-        name: label.name,
-        color: label.color
-    })).filter(label => isNaN(label.id) === false); // Ensure IDs are valid numbers
 };
 
-const changeLabel = (username, labelId, updates) => {
-    labelId = parseInt(labelId);
-    if (!labels[username] || !labels[username][labelId]) {
-        return { error: 'Label not found' };
-    }
+const changeLabel = async (username, labelId, updates) => {
+    try {
+        labelId = parseInt(labelId);
+        if (isNaN(labelId)) {
+            return { error: 'Invalid label ID' };
+        }
 
-    if (!updates.name) {
-        return { error: 'New label name is required' };
-    }
+        const label = await Label.findOne({ username, id: labelId });
+        if (!label) {
+            return { error: 'Label not found' };
+        }
 
-    // Check if the new name already exists (except for this label)
-    if (Object.values(labels[username]).some(
-        label => label.id !== labelId && label.name === updates.name
-    )) {
-        return { error: 'Label name already exists' };
-    }
+        if (!updates.name) {
+            return { error: 'New label name is required' };
+        }
 
-    // Update the label name and color if provided
-    labels[username][labelId].name = updates.name;
-    if (updates.color) {
-        labels[username][labelId].color = updates.color;
+        // Check if the new name already exists (except for this label)
+        const existingLabel = await Label.findOne({ 
+            username, 
+            name: updates.name, 
+            id: { $ne: labelId } 
+        });
+        if (existingLabel) {
+            return { error: 'Label name already exists' };
+        }
+
+        // Update the label name and color if provided
+        label.name = updates.name;
+        if (updates.color) {
+            label.color = updates.color;
+        }
+        
+        const savedLabel = await label.save();
+        return { 
+            id: savedLabel.id,
+            name: savedLabel.name,
+            color: savedLabel.color
+        };
+    } catch (error) {
+        return { error: 'Database error: ' + error.message };
     }
-    return { 
-        id: labelId,
-        name: updates.name,
-        mails: labels[username][labelId].mails,
-        color: labels[username][labelId].color
-    };
 };
 
-const removeLabel = (username, labelId) => {
-    labelId = parseInt(labelId);
-    if (!labels[username] || !labels[username][labelId]) {
+const removeLabel = async (username, labelId) => {
+    try {
+        labelId = parseInt(labelId);
+        if (isNaN(labelId) || labelId < 6) { // Ensure labelId is valid and not a default label
+            return false;
+        }
+
+        const label = await Label.findOne({ username, id: labelId });
+        if (!label) {
+            return false;
+        }
+
+        // Remove this label from mails that use it
+        await Mail.updateMany(
+            { owner: username, labels: labelId.toString() },
+            { $pull: { labels: labelId.toString() } }
+        );
+
+        // Delete the label
+        await Label.deleteOne({ username, id: labelId });
+        return true;
+    } catch (error) {
         return false;
     }
-    for (const mailId of labels[username][labelId].mails) {
-        // Remove this label from each mail's labels
-        if (mails[username] && mails[username][mailId]) {
-            const mail = mails[username][mailId];
-            mail.labels = mail.labels.filter(label => label !== labelId);
-        }
-    }
-    // Delete the label from the user's labels
-    delete labels[username][labelId];
-    return true;
 };
 
-export { labels, createNewLabel, getLabel, getLabels, changeLabel, removeLabel };
+export { createNewLabel, getLabel, getLabels, changeLabel, removeLabel };

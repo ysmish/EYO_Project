@@ -1,7 +1,7 @@
 import { createNewLabel, getLabel, getLabels, changeLabel, removeLabel } from '../models/labels.js';
 import { authorizeToken } from '../models/tokens.js';
 
-const getAllLabels = (req, res) => {
+const getAllLabels = async (req, res) => {
     // Get token from header
     const token = req.headers.authorization;
     if (!token) {
@@ -17,7 +17,7 @@ const getAllLabels = (req, res) => {
     const username = authResult.username;
 
     try {
-        const labels = getLabels(username);
+        const labels = await getLabels(username);
         return res.status(200).json(labels);
     } catch (error) {
         console.error('Error fetching labels:', error);
@@ -25,7 +25,7 @@ const getAllLabels = (req, res) => {
     }
 }
 
-const getLabelById = (req, res) => {
+const getLabelById = async (req, res) => {
     // Get token from header
     const token = req.headers.authorization;
     if (!token) {
@@ -46,7 +46,7 @@ const getLabelById = (req, res) => {
     }
 
     try {
-        const label = getLabel(username, labelId);
+        const label = await getLabel(username, labelId);
         if (!label) {
             return res.status(404).json({ error: 'Label not found' });
         }
@@ -57,7 +57,7 @@ const getLabelById = (req, res) => {
     }
 }
 
-const createLabel = (req, res) => {
+const createLabel = async (req, res) => {
     // Get token from header
     const token = req.headers.authorization;
     if (!token) {
@@ -80,7 +80,7 @@ const createLabel = (req, res) => {
     }
 
     try {
-        const result = createNewLabel(username, name, color);
+        const result = await createNewLabel(username, name, color);
         if (result.error) {
             return res.status(400).json({ error: result.error });
         }
@@ -93,7 +93,7 @@ const createLabel = (req, res) => {
     }
 }
 
-const patchLabel = (req, res) => {
+const patchLabel = async (req, res) => {
     // Get token from header
     const token = req.headers.authorization;
     if (!token) {
@@ -121,7 +121,7 @@ const patchLabel = (req, res) => {
     }
 
     try {
-        const result = changeLabel(username, labelId, updates);
+        const result = await changeLabel(username, labelId, updates);
         if (result.error) {
             return res.status(400).json({ error: result.error });
         }
@@ -132,7 +132,7 @@ const patchLabel = (req, res) => {
     }
 }
 
-const deleteLabel = (req, res) => {
+const deleteLabel = async (req, res) => {
     // Get token from header
     const token = req.headers.authorization;
     if (!token) {
@@ -154,7 +154,7 @@ const deleteLabel = (req, res) => {
     }
 
     try {
-        const success = removeLabel(username, labelName);
+        const success = await removeLabel(username, labelName);
         if (!success) {
             return res.status(404).json({ error: 'Label not found' });
         }

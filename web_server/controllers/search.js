@@ -3,7 +3,7 @@ import { search } from '../models/search.js';
 import { authorizeToken } from '../models/tokens.js';
 import { getLabels } from '../models/labels.js';
 
-const searchQuery = (req, res) => {
+const searchQuery = async (req, res) => {
     const token = req.headers.authorization;
     const query = decodeURIComponent(req.params.query);
     if (!token || !query) {
@@ -19,7 +19,7 @@ const searchQuery = (req, res) => {
     const username = authResult.username;
 
     const querys = query.split(' ').filter(q => q.length > 0);
-    const validLabels = getLabels(username);
+    const validLabels = await getLabels(username);
     let labels = [];
     let keywords = [];
     let flags = {
@@ -51,7 +51,7 @@ const searchQuery = (req, res) => {
         }
     }
     try {
-        const results = search(username, keywords, flags, labels);
+        const results = await search(username, keywords, flags, labels);
         return res.status(200).json(results);
     } catch (error) {
         console.error('Search error:', error);

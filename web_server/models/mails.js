@@ -1,314 +1,427 @@
-import { labels } from "./labels.js";
+import Mail from '../service/Mail.js';
+import Label from '../service/Label.js';
 
-let mails = {};
 let nextId = 1;
 
-const createNewDraft = (from, to, cc, subject, body, attachments, userLabels = []) => {
-    // Ensure 'to' is an array and remove duplicates
-    const toUsers = Array.isArray(to) ? [...new Set(to)] : [to];
-    const ccUsers = [...new Set(cc)];
-    
-    const newDraft = {
-        from,
-        to: toUsers,
-        cc: ccUsers,
-        subject,
-        body,
-        date: new Date(),
-        read: true,
-        attachments,
-        labels: ['Drafts', ...userLabels]
-    };
-    const draftId = nextId++;
-    
-    // Add to sender's Drafts folder only
-    mails[from] = mails[from] || {};
-    mails[from][draftId] = JSON.parse(JSON.stringify(newDraft));
-    
-    // Update the mails field in numeric labels
-    userLabels.filter(label => typeof label === 'number').forEach(labelId => {
-        if (labels[from] && labels[from][labelId]) {
-            if (!labels[from][labelId].mails.includes(draftId)) {
-                labels[from][labelId].mails.push(draftId);
-            }
-        }
-    });
-    
-    return draftId;
+const getNextId = async () => {
+    const lastMail = await Mail.findOne().sort({ mailId: -1 });
+    if (lastMail) {
+        nextId = lastMail.mailId + 1;
+    }
+    return nextId++;
 };
 
-const createNewMail = (from, to, cc, subject, body, attachments, userLabels = []) => {
-    // Ensure 'to' is an array and remove duplicates
-    const toUsers = Array.isArray(to) ? [...new Set(to)] : [to];
-    const ccUsers = [...new Set(cc)];
-    
-    const newMail = {
-        from,
-        to: toUsers,
-        cc: ccUsers,
-        subject,
-        body,
-        date: new Date(),
-        read: false,
-        attachments,
-        labels: [...userLabels]
-    };
-    const mailId = nextId++;
-    
-    // Add to sender's Sent folder
-    mails[from] = mails[from] || {};
-    mails[from][mailId] = JSON.parse(JSON.stringify(newMail));
-    mails[from][mailId].labels.push('Sent');
-    
-    // Update the mails field in numeric labels for sender
-    userLabels.filter(label => typeof label === 'number').forEach(labelId => {
-        if (labels[from] && labels[from][labelId]) {
-            if (!labels[from][labelId].mails.includes(mailId)) {
-                labels[from][labelId].mails.push(mailId);
-            }
-        }
-    });
-    
-    // Add to each recipient's Inbox
-    toUsers.forEach(user => {
-        if (user === from) {
-            // Self-sent mail: add 'Inbox' label to the existing mail (already has 'Sent')
-            mails[from][mailId].labels.push('Inbox');
-        } else {
-            // Different recipient: create separate copy with 'Inbox' label
-            mails[user] = mails[user] || {};
-            mails[user][mailId] = JSON.parse(JSON.stringify(newMail));
-            mails[user][mailId].labels.push('Inbox');
-            
-            // Update the mails field in numeric labels for recipient
-            userLabels.filter(label => typeof label === 'number').forEach(labelId => {
-                if (labels[user] && labels[user][labelId]) {
-                    if (!labels[user][labelId].mails.includes(mailId)) {
-                        labels[user][labelId].mails.push(mailId);
-                    }
-                }
-            });
-        }
-    });
-    
-    // Add to each CC recipient's Inbox (only if not already in To list)
-    ccUsers.forEach(user => {
-        if (toUsers.includes(user)) {
-            // User is already in To list, skip to avoid duplicates
-            return;
+const createNewDraft = async (from, to, cc, subject, body, attachments, userLabels = []) => {
+    try {
+        // Ensure 'to' is an array and remove duplicates
+        const toUsers = Array.isArray(to) ? [...new Set(to)] : [to];
+        const ccUsers = [...new Set(cc)];
+        
+        const draftId = await getNextId();
+        
+        const newDraft = new Mail({
+            mailId: draftId,
+            from,
+            to: toUsers,
+            cc: ccUsers,
+            subject,
+            body,
+            date: new Date(),
+            read: true,
+            attachments,
+            labels: [4, ...userLabels],
+            owner: from
+        });
+        
+        await newDraft.save();
+        
+        // Update the mails field in numeric labels
+        const numericLabels = userLabels.filter(label => typeof label === 'number');
+        for (const labelId of numericLabels) {
+            await Label.findOneAndUpdate(
+                { username: from, id: labelId },
+                { $push: { mails: newDraft._id } }
+            );
         }
         
-        if (user === from) {
-            // Self-CC: add 'Inbox' label to the existing mail if not already added
-            if (!mails[from][mailId].labels.includes('Inbox')) {
-                mails[from][mailId].labels.push('Inbox');
-            }
-        } else {
-            // Different CC recipient: create separate copy with 'Inbox' label
-            mails[user] = mails[user] || {};
-            mails[user][mailId] = JSON.parse(JSON.stringify(newMail));
-            mails[user][mailId].labels.push('Inbox');
-            
-            // Update the mails field in numeric labels for CC recipient
-            userLabels.filter(label => typeof label === 'number').forEach(labelId => {
-                if (labels[user] && labels[user][labelId]) {
-                    if (!labels[user][labelId].mails.includes(mailId)) {
-                        labels[user][labelId].mails.push(mailId);
-                    }
-                }
-            });
+        return draftId;
+    } catch (error) {
+        console.error('Error creating draft:', error);
+        throw error;
+    }
+};
+
+const createNewMail = async (from, to, cc, subject, body, attachments, userLabels = []) => {
+    try {
+        // Ensure 'to' is an array and remove duplicates
+        const toUsers = Array.isArray(to) ? [...new Set(to)] : [to];
+        const ccUsers = [...new Set(cc)];
+        
+        const mailId = await getNextId();
+        
+        // Create mail for sender with 'Sent' label
+        const senderMail = new Mail({
+            mailId,
+            from,
+            to: toUsers,
+            cc: ccUsers,
+            subject,
+            body,
+            date: new Date(),
+            read: false,
+            attachments,
+            labels: [2, ...userLabels],
+            owner: from
+        });
+        
+        await senderMail.save();
+        
+        // Update the mails field in numeric labels for sender
+        const numericLabels = userLabels.filter(label => typeof label === 'number');
+        for (const labelId of numericLabels) {
+            await Label.findOneAndUpdate(
+                { username: from, id: labelId },
+                { $push: { mails: senderMail._id } }
+            );
         }
-    });
-    
-    return mailId;
-};
-
-const extractUrlsFromString = (text) => {
-    if (!text || typeof text !== 'string') return [];
-    const urlRegex = /((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?/g;
-    return text.match(urlRegex) || [];
-};
-
-const extractUrlsFromMail = (mail) => {
-    const urls = new Set();
-    
-    // Go through all fields in the mail object
-    for (const [key, value] of Object.entries(mail)) {
-        if (Array.isArray(value)) {
-            // Handle arrays (like cc and attachments)
-            value.forEach(item => {
-                if (typeof item === 'string') {
-                    extractUrlsFromString(item).forEach(url => urls.add(url));
-                } else if (item && typeof item === 'object' && item.name) {
-                    // Handle attachment objects with names
-                    extractUrlsFromString(item.name).forEach(url => urls.add(url));
-                }
-            });
-        } else if (typeof value === 'string') {
-            // Handle string fields
-            extractUrlsFromString(value).forEach(url => urls.add(url));
-        }
-    }
-    
-    return Array.from(urls);
-};
-
-const getMail = (username, mailId) => {
-    if (mails[username] && mails[username][mailId]) {
-        return { id: mailId, ...mails[username][mailId] };
-    }
-    return null;
-};
-
-const getLatestMails = (username, limit = 50) => {
-    if (!mails[username]) {
-        return [];
-    }
-    return Object.entries(mails[username])
-        .map(([id, mail]) => ({ id: parseInt(id), ...mail }))
-        .sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, limit);
-};
-
-const deleteMailOfUser = (username, mailId) => {
-    if (!mails[username] || !mails[username][mailId]) {
-        return false;
-    }
-    
-    // Get the mail's labels before deleting
-    const mail = mails[username][mailId];
-    const mailLabels = mail.labels || [];
-    
-    // Remove this mail from all numeric labels' mails arrays
-    mailLabels.filter(label => typeof label === 'number').forEach(labelId => {
-        if (labels[username] && labels[username][labelId]) {
-            const mailIndex = labels[username][labelId].mails.indexOf(parseInt(mailId));
-            if (mailIndex > -1) {
-                labels[username][labelId].mails.splice(mailIndex, 1);
-            }
-        }
-    });
-    
-    // Only delete the mail from the user's list
-    delete mails[username][mailId];
-    return true;
-};
-
-const updateMail = (username, mailId, updates) => {
-    if (!mails[username] || !mails[username][mailId]) {
-        return false;
-    }
-
-    // Only update allowed fields
-    const allowedFields = ['subject', 'body', 'attachments', 'to', 'cc', 'read', 'labels'];
-    // System labels are managed by the application logic, not user input
-    const systemLabels = ['Sent', 'Inbox', 'Drafts'];
-    const updatedMail = { ...mails[username][mailId] };
-    
-    // Track old labels before updating to manage label-mail relationships
-    const oldLabels = updatedMail.labels || [];
-    
-    for (const field of allowedFields) {
-        if (field in updates) {
-            if (field === 'labels') {
-                // Check if this is a spam-related update (contains 'Spam' or 'Inbox' manipulation)
-                const hasSpamUpdate = updates[field].some(label => 
-                    label === 'Spam' || label === 'Inbox'
-                );
-                
-                if (hasSpamUpdate) {
-                    // For spam updates, allow full control over labels
-                    updatedMail[field] = updates[field];
-                } else {
-                    // For regular updates, preserve system labels and merge with new labels
-                    const currentSystemLabels = (updatedMail[field] || []).filter(label => 
-                        typeof label === 'string' && systemLabels.includes(label)
-                    );
-                    const newUserLabels = updates[field].filter(label => 
-                        typeof label === 'number' || (typeof label === 'string' && !systemLabels.includes(label))
-                    );
-                    updatedMail[field] = [...currentSystemLabels, ...newUserLabels];
-                }
-                
-                // Update the mails field in labels when labels are updated
-                const newLabels = updatedMail[field] || [];
-                
-                // Remove mailId from old numeric labels that are no longer assigned
-                const oldNumericLabels = oldLabels.filter(label => typeof label === 'number');
-                const newNumericLabels = newLabels.filter(label => typeof label === 'number');
-                
-                oldNumericLabels.forEach(labelId => {
-                    if (!newNumericLabels.includes(labelId) && labels[username] && labels[username][labelId]) {
-                        // Remove mailId from this label's mails array
-                        const mailIndex = labels[username][labelId].mails.indexOf(parseInt(mailId));
-                        if (mailIndex > -1) {
-                            labels[username][labelId].mails.splice(mailIndex, 1);
-                        }
-                    }
-                });
-                
-                // Add mailId to new numeric labels that weren't previously assigned
-                newNumericLabels.forEach(labelId => {
-                    if (!oldNumericLabels.includes(labelId) && labels[username] && labels[username][labelId]) {
-                        // Add mailId to this label's mails array if not already present
-                        if (!labels[username][labelId].mails.includes(parseInt(mailId))) {
-                            labels[username][labelId].mails.push(parseInt(mailId));
-                        }
-                    }
-                });
+        
+        // Add to each recipient's Inbox
+        for (const user of toUsers) {
+            if (user === from) {
+                // Self-sent mail: add 'Inbox' label to the existing mail
+                senderMail.labels.push(1);
+                await senderMail.save();
             } else {
-                updatedMail[field] = updates[field];
+                // Different recipient: create separate copy with 'Inbox' label
+                const recipientMail = new Mail({
+                    mailId,
+                    from,
+                    to: toUsers,
+                    cc: ccUsers,
+                    subject,
+                    body,
+                    date: new Date(),
+                    read: false,
+                    attachments,
+                    labels: [1, ...userLabels],
+                    owner: user
+                });
+                
+                await recipientMail.save();
+                
+                // Update the mails field in numeric labels for recipient
+                for (const labelId of numericLabels) {
+                    await Label.findOneAndUpdate(
+                        { username: user, id: labelId },
+                        { $push: { mails: recipientMail._id } }
+                    );
+                }
             }
         }
+        
+        // Add to each CC recipient's Inbox (only if not already in To list)
+        for (const user of ccUsers) {
+            if (toUsers.includes(user)) {
+                // User is already in To list, skip to avoid duplicates
+                continue;
+            }
+            
+            if (user === from) {
+                // Self-CC: add 'Inbox' label to the existing mail (already has 'Sent')
+                if (!senderMail.labels.includes(1)) {
+                    senderMail.labels.push(1);
+                    await senderMail.save();
+                }
+            } else {
+                // Different CC recipient: create separate copy with 'Inbox' label
+                const ccMail = new Mail({
+                    mailId,
+                    from,
+                    to: toUsers,
+                    cc: ccUsers,
+                    subject,
+                    body,
+                    date: new Date(),
+                    read: false,
+                    attachments,
+                    labels: [1, ...userLabels],
+                    owner: user
+                });
+                
+                await ccMail.save();
+                
+                // Update the mails field in numeric labels for CC recipient
+                for (const labelId of numericLabels) {
+                    await Label.findOneAndUpdate(
+                        { username: user, id: labelId },
+                        { $push: { mails: ccMail._id } }
+                    );
+                }
+            }
+        }
+        
+        return mailId;
+    } catch (error) {
+        console.error('Error creating mail:', error);
+        throw error;
     }
-
-    // Ensure drafts remain marked as read
-    const isDraft = updatedMail.labels && updatedMail.labels.includes('Drafts');
-    if (isDraft) {
-        updatedMail.read = true;
-    }
-
-    mails[username][mailId] = updatedMail;
-    return true;
 };
 
-const updateMailSpamStatus = (mailId, isSpam, reportingUsername) => {
-    // Find all users who have this email
-    const usersWithMail = [];
-    for (const username in mails) {
-        if (mails[username] && mails[username][mailId]) {
-            usersWithMail.push(username);
-        }
+const getMails = async (username) => {
+    try {
+        const mails = await Mail.find({ owner: username }).sort({ date: -1 });
+        return mails.reduce((acc, mail) => {
+            acc[mail.mailId] = {
+                from: mail.from,
+                to: mail.to,
+                cc: mail.cc,
+                subject: mail.subject,
+                body: mail.body,
+                date: mail.date,
+                read: mail.read,
+                attachments: mail.attachments,
+                labels: mail.labels
+            };
+            return acc;
+        }, {});
+    } catch (error) {
+        console.error('Error fetching mails:', error);
+        return {};
     }
-    
-    // Update the spam status for all users who have this email
-    for (const username of usersWithMail) {
-        const mail = mails[username][mailId];
-        if (mail) {
+};
+
+const getMail = async (username, mailId) => {
+    try {
+        const mail = await Mail.findOne({ owner: username, mailId });
+        if (!mail) {
+            return null;
+        }
+        console.error('Mail found:', mail);
+        return {
+            id: mail.mailId,
+            from: mail.from,
+            to: mail.to,
+            cc: mail.cc,
+            subject: mail.subject,
+            body: mail.body,
+            date: mail.date,
+            read: mail.read,
+            attachments: mail.attachments,
+            labels: mail.labels
+        };
+    } catch (error) {
+        console.error('Error fetching mail:', error);
+        return null;
+    }
+};
+
+const updateMail = async (username, mailId, updates) => {
+    try {
+        const mail = await Mail.findOne({ owner: username, mailId });
+        if (!mail) {
+            return null;
+        }
+        
+        // Only update allowed fields
+        const allowedFields = ['subject', 'body', 'attachments', 'to', 'cc', 'read', 'labels'];
+        // System labels are managed by the application logic, not user input
+        const systemLabels = [1, 2, 4];
+        
+        // Track old labels before updating to manage label-mail relationships
+        const oldLabels = mail.labels || [];
+        
+        for (const field of allowedFields) {
+            if (field in updates) {
+                if (field === 'labels') {
+                    // Check if this is a spam-related update (contains 'Spam' or 'Inbox' manipulation)
+                    const hasSpamUpdate = updates[field].some(label => 
+                        label === 5 || label === 1
+                    );
+                    
+                    if (hasSpamUpdate) {
+                        // For spam updates, allow full control over labels
+                        mail[field] = updates[field];
+                    } else {
+                        // For regular updates, preserve system labels and merge with new labels
+                        const currentSystemLabels = (mail[field] || []).filter(label => 
+                            typeof label === 'string' && systemLabels.includes(label)
+                        );
+                        const newUserLabels = updates[field].filter(label => 
+                            typeof label === 'number' || (typeof label === 'string' && !systemLabels.includes(label))
+                        );
+                        mail[field] = [...currentSystemLabels, ...newUserLabels];
+                    }
+                    
+                    // Update the mails field in labels when labels are updated
+                    const newLabels = mail[field] || [];
+                    
+                    // Remove mailId from old numeric labels that are no longer assigned
+                    const oldNumericLabels = oldLabels.filter(label => typeof label === 'number');
+                    const newNumericLabels = newLabels.filter(label => typeof label === 'number');
+                    
+                    for (const labelId of oldNumericLabels) {
+                        if (!newNumericLabels.includes(labelId)) {
+                            // Remove mailId from this label's mails array
+                            await Label.findOneAndUpdate(
+                                { username: username, id: labelId },
+                                { $pull: { mails: mail._id } }
+                            );
+                        }
+                    }
+                    
+                    // Add mailId to new numeric labels that weren't previously assigned
+                    for (const labelId of newNumericLabels) {
+                        if (!oldNumericLabels.includes(labelId)) {
+                            // Add mailId to this label's mails array if not already present
+                            await Label.findOneAndUpdate(
+                                { username: username, id: labelId },
+                                { $addToSet: { mails: mail._id } }
+                            );
+                        }
+                    }
+                } else {
+                    mail[field] = updates[field];
+                }
+            }
+        }
+        
+        // Ensure drafts remain marked as read
+        const isDraft = mail.labels && mail.labels.includes(4);
+        if (isDraft) {
+            mail.read = true;
+        }
+        
+        await mail.save();
+        
+        return {
+            id: mail.mailId,
+            from: mail.from,
+            to: mail.to,
+            cc: mail.cc,
+            subject: mail.subject,
+            body: mail.body,
+            date: mail.date,
+            read: mail.read,
+            attachments: mail.attachments,
+            labels: mail.labels
+        };
+    } catch (error) {
+        console.error('Error updating mail:', error);
+        return null;
+    }
+};
+
+const updateMailSpamStatus = async (mailId, isSpam, reportingUsername) => {
+    try {
+        // Find all users who have this email
+        const usersWithMail = await Mail.find({ mailId });
+        
+        if (usersWithMail.length === 0) {
+            return false;
+        }
+        
+        // Update the spam status for all users who have this email
+        for (const mail of usersWithMail) {
+            const username = mail.owner;
+            
             if (isSpam) {
                 // Mark as spam: remove the inbox label and add spam label
-                mail.labels = (mail.labels || []).filter(label => label !== 'Inbox' && label !== 'Sent');
+                mail.labels = (mail.labels || []).filter(label => label !== 1 && label !== 2);
                 
                 // Only add SPAM label to the reporting user 
                 if (username === reportingUsername) {
-                    mail.labels.push('Spam');
+                    mail.labels.push(5);
                 }
             } else {
                 // Unmark as spam: remove 'Spam' and add appropriate label based on user role
-                mail.labels = (mail.labels || []).filter(label => label !== 'Spam');
+                mail.labels = (mail.labels || []).filter(label => label !== 5);
                 if (username === reportingUsername) {
                     // If the user is the reporting user, add 'Inbox' label
-                    mail.labels.push('Inbox');
+                    mail.labels.push(1);
                 } else {
                     // For other users, add 'Sent' label if it was sent by them
                     if (mail.from === username) {
-                        mail.labels.push('Sent');
+                        mail.labels.push(2);
                     }
                 }
             }
+            
+            await mail.save();
         }
+        
+        return true;
+    } catch (error) {
+        console.error('Error updating mail spam status:', error);
+        return false;
     }
-    
-    return usersWithMail.length > 0;
 };
 
-export { mails, getLatestMails, createNewMail, createNewDraft, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail, updateMailSpamStatus };
+const extractUrlsFromMail = (mail) => {
+    const urlRegex = /https?:\/\/[^\s]+/g;
+    const urls = [];
+    
+    // Extract URLs from all string fields
+    const fields = [mail.from, mail.subject, mail.body];
+    
+    // Add to and cc arrays
+    if (Array.isArray(mail.to)) {
+        fields.push(...mail.to);
+    } else if (mail.to) {
+        fields.push(mail.to);
+    }
+    
+    if (Array.isArray(mail.cc)) {
+        fields.push(...mail.cc);
+    }
+    
+    // Check attachments if they exist
+    if (mail.attachments && Array.isArray(mail.attachments)) {
+        mail.attachments.forEach(attachment => {
+            if (attachment.filename) {
+                fields.push(attachment.filename);
+            }
+        });
+    }
+    
+    // Extract URLs from all fields
+    fields.forEach(field => {
+        if (typeof field === 'string') {
+            const matches = field.match(urlRegex);
+            if (matches) {
+                urls.push(...matches);
+            }
+        }
+    });
+    
+    return [...new Set(urls)]; // Remove duplicates
+};
+
+const deleteMail = async (username, mailId) => {
+    try {
+        const mail = await Mail.findOne({ owner: username, mailId });
+        if (!mail) {
+            return false;
+        }
+        
+        // Get the mail's labels before deleting
+        const mailLabels = mail.labels || [];
+        
+        // Remove this mail from all numeric labels' mails arrays
+        const numericLabels = mailLabels.filter(label => typeof label === 'number');
+        for (const labelId of numericLabels) {
+            await Label.findOneAndUpdate(
+                { username: username, id: labelId },
+                { $pull: { mails: mail._id } }
+            );
+        }
+        
+        // Delete the mail
+        const result = await Mail.deleteOne({ owner: username, mailId });
+        return result.deletedCount > 0;
+    } catch (error) {
+        console.error('Error deleting mail:', error);
+        return false;
+    }
+};
+
+export { createNewDraft, createNewMail, getMails, getMail, updateMail, deleteMail, extractUrlsFromMail, updateMailSpamStatus };
