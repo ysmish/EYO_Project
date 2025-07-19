@@ -121,11 +121,11 @@ public class HomeViewModel extends AndroidViewModel {
         setCurrentFilter("example");
     }
     
-    // Compose action
+    // Compose action - now handled by ComposeActivity
+    // This method is no longer needed but kept for backward compatibility
     public void openCompose() {
-        // TODO: Implement compose functionality
-        // For now, just set a message
-        setErrorMessage("Compose functionality will be implemented later");
+        // Compose functionality is now handled by ComposeActivity
+        // This method is deprecated and will be removed in future versions
     }
     
     // Search functionality

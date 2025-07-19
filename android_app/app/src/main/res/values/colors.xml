@@ -10,6 +10,16 @@
     <color name="app_primary">#FF4F46E5</color>
     <color name="app_primary_dark">#FF3730A3</color>
     
+    <!-- Compose Activity Colors - Light mode -->
+    <color name="compose_background">#F8F9FA</color>
+    <color name="compose_card_background">#FFFFFF</color>
+    <color name="compose_action_bar_background">#FFFFFF</color>
+    <color name="compose_divider">#E0E0E0</color>
+    <color name="compose_label_text">#546E7A</color>
+    <color name="compose_hint_text">#78909C</color>
+    <color name="compose_input_text">#000000</color>
+    <color name="compose_delete_text">#D32F2F</color>
+    
     <!-- Mail item colors - Light mode -->
     <color name="mail_background">#FFFFFF</color>
     <color name="mail_divider">#F0F0F0</color>

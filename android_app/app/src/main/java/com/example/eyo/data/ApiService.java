@@ -1,8 +1,11 @@
 package com.example.eyo.data;
 
+import com.example.eyo.data.requests.CheckUserRequest;
 import com.example.eyo.data.requests.LoginRequest;
 import com.example.eyo.data.requests.RegisterRequest;
+import com.example.eyo.data.requests.SaveDraftRequest;
 import com.example.eyo.data.requests.SearchRequest;
+import com.example.eyo.data.requests.SendMailRequest;
 
 import java.util.List;
 
@@ -25,6 +28,21 @@ public class ApiService {
     
     public static void searchMails(String query, String authToken, ApiCallback<List<Mail>> callback) {
         SearchRequest request = new SearchRequest(query, authToken);
+        new GenericApiTask<>(request, callback).execute();
+    }
+    
+    public static void sendMail(Mail mail, String authToken, ApiCallback<String> callback) {
+        SendMailRequest request = new SendMailRequest(mail, authToken);
+        new GenericApiTask<>(request, callback).execute();
+    }
+    
+    public static void checkUser(String username, String authToken, ApiCallback<Boolean> callback) {
+        CheckUserRequest request = new CheckUserRequest(username, authToken);
+        new GenericApiTask<>(request, callback).execute();
+    }
+    
+    public static void saveDraft(List<String> toList, List<String> ccList, String subject, String body, String authToken, ApiCallback<String> callback) {
+        SaveDraftRequest request = new SaveDraftRequest(toList, ccList, subject, body, authToken);
         new GenericApiTask<>(request, callback).execute();
     }
 } 

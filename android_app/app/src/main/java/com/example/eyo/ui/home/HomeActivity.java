@@ -123,8 +123,9 @@ public class HomeActivity extends AppCompatActivity
         });
         
         fabCompose.setOnClickListener(v -> {
-            viewModel.openCompose();
-            Toast.makeText(this, "Compose clicked", Toast.LENGTH_SHORT).show();
+            // Open ComposeActivity
+            Intent intent = new Intent(this, com.example.eyo.ui.compose.ComposeActivity.class);
+            startActivity(intent);
         });
         
         // Search functionality

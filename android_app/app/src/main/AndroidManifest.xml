@@ -33,6 +33,15 @@
         <activity
             android:name=".ui.home.HomeActivity"
             android:exported="false" />
+        
+        <activity
+            android:name=".ui.compose.ComposeActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.home.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.home.HomeActivity" />
+        </activity>
 
     </application>
 
