@@ -62,18 +62,23 @@
                 android:maxLines="1"
                 android:ellipsize="end" />
 
-            <TextView
-                android:id="@+id/mail_preview"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:text="This is a preview of the email content..."
-                android:textColor="@color/mail_preview_text"
-                android:textSize="12sp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/mail_preview"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:text="This is a preview of the email content..."
+                    android:textColor="@color/mail_preview_text"
+                    android:textSize="12sp" />
 
         <ImageButton
             android:id="@+id/star_icon"

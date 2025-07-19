@@ -39,6 +39,11 @@ public class UserRepository {
         void onError(String error);
     }
     
+    public interface CreateLabelCallback {
+        void onSuccess(String message);
+        void onError(String error);
+    }
+    
     public interface GetUserDataCallback {
         void onSuccess(User user);
         void onError(String error);
@@ -165,6 +170,30 @@ public class UserRepository {
             @Override
             public void onSuccess(List<Label> labels) {
                 callback.onSuccess(labels);
+            }
+            
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
+        });
+    }
+    
+    public void createLabel(String name, String color, String authToken, CreateLabelCallback callback) {
+        if (authToken == null || authToken.isEmpty()) {
+            callback.onError("Authentication token is required");
+            return;
+        }
+        
+        if (name == null || name.trim().isEmpty()) {
+            callback.onError("Label name is required");
+            return;
+        }
+        
+        ApiService.createLabel(name.trim(), color, authToken, new ApiService.ApiCallback<String>() {
+            @Override
+            public void onSuccess(String message) {
+                callback.onSuccess(message);
             }
             
             @Override

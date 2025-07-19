@@ -49,6 +49,7 @@
                     android:src="@drawable/ic_arrow_back"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Close and save draft"
+                    android:tint="@color/action_icon_tint"
                     android:padding="12dp" />
 
                 <!-- Spacer -->
@@ -64,6 +65,7 @@
                     android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Send email"
+                    android:tint="@color/action_icon_tint"
                     android:padding="12dp"
                     android:src="@drawable/ic_send" />
 
@@ -74,6 +76,7 @@
                     android:src="@drawable/ic_delete"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Delete without saving"
+                    android:tint="@color/action_icon_tint"
                     android:padding="12dp"/>
 
                 <!-- Send button -->
@@ -98,9 +101,9 @@
                     android:textSize="14sp"
                     android:padding="12dp"
                     android:hint="To"
-                    android:background="@drawable/search_background"
                     android:textColor="@color/compose_input_text"
-                    android:textColorHint="@color/compose_hint_text" />
+                    android:textColorHint="@color/compose_hint_text"
+                    android:background="@android:color/transparent" />
 
                 <ImageButton
                     android:id="@+id/btn_add_cc"
@@ -139,9 +142,9 @@
                     android:textSize="14sp"
                     android:padding="12dp"
                     android:hint="CC"
-                    android:background="@drawable/search_background"
                     android:textColor="@color/compose_input_text"
-                    android:textColorHint="@color/compose_hint_text" />
+                    android:textColorHint="@color/compose_hint_text"
+                    android:background="@android:color/transparent" />
 
                 <ImageButton
                     android:id="@+id/btn_remove_cc"
@@ -168,10 +171,10 @@
                 android:inputType="text"
                 android:textSize="14sp"
                 android:padding="12dp"
-                android:background="@drawable/search_background"
                 android:textColor="@color/compose_input_text"
                 android:hint="Subject"
-                android:textColorHint="@color/compose_hint_text">
+                android:textColorHint="@color/compose_hint_text"
+                android:background="@android:color/transparent">
                 </EditText>
 
             <!-- Divider -->
@@ -191,10 +194,10 @@
                 android:textSize="14sp"
                 android:lineSpacingExtra="2dp"
                 android:padding="12dp"
-                android:background="@drawable/search_background"
                 android:textColor="@color/compose_input_text"
                 android:hint="Compose mail"
                 android:textColorHint="@color/compose_hint_text"
+                android:background="@android:color/transparent"
                 android:layout_marginBottom="20dp" />
 
 

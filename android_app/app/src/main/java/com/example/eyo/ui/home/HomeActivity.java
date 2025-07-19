@@ -31,7 +31,9 @@ import com.example.eyo.utils.TokenManager;
 
 public class HomeActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CODE_CREATE_LABEL = 100;
     private static final int REQUEST_CODE_MAIL_DETAIL = 1001;
+
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -77,6 +79,9 @@ public class HomeActivity extends AppCompatActivity {
         // Set default navigation item and load inbox mails
         navigationView.setCheckedItem(R.id.nav_inbox);
         viewModel.navigateToInbox(); // Load initial inbox mails
+        
+        // Load user labels for the navigation menu
+        viewModel.loadUserLabels();
     }
 
     private void initViews() {
@@ -227,6 +232,20 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     @SuppressWarnings("deprecation")
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        // Check if this is the result from CreateLabelActivity
+        if (requestCode == REQUEST_CODE_CREATE_LABEL && resultCode == RESULT_OK) {
+            // Add a small delay to ensure the server has processed the label creation
+            // then reload labels to show the newly created label
+            new android.os.Handler().postDelayed(() -> {
+                viewModel.loadUserLabels();
+            }, 500); // 500ms delay
+        }
+    }
+    
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {

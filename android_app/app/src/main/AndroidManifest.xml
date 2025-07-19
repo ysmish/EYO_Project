@@ -42,6 +42,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.home.HomeActivity" />
         </activity>
+        
+        <activity
+            android:name=".ui.labels.CreateLabelActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.home.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.home.HomeActivity" />
+        </activity>
 
         <activity
             android:name=".ui.mail.MailDetailActivity"

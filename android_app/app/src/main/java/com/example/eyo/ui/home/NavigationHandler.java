@@ -1,5 +1,6 @@
 package com.example.eyo.ui.home;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -19,6 +20,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.example.eyo.R;
 import com.example.eyo.data.Label;
 import com.example.eyo.ui.auth.LoginActivity;
+import com.example.eyo.ui.labels.CreateLabelActivity;
 import com.example.eyo.viewmodel.HomeViewModel;
 
 import java.util.List;
@@ -48,19 +50,13 @@ public class NavigationHandler implements NavigationView.OnNavigationItemSelecte
         
         Menu menu = navigationView.getMenu();
         
-        // Find the Labels submenu
+        // Find the Labels submenu by title
         SubMenu labelsSubmenu = null;
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
-            if (item.hasSubMenu()) {
-                SubMenu subMenu = item.getSubMenu();
-                for (int j = 0; j < subMenu.size(); j++) {
-                    if (subMenu.getItem(j).getItemId() == R.id.nav_example) {
-                        labelsSubmenu = subMenu;
-                        break;
-                    }
-                }
-                if (labelsSubmenu != null) break;
+            if (item.hasSubMenu() && "Labels".equals(item.getTitle().toString())) {
+                labelsSubmenu = item.getSubMenu();
+                break;
             }
         }
         
@@ -91,6 +87,17 @@ public class NavigationHandler implements NavigationView.OnNavigationItemSelecte
                 
                 labelItem.setCheckable(true);
             }
+            
+            // Add "Create New Label" button at the end
+            MenuItem createLabelItem = labelsSubmenu.add(Menu.NONE, R.id.nav_create_label, Menu.NONE, "Create new");
+            Drawable addIconDrawable = ContextCompat.getDrawable(context, R.drawable.ic_add);
+            if (addIconDrawable != null) {
+                addIconDrawable = DrawableCompat.wrap(addIconDrawable).mutate();
+                int tintColor = ContextCompat.getColor(context, R.color.navigation_icon_tint);
+                DrawableCompat.setTint(addIconDrawable, tintColor);
+                createLabelItem.setIcon(addIconDrawable);
+            }
+            createLabelItem.setCheckable(false);
         }
     }
     
@@ -113,6 +120,8 @@ public class NavigationHandler implements NavigationView.OnNavigationItemSelecte
         } else if (id == R.id.nav_example) {
             // This should not happen anymore as we remove the example
             viewModel.navigateToExample();
+        } else if (id == R.id.nav_create_label) {
+            handleCreateNewLabel();
         } else if (id == R.id.nav_logout) {
             handleLogout();
         } else {
@@ -148,6 +157,18 @@ public class NavigationHandler implements NavigationView.OnNavigationItemSelecte
         // Finish the current activity if it's an Activity
         if (context instanceof android.app.Activity) {
             ((android.app.Activity) context).finish();
+        }
+    }
+    
+    /**
+     * Handles the create new label functionality
+     */
+    private void handleCreateNewLabel() {
+        Intent intent = new Intent(context, CreateLabelActivity.class);
+        if (context instanceof Activity) {
+            ((Activity) context).startActivityForResult(intent, 100); // REQUEST_CODE_CREATE_LABEL = 100
+        } else {
+            context.startActivity(intent);
         }
     }
 } 

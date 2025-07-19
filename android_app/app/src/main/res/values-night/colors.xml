@@ -18,4 +18,18 @@
     <color name="mail_preview_text">#AAAAAA</color>
     <color name="mail_read_all">#AAAAAA</color>
     <color name="mail_draft_text">#FF5252</color>
+    
+    <!-- Profile dialog colors - Dark mode -->
+    <color name="profile_picture_background">#2C2C2C</color>
+    
+    <!-- Search bar colors - Dark mode -->
+    <color name="search_wrapper_background">#2C2C2C</color>
+    <color name="search_wrapper_border">#3C3C3C</color>
+    
+    <!-- Dark theme specific colors -->
+    <color name="navigation_icon_tint">#FFFFFF</color>
+    <color name="profile_icon_tint">#AAAAAA</color>
+    <color name="action_icon_tint">#FFFFFF</color>
+    <color name="menu_icon_tint">#FFFFFF</color>
+    <color name="sender_avatar_tint">#888888</color>
 </resources> 
