@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 
 import com.example.eyo.data.Label;
 import com.example.eyo.data.Mail;
+import com.example.eyo.data.User;
 import com.example.eyo.repository.UserRepository;
 import com.example.eyo.utils.TokenManager;
 
@@ -22,6 +23,7 @@ public class HomeViewModel extends AndroidViewModel {
     private MutableLiveData<List<Mail>> mails;
     private MutableLiveData<String> categoryTitle;
     private MutableLiveData<List<Label>> userLabels;
+    private MutableLiveData<User> currentUser;
     
     // Navigation states
     private MutableLiveData<String> selectedNavItem;
@@ -44,6 +46,7 @@ public class HomeViewModel extends AndroidViewModel {
         mails = new MutableLiveData<>();
         categoryTitle = new MutableLiveData<>();
         userLabels = new MutableLiveData<>();
+        currentUser = new MutableLiveData<>();
         
         // Initialize repository
         userRepository = new UserRepository();
@@ -57,8 +60,9 @@ public class HomeViewModel extends AndroidViewModel {
         mails.setValue(null);
         categoryTitle.setValue("Inbox mails");
         
-        // Load user labels
+        // Load user labels and current user data
         loadUserLabels();
+        loadCurrentUserData();
     }
     
     // Getters for LiveData
@@ -92,6 +96,10 @@ public class HomeViewModel extends AndroidViewModel {
     
     public LiveData<List<Label>> getUserLabels() {
         return userLabels;
+    }
+    
+    public LiveData<User> getCurrentUser() {
+        return currentUser;
     }
     
     // Methods to update state
@@ -207,6 +215,31 @@ public class HomeViewModel extends AndroidViewModel {
             @Override
             public void onError(String error) {
                 setErrorMessage("Failed to load labels: " + error);
+            }
+        });
+    }
+    
+    // Load current user data
+    public void loadCurrentUserData() {
+        String authToken = tokenManager.getBearerToken();
+        String username = tokenManager.getUsername();
+        
+        if (authToken == null || username == null) {
+            setErrorMessage("Authentication required. Please login again.");
+            return;
+        }
+        
+        userRepository.getUserData(username, authToken, new UserRepository.GetUserDataCallback() {
+            @Override
+            public void onSuccess(User user) {
+                currentUser.setValue(user);
+            }
+            
+            @Override
+            public void onError(String error) {
+                // Don't show error for user data loading failure as it's not critical
+                // Just log it or set a default user
+                currentUser.setValue(null);
             }
         });
     }

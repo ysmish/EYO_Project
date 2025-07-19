@@ -35,4 +35,10 @@
     <color name="chip_background_end">#E9ECEF</color>
     <color name="chip_border_color">#DEE2E6</color>
     <color name="chip_text_color">#495057</color>
+    <!-- Profile dialog colors -->
+    <color name="profile_picture_background">#F5F5F5</color>
+    
+    <!-- Search bar colors -->
+    <color name="search_wrapper_background">#F0F4F8</color>
+    <color name="search_wrapper_border">#E2E8F0</color>
 </resources>

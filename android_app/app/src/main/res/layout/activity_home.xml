@@ -19,37 +19,56 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            android:background="?attr/colorPrimary"
-            android:gravity="center_vertical">
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:background="@color/mail_background">
 
-            <!-- Sidebar toggle button -->
-            <ImageButton
-                android:id="@+id/btn_sidebar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_menu"
-                android:contentDescription="Open sidebar"
-                android:tint="@color/white" />
-
-            <!-- Search EditText -->
-            <EditText
-                android:id="@+id/search_edit_text"
-                android:layout_width="0dp"
+            <!-- Search wrapper containing all three elements -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="16dp"
-                android:hint="Search mails..."
-                android:textColorHint="@color/white"
-                android:textColor="@color/white"
+                android:orientation="horizontal"
                 android:background="@drawable/search_background"
-                android:padding="12dp"
-                android:inputType="text"
-                android:drawableStart="@drawable/ic_search"
-                android:drawablePadding="8dp"
-                android:drawableTint="@color/white" />
+                android:gravity="center_vertical"
+                android:padding="8dp">
+
+                <!-- Sidebar toggle button -->
+                <ImageButton
+                    android:id="@+id/btn_sidebar"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_menu"
+                    android:contentDescription="Open sidebar"
+                    android:tint="@color/black" />
+
+                <!-- Search EditText -->
+                <EditText
+                    android:id="@+id/search_edit_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:hint="Search mails..."
+                    android:textColorHint="@android:color/darker_gray"
+                    android:textColor="@color/black"
+                    android:background="@android:color/transparent"
+                    android:padding="0dp"
+                    android:inputType="text" />
+
+                <!-- Profile Picture Button -->
+                <ImageButton
+                    android:id="@+id/btn_profile"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_person"
+                    android:contentDescription="User Profile"
+                    android:tint="@color/black"
+                    android:scaleType="centerCrop" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
