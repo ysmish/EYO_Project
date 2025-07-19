@@ -4,11 +4,13 @@ import com.example.eyo.data.requests.CheckUserRequest;
 import com.example.eyo.data.requests.CreateLabelRequest;
 import com.example.eyo.data.requests.DeleteMailRequest;
 import com.example.eyo.data.requests.GetLabelsRequest;
+import com.example.eyo.data.requests.GetMailRequest;
 import com.example.eyo.data.requests.GetUserRequest;
 import com.example.eyo.data.requests.LoginRequest;
 import com.example.eyo.data.requests.RegisterRequest;
 import com.example.eyo.data.requests.SaveDraftRequest;
 import com.example.eyo.data.requests.SearchRequest;
+import com.example.eyo.data.requests.SendDraftRequest;
 import com.example.eyo.data.requests.SendMailRequest;
 import com.example.eyo.data.requests.UpdateMailRequest;
 
@@ -56,8 +58,14 @@ public class ApiService {
         new GenericApiTask<>(request, callback).execute();
     }
     
+
     public static void createLabel(String name, String color, String authToken, ApiCallback<String> callback) {
         CreateLabelRequest request = new CreateLabelRequest(name, color, authToken);
+        new GenericApiTask<>(request, callback).execute();
+    }
+
+    public static void getMail(int mailId, String authToken, ApiCallback<Mail> callback) {
+        GetMailRequest request = new GetMailRequest(mailId, authToken);
         new GenericApiTask<>(request, callback).execute();
     }
     
@@ -78,6 +86,11 @@ public class ApiService {
     
     public static void deleteMail(int mailId, String authToken, ApiCallback<String> callback) {
         DeleteMailRequest request = new DeleteMailRequest(mailId, authToken);
+        new GenericApiTask<>(request, callback).execute();
+    }
+    
+    public static void sendDraft(int draftId, List<String> toList, List<String> ccList, String subject, String body, String authToken, ApiCallback<String> callback) {
+        SendDraftRequest request = new SendDraftRequest(draftId, toList, ccList, subject, body, authToken);
         new GenericApiTask<>(request, callback).execute();
     }
 } 

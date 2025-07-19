@@ -52,6 +52,33 @@
                 android:value=".ui.home.HomeActivity" />
         </activity>
 
+        <activity
+            android:name=".ui.mail.MailDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.home.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.home.HomeActivity" />
+        </activity>
+
+        <activity
+            android:name=".ui.demo.MailDetailDemoActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.home.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.home.HomeActivity" />
+        </activity>
+
+        <activity
+            android:name=".ui.demo.LabelChipsDemoActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.home.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.home.HomeActivity" />
+        </activity>
+
     </application>
 
 </manifest>

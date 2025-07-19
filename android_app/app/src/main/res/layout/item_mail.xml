@@ -80,16 +80,16 @@
                     android:textColor="@color/mail_preview_text"
                     android:textSize="12sp" />
 
-                <ImageView
-                    android:id="@+id/star_icon"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_marginStart="8dp"
-                    android:src="@drawable/ic_star"
-                    android:visibility="gone" />
-
-            </LinearLayout>
-
-        </LinearLayout>
+        <ImageButton
+            android:id="@+id/star_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_star"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Star mail"
+            android:padding="6dp"
+            android:scaleType="centerInside" />
 
 </LinearLayout> 
