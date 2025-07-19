@@ -19,6 +19,7 @@ public class HomeViewModel extends AndroidViewModel {
     private MutableLiveData<Boolean> isLoading;
     private MutableLiveData<String> errorMessage;
     private MutableLiveData<List<Mail>> mails;
+    private MutableLiveData<String> categoryTitle;
     
     // Navigation states
     private MutableLiveData<String> selectedNavItem;
@@ -39,6 +40,7 @@ public class HomeViewModel extends AndroidViewModel {
         errorMessage = new MutableLiveData<>();
         selectedNavItem = new MutableLiveData<>();
         mails = new MutableLiveData<>();
+        categoryTitle = new MutableLiveData<>();
         
         // Initialize repository
         userRepository = new UserRepository();
@@ -50,6 +52,7 @@ public class HomeViewModel extends AndroidViewModel {
         isLoading.setValue(false);
         selectedNavItem.setValue("inbox");
         mails.setValue(null);
+        categoryTitle.setValue("Inbox mails");
     }
     
     // Getters for LiveData
@@ -77,10 +80,15 @@ public class HomeViewModel extends AndroidViewModel {
         return mails;
     }
     
+    public LiveData<String> getCategoryTitle() {
+        return categoryTitle;
+    }
+    
     // Methods to update state
     public void setCurrentFilter(String filter) {
         currentFilter.setValue(filter);
         selectedNavItem.setValue(filter);
+        categoryTitle.setValue(getCategoryTitleText(filter));
     }
     
     public void setSearchQuery(String query) {
@@ -97,35 +105,78 @@ public class HomeViewModel extends AndroidViewModel {
     
     // Navigation methods
     public void navigateToInbox() {
-        setCurrentFilter("inbox");
+        clearSearchAndNavigate("inbox");
     }
     
     public void navigateToSent() {
-        setCurrentFilter("sent");
+        clearSearchAndNavigate("sent");
     }
     
     public void navigateToDrafts() {
-        setCurrentFilter("drafts");
+        clearSearchAndNavigate("drafts");
     }
     
     public void navigateToStarred() {
-        setCurrentFilter("starred");
+        clearSearchAndNavigate("starred");
     }
     
     public void navigateToSpam() {
-        setCurrentFilter("spam");
+        clearSearchAndNavigate("spam");
     }
     
     // Label navigation methods
     public void navigateToExample() {
-        setCurrentFilter("example");
+        clearSearchAndNavigate("example");
     }
     
-    // Compose action - now handled by ComposeActivity
-    // This method is no longer needed but kept for backward compatibility
-    public void openCompose() {
-        // Compose functionality is now handled by ComposeActivity
-        // This method is deprecated and will be removed in future versions
+    // All mails navigation
+    public void navigateToAll() {
+        clearSearchAndNavigate("all");
+    }
+    
+    // Helper method to clear search and navigate to category
+    private void clearSearchAndNavigate(String category) {
+        setCurrentFilter(category);
+        setSearchQuery(""); // Clear search
+        loadMailsForCategoryInternal(category);
+    }
+    
+    // Load mails for specific category
+    private void loadMailsForCategoryInternal(String category) {
+        setLoading(true);
+        setErrorMessage(null);
+        
+        // Get the actual auth token from TokenManager
+        String authToken = tokenManager.getBearerToken();
+        
+        if (authToken == null) {
+            setErrorMessage("Authentication required. Please login again.");
+            setLoading(false);
+            return;
+        }
+        
+        // Build search query for the category (show all mails in that category)
+        String searchQuery;
+        if ("all".equals(category)) {
+            // For "all" category, use "in:all" to get all mails without filtering
+            searchQuery = "in:all";
+        } else {
+            searchQuery = "in:" + category;
+        }
+        
+        userRepository.searchMails(searchQuery, authToken, new UserRepository.SearchCallback() {
+            @Override
+            public void onSuccess(List<Mail> searchResults) {
+                mails.setValue(searchResults);
+                setLoading(false);
+            }
+            
+            @Override
+            public void onError(String error) {
+                setErrorMessage("Failed to load " + category + " mails: " + error);
+                setLoading(false);
+            }
+        });
     }
     
     // Search functionality
@@ -135,9 +186,14 @@ public class HomeViewModel extends AndroidViewModel {
         setErrorMessage(null);
         
         if (query.trim().isEmpty()) {
-            // If query is empty, clear results
-            mails.setValue(null);
-            setLoading(false);
+            // If query is empty, reload current category mails
+            String currentCategory = currentFilter.getValue();
+            if (currentCategory != null) {
+                loadMailsForCategoryInternal(currentCategory);
+            } else {
+                mails.setValue(null);
+                setLoading(false);
+            }
             return;
         }
         
@@ -171,29 +227,27 @@ public class HomeViewModel extends AndroidViewModel {
     private String buildSearchQuery(String query) {
         // Build search query based on current filter
         String currentFilterValue = currentFilter.getValue();
-        if (currentFilterValue == null) {
-            return query;
+        if (currentFilterValue == null || "all".equals(currentFilterValue)) {
+            return query; // No filter for "all" category
         }
         
         switch (currentFilterValue) {
             case "inbox":
-                return query + " in:inbox";
+                return "in:inbox " + query;
             case "sent":
-                return query + " in:sent";
+                return "in:sent " + query;
             case "starred":
-                return query + " in:starred";
+                return "in:starred " + query;
             case "drafts":
-                return query + " in:drafts";
+                return "in:drafts " + query;
             case "spam":
-                return query + " in:spam";
-            case "example":
-                return query + " label:example";
+                return "in:spam " + query;
             default:
                 return query;
         }
     }
     
-    // Get title for current filter
+    // Get title for current filter (for toolbar/header)
     public String getTitleForFilter(String filter) {
         switch (filter) {
             case "inbox": return "Inbox";
@@ -202,7 +256,22 @@ public class HomeViewModel extends AndroidViewModel {
             case "starred": return "Starred";
             case "spam": return "Spam";
             case "example": return "EXAMPLE";
+            case "all": return "All";
             default: return "EYO Mail";
+        }
+    }
+    
+    // Get category title with "mails" suffix for display
+    private String getCategoryTitleText(String filter) {
+        switch (filter) {
+            case "inbox": return "Inbox mails";
+            case "sent": return "Sent mails";
+            case "drafts": return "Draft mails";
+            case "starred": return "Starred mails";
+            case "spam": return "Spam mails";
+            case "example": return "EXAMPLE mails";
+            case "all": return "All mails";
+            default: return "All mails";
         }
     }
     

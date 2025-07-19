@@ -60,12 +60,25 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
+            <!-- Category indicator -->
+            <TextView
+                android:id="@+id/tv_category_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Inbox mails"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/mail_preview_text"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="16dp"
+                android:background="?attr/colorSurface" />
+
             <!-- Mail list -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/mails_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="12dp"
+                android:layout_margin="16dp"
                 android:background="@android:color/transparent"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_mail" />

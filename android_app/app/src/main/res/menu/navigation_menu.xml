@@ -22,6 +22,10 @@
             android:id="@+id/nav_spam"
             android:icon="@drawable/ic_report"
             android:title="Spam" />
+        <item
+            android:id="@+id/nav_all"
+            android:icon="@drawable/ic_mail_outline"
+            android:title="All mails" />
     </group>
 
     <item android:title="Labels">

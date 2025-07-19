@@ -176,10 +176,13 @@ public class ComposeViewModel extends AndroidViewModel {
     
     // Save as draft method
     public void saveAsDraft(List<String> toList, List<String> ccList, String subject, String body) {
+        isLoading.setValue(true);
+        
         // Get auth token
         String authToken = tokenManager.getBearerToken();
         
         if (authToken == null) {
+            isLoading.setValue(false);
             errorMessage.setValue("Authentication required. Please login again.");
             return;
         }
@@ -215,14 +218,18 @@ public class ComposeViewModel extends AndroidViewModel {
         userRepository.saveDraft(cleanToList, cleanCcList, subject, body, authToken, new UserRepository.SaveDraftCallback() {
             @Override
             public void onSuccess(String message) {
+                isLoading.setValue(false);
                 // Only show message if there was actual content saved
                 if (!"No content to save".equals(message)) {
                     successMessage.setValue("Draft saved");
+                } else {
+                    successMessage.setValue("No content to save");
                 }
             }
 
             @Override
             public void onError(String error) {
+                isLoading.setValue(false);
                 errorMessage.setValue("Failed to save draft: " + error);
             }
         });
