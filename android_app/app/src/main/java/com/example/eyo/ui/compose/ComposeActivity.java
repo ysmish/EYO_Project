@@ -29,6 +29,7 @@ public class ComposeActivity extends AppCompatActivity {
     
     private ComposeViewModel viewModel;
     private boolean isCcVisible = false;
+    private boolean isWaitingForOperation = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +61,8 @@ public class ComposeActivity extends AppCompatActivity {
 
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(ComposeViewModel.class);
+        // Clear any previous messages
+        viewModel.clearMessages();
     }
 
     private void setupClickListeners() {
@@ -112,22 +115,34 @@ public class ComposeActivity extends AppCompatActivity {
     private void observeViewModel() {
         viewModel.getIsLoading().observe(this, isLoading -> {
             if (isLoading) {
+                // Disable all buttons during loading
                 btnSend.setEnabled(false);
+                btnCloseDraft.setEnabled(false);
+                btnDelete.setEnabled(false);
             } else {
+                // Re-enable all buttons when not loading
                 btnSend.setEnabled(true);
+                btnCloseDraft.setEnabled(true);
+                btnDelete.setEnabled(true);
             }
         });
 
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+                // Reset waiting flag on error
+                isWaitingForOperation = false;
             }
         });
 
         viewModel.getSuccessMessage().observe(this, success -> {
             if (success != null) {
                 Toast.makeText(this, success, Toast.LENGTH_SHORT).show();
-                finish(); // Close activity after successful send
+                
+                // Close activity after any successful operation
+                if (isWaitingForOperation) {
+                    finish();
+                }
             }
         });
     }
@@ -180,7 +195,8 @@ public class ComposeActivity extends AppCompatActivity {
         List<String> toList = parseUsernames(to);
         List<String> ccList = cc.isEmpty() ? null : parseUsernames(cc);
 
-        // Send email through ViewModel
+        // Send email through ViewModel and wait for completion
+        isWaitingForOperation = true;
         viewModel.sendEmail(toList, ccList, subject, body);
     }
 
@@ -192,14 +208,15 @@ public class ComposeActivity extends AppCompatActivity {
         String body = etBody.getText().toString().trim();
 
         if (!to.isEmpty() || !cc.isEmpty() || !subject.isEmpty() || !body.isEmpty()) {
-            // Save as draft using the ViewModel
+            // Save as draft using the ViewModel and wait for completion
+            isWaitingForOperation = true;
             List<String> toList = parseUsernames(to);
             List<String> ccList = cc.isEmpty() ? null : parseUsernames(cc);
             viewModel.saveAsDraft(toList, ccList, subject, body);
-            Toast.makeText(this, "Draft saved", Toast.LENGTH_SHORT).show();
+        } else {
+            // No content to save, just close
+            finish();
         }
-        
-        finish();
     }
 
     private void deleteWithoutSaving() {
@@ -210,10 +227,10 @@ public class ComposeActivity extends AppCompatActivity {
         String body = etBody.getText().toString().trim();
 
         if (!to.isEmpty() || !cc.isEmpty() || !subject.isEmpty() || !body.isEmpty()) {
-            // Show confirmation dialog
             Toast.makeText(this, "Message discarded", Toast.LENGTH_SHORT).show();
         }
         
+        // Delete doesn't need server call, so finish immediately
         finish();
     }
 

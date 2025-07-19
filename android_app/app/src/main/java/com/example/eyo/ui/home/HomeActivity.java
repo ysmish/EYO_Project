@@ -41,6 +41,7 @@ public class HomeActivity extends AppCompatActivity
     private RecyclerView mailsRecyclerView;
     private View emptyState;
     private EditText searchEditText;
+    private TextView categoryTitle;
     
     private HomeViewModel viewModel;
     private MailAdapter mailAdapter;
@@ -68,8 +69,9 @@ public class HomeActivity extends AppCompatActivity
         setupClickListeners();
         observeViewModel();
         
-        // Set default navigation item
+        // Set default navigation item and load inbox mails
         navigationView.setCheckedItem(R.id.nav_inbox);
+        viewModel.navigateToInbox(); // Load initial inbox mails
     }
 
     private void initViews() {
@@ -80,6 +82,7 @@ public class HomeActivity extends AppCompatActivity
         mailsRecyclerView = findViewById(R.id.mails_recycler_view);
         emptyState = findViewById(R.id.empty_state);
         searchEditText = findViewById(R.id.search_edit_text);
+        categoryTitle = findViewById(R.id.tv_category_title);
     }
 
     private void setupNavigationDrawer() {
@@ -153,11 +156,8 @@ public class HomeActivity extends AppCompatActivity
 
     private void observeViewModel() {
         viewModel.getCurrentFilter().observe(this, filter -> {
-            // Filter changed, clear search if needed
-            if (searchEditText.getText().toString().trim().isEmpty()) {
-                // If no search query, show empty state
-                showEmptyState();
-            }
+            // Filter changed - navigation handles the mail loading
+            // No need to manually show empty state here
         });
         
         viewModel.getIsLoading().observe(this, isLoading -> {
@@ -175,14 +175,28 @@ public class HomeActivity extends AppCompatActivity
         });
         
         viewModel.getSearchQuery().observe(this, query -> {
-            // Update search edit text if needed
-            if (!searchEditText.getText().toString().equals(query)) {
+            // Update search edit text when query changes (e.g., cleared by navigation)
+            if (query != null && !searchEditText.getText().toString().equals(query)) {
                 searchEditText.setText(query);
+                // Move cursor to end if setting text
+                searchEditText.setSelection(query.length());
             }
         });
         
         viewModel.getMails().observe(this, mails -> {
             updateMailsList(mails);
+        });
+        
+        viewModel.getCategoryTitle().observe(this, title -> {
+            if (title != null) {
+                categoryTitle.setText(title);
+            }
+        });
+        
+        viewModel.getCurrentFilter().observe(this, filter -> {
+            if (filter != null && mailAdapter != null) {
+                mailAdapter.setCurrentCategory(filter);
+            }
         });
     }
 
@@ -214,7 +228,9 @@ public class HomeActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         
-        if (id == R.id.nav_inbox) {
+        if (id == R.id.nav_all) {
+            viewModel.navigateToAll();
+        } else if (id == R.id.nav_inbox) {
             viewModel.navigateToInbox();
         } else if (id == R.id.nav_sent) {
             viewModel.navigateToSent();

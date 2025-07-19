@@ -17,4 +17,5 @@
     <color name="mail_unread_subject">#FFFFFF</color>
     <color name="mail_preview_text">#AAAAAA</color>
     <color name="mail_read_all">#AAAAAA</color>
+    <color name="mail_draft_text">#FF5252</color>
 </resources> 

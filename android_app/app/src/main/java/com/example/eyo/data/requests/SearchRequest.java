@@ -112,7 +112,9 @@ public class SearchRequest implements ApiRequest<List<Mail>> {
                 List<String> labelsList = new ArrayList<>();
                 if (labelsArray != null) {
                     for (int j = 0; j < labelsArray.length(); j++) {
-                        labelsList.add(labelsArray.getString(j));
+                        // Handle both integer and string labels from server
+                        String label = labelsArray.get(j).toString();
+                        labelsList.add(label);
                     }
                 }
                 mail.setLabels(labelsList);

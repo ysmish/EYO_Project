@@ -21,6 +21,7 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
     
     private List<Mail> mails = new ArrayList<>();
     private OnMailClickListener onMailClickListener;
+    private String currentCategory = "inbox"; // Default category
     
     public interface OnMailClickListener {
         void onMailClick(Mail mail);
@@ -68,6 +69,11 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
         notifyDataSetChanged();
     }
     
+    public void setCurrentCategory(String category) {
+        this.currentCategory = category != null ? category : "inbox";
+        notifyDataSetChanged(); // Refresh to update display
+    }
+    
     class MailViewHolder extends RecyclerView.ViewHolder {
         private TextView senderName;
         private TextView mailTime;
@@ -106,8 +112,8 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
         }
         
         public void bind(Mail mail) {
-            // Set sender name (cleaned)
-            senderName.setText(mail.getCleanFrom());
+            // Set sender/draft/recipient text based on category
+            setSenderText(mail);
             
             // Set time
             mailTime.setText(mail.getFormattedTime());
@@ -133,7 +139,10 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
                 mailSubject.setTypeface(null, Typeface.NORMAL);
                 mailPreview.setTypeface(null, Typeface.NORMAL);
                 
-                senderName.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_read_all));
+                // Don't override draft color for read mails
+                if (!isDraftMail(mail)) {
+                    senderName.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_read_all));
+                }
                 mailSubject.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_read_all));
                 mailPreview.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_read_all));
             } else {
@@ -142,13 +151,70 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
                 mailSubject.setTypeface(null, Typeface.BOLD);
                 mailPreview.setTypeface(null, Typeface.NORMAL);
                 
-                senderName.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_unread_text));
+                // Don't override draft color for unread mails
+                if (!isDraftMail(mail)) {
+                    senderName.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_unread_text));
+                }
                 mailSubject.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_unread_subject));
                 mailPreview.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_preview_text));
             }
             
             // Set sender avatar (simple placeholder for now)
             senderAvatar.setImageResource(R.drawable.ic_person);
+        }
+        
+        private void setSenderText(Mail mail) {
+            if (isDraftMail(mail)) {
+                // ALWAYS show "Draft" in red for draft mails, regardless of current category
+                senderName.setText("Draft");
+                senderName.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_draft_text));
+            } else if ("sent".equals(currentCategory)) {
+                // Show "To: recipients" for sent mails (only if not draft)
+                String recipients = getRecipientsText(mail);
+                senderName.setText("To: " + recipients);
+                // Use normal color for sent mails, will be set later based on read status
+            } else {
+                // Show sender name for other categories (inbox, starred, spam, all)
+                senderName.setText(mail.getCleanFrom());
+                // Use normal color, will be set later based on read status
+            }
+        }
+        
+        private boolean isDraftMail(Mail mail) {
+            // Check if mail has draft label
+            if (mail.getLabels() != null) {
+                return mail.getLabels().contains("Drafts");
+            }
+            
+            // Also check if we're in drafts category
+            if ("drafts".equals(currentCategory)) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        private String getRecipientsText(Mail mail) {
+            StringBuilder recipients = new StringBuilder();
+            
+            // Add "to" recipients
+            if (mail.getTo() != null && !mail.getTo().isEmpty()) {
+                for (int i = 0; i < mail.getTo().size(); i++) {
+                    if (i > 0) recipients.append(", ");
+                    recipients.append(mail.getTo().get(i));
+                }
+            }
+            
+            // Add CC recipients if any
+            if (mail.getCc() != null && !mail.getCc().isEmpty()) {
+                if (recipients.length() > 0) recipients.append(", ");
+                for (int i = 0; i < mail.getCc().size(); i++) {
+                    if (i > 0) recipients.append(", ");
+                    recipients.append(mail.getCc().get(i));
+                }
+            }
+            
+            return recipients.toString();
         }
     }
 } 
