@@ -25,6 +25,17 @@ services:
     stdin_open: true
     tty: true
 
+  mongodb:
+    image: mongo:latest
+    container_name: asp_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: asp_project
+
   web_server:
     build:
       context: ./web_server
@@ -35,6 +46,7 @@ services:
       - "3000:3000"
     depends_on:
       - url_server
+      - mongodb
 
   web_app:
     build:

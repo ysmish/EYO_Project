@@ -46,8 +46,8 @@ const Labels = ({ activeSection, collapsed }) => {
         throw new Error('Failed to fetch labels');
       }
 
-      const labelsData = await response.json();
-      setLabels(labelsData);
+      const labelsData = await response.json()
+      setLabels(labelsData.filter(label => label.id > 5)); // Exclude default labels (1-5)
     } catch (error) {
       console.error('Error fetching labels:', error);
       setError('Failed to load labels');

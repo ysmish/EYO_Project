@@ -169,7 +169,7 @@ const Mail = () => {
   };
 
   const handleSpam = async () => {
-    const isSpam = mail.labels && mail.labels.includes('Spam');
+    const isSpam = mail.labels && mail.labels.includes(5);
     try {
       await fetch(`http://localhost:3000/api/mails/${mailId}`, {
         method: 'PATCH',
@@ -184,8 +184,8 @@ const Mail = () => {
       setMail(prev => ({
         ...prev,
         labels: isSpam 
-          ? (prev.labels || []).filter(label => label !== 'Spam').concat('Inbox')
-          : (prev.labels || []).filter(label => label !== 'Inbox').concat('Spam')
+          ? (prev.labels || []).filter(label => label !== 5).concat(1)
+          : (prev.labels || []).filter(label => label !== 1).concat(5)
       }));
       
       // Navigate back after marking as spam
@@ -198,10 +198,10 @@ const Mail = () => {
   };
 
   const handleStar = async () => {
-    const isStarred = mail.labels && mail.labels.includes('Starred');
+    const isStarred = mail.labels && mail.labels.includes(3);
     const newLabels = isStarred
-      ? (mail.labels || []).filter(label => label !== 'Starred')
-      : [...(mail.labels || []), 'Starred'];
+      ? (mail.labels || []).filter(label => label !== 3)
+      : [...(mail.labels || []), 3];
 
     try {
       const response = await fetch(`http://localhost:3000/api/mails/${mailId}`, {
@@ -221,8 +221,8 @@ const Mail = () => {
         // Update labels display
         setLabels(prevLabels => {
           const updatedLabels = isStarred
-            ? prevLabels.filter(label => label !== 'Starred')
-            : [...new Set([...prevLabels, 'Starred'])];
+            ? prevLabels.filter(label => label !== 3)
+            : [...new Set([...prevLabels, 3])];
           return updatedLabels;
         });
       }
@@ -300,8 +300,8 @@ const Mail = () => {
     return mail.labels && mail.labels.includes(labelId);
   };
 
-  const isStarred = mail.labels && mail.labels.includes('Starred');
-  const isSpam = mail.labels && mail.labels.includes('Spam');
+  const isStarred = mail.labels && mail.labels.includes(3);
+  const isSpam = mail.labels && mail.labels.includes(5);
   const toolbarActions = [
     {
       key: 'star',
@@ -422,7 +422,7 @@ const Mail = () => {
             left: `${labelButtonPosition.left}px`
           } : {}}
         >
-          { availableLabels.map(label => (
+          { availableLabels.filter(label => label.id > 5).map(label => (
             <button
               key={label.id}
               className={`label-dropdown-item ${isLabelApplied(label.id) ? 'applied' : ''}`}

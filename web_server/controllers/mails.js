@@ -1,9 +1,9 @@
-import { getLatestMails, createNewMail, createNewDraft, extractUrlsFromMail, getMail, deleteMailOfUser, updateMail, updateMailSpamStatus } from '../models/mails.js';
+import { getMails, createNewMail, createNewDraft, getMail, deleteMail, updateMail, extractUrlsFromMail, updateMailSpamStatus } from '../models/mails.js';
 import { checkUrl, addUrl, deleteUrl } from '../models/blacklist.js';
 import { getUser } from '../models/users.js';
 import { authorizeToken } from '../models/tokens.js';
 
-const getAllMails = (req, res) => {
+const getAllMails = async (req, res) => {
     const token = req.headers.authorization;
     if (!token) {
         return res.status(401).json({ error: 'Authorization token is required.' });
@@ -18,7 +18,7 @@ const getAllMails = (req, res) => {
     const username = authResult.username;
 
     try {
-        const latestMails = getLatestMails(username);
+        const latestMails = await getMails(username);
         return res.status(200).json(latestMails);
     } catch (error) {
         console.error('Error fetching latest mails:', error);
@@ -26,7 +26,7 @@ const getAllMails = (req, res) => {
     }
 }
 
-const getMailById = (req, res) => {
+const getMailById = async (req, res) => {
     const token = req.headers.authorization;
     
     // Check if user is authenticated
@@ -48,13 +48,18 @@ const getMailById = (req, res) => {
         return res.status(400).json({error: 'Invalid mail ID'});
     }
 
-    const mail = getMail(username, mailId);
+    try {
+        const mail = await getMail(username, mailId);
         if (!mail) {
             return res.status(404).json({error: 'Mail not found'});
         }
         else {
             return res.status(200).json(mail);
         }
+    } catch (error) {
+        console.error('Error fetching mail:', error);
+        return res.status(500).json({error: 'Internal server error.'});
+    }
 }
 
 const createMail = async (req, res) => {
@@ -79,20 +84,20 @@ const createMail = async (req, res) => {
         const toUsers = Array.isArray(to) ? to : [to];
         
         // Check if users exist
-        const senderCheck = getUser(username);
+        const senderCheck = await getUser(username);
         if (senderCheck.error) {
             return res.status(400).json({error: 'Sender user not found' });
         }
         
         for (const user of toUsers) {
-            const userCheck = getUser(user);
+            const userCheck = await getUser(user);
             if (userCheck.error) {
                 return res.status(400).json({error: `User '${user}' not found` });
             }
         }
         
         for (const user of cc) {
-            const userCheck = getUser(user);
+            const userCheck = await getUser(user);
             if (userCheck.error) {
                 return res.status(400).json({error: `User '${user}' not found` });
             }
@@ -126,7 +131,7 @@ const createMail = async (req, res) => {
 
             // If blacklisted URLs found, create mail and tag as SPAM for recipients
             if (hasBlacklistedUrls) {
-                const mailId = createNewMail(
+                const mailId = await createNewMail(
                     username,
                     toUsers,
                     cc,
@@ -136,7 +141,7 @@ const createMail = async (req, res) => {
                 );
                 
                 // Tag as SPAM for all recipients (but not for sender)
-                updateMailSpamStatus(mailId, true, username);
+                await updateMailSpamStatus(mailId, true, username);
                 
                 return res.status(201).location(`/api/mails/${mailId}`).end();
             }
@@ -146,7 +151,7 @@ const createMail = async (req, res) => {
         }
 
         // Create the mail if all URLs are valid (no blacklisted URLs found)
-        const mailId = createNewMail(
+        const mailId = await createNewMail(
             username,
             toUsers,
             cc,
@@ -180,7 +185,7 @@ const createDraft = async (req, res) => {
     const toUsers = Array.isArray(to) ? to : [to];
     
     // Check if sender exists
-    const senderCheck = getUser(username);
+    const senderCheck = await getUser(username);
     if (senderCheck.error) {
         return res.status(400).json({error: 'Sender user not found' });
     }
@@ -189,7 +194,7 @@ const createDraft = async (req, res) => {
     // We also don't need to check for blacklisted URLs since drafts are not sent
 
     // Create the draft
-    const draftId = createNewDraft(
+    const draftId = await createNewDraft(
         username,
         toUsers,
         cc,
@@ -222,7 +227,7 @@ const sendDraft = async (req, res) => {
     }
 
     // Get the draft
-    const draft = getMail(username, draftId);
+    const draft = await getMail(username, draftId);
     if (!draft) {
         return res.status(404).json({ error: 'Draft not found' });
     }
@@ -250,14 +255,14 @@ const sendDraft = async (req, res) => {
 
     // Check if users exist
     for (const user of finalTo) {
-        const userCheck = getUser(user);
+        const userCheck = await getUser(user);
         if (userCheck.error) {
             return res.status(400).json({error: `User '${user}' not found` });
         }
     }
     
     for (const user of finalCc) {
-        const userCheck = getUser(user);
+        const userCheck = await getUser(user);
         if (userCheck.error) {
             return res.status(400).json({error: `User '${user}' not found` });
         }
@@ -287,13 +292,13 @@ const sendDraft = async (req, res) => {
         // If blacklisted URLs found, create mail and tag as SPAM for recipients
         if (hasBlacklistedUrls) {
             // Delete the draft first
-            const deleteSuccess = deleteMailOfUser(username, draftId);
+            const deleteSuccess = await deleteMail(username, draftId);
             if (!deleteSuccess) {
                 return res.status(500).json({ error: 'Failed to delete draft' });
             }
 
             // Create the mail with blacklisted URLs
-            const mailId = createNewMail(
+            const mailId = await createNewMail(
                 username,
                 finalTo,
                 finalCc,
@@ -303,7 +308,7 @@ const sendDraft = async (req, res) => {
             );
             
             // Tag as SPAM for all recipients (but not for sender)
-            updateMailSpamStatus(mailId, true, username);
+            await updateMailSpamStatus(mailId, true, username);
             
             return res.status(201).json({ 
                 id: mailId, 
@@ -316,14 +321,14 @@ const sendDraft = async (req, res) => {
     }
 
     // Delete the draft first
-    const deleteSuccess = deleteMailOfUser(username, draftId);
+    const deleteSuccess = await deleteMail(username, draftId);
     if (!deleteSuccess) {
         return res.status(500).json({ error: 'Failed to delete draft' });
     }
 
     // Create the mail (URLs are valid)
     try {
-        const mailId = createNewMail(
+        const mailId = await createNewMail(
             username,
             finalTo,
             finalCc,
@@ -341,7 +346,7 @@ const sendDraft = async (req, res) => {
         
         // Try to recreate the draft since we deleted it but couldn't send
         try {
-            createNewDraft(
+            await createNewDraft(
                 username,
                 finalTo,
                 finalCc,
@@ -382,7 +387,7 @@ const patchMail = async (req, res) => {
     }
 
     // Check if the mail exists and belongs to the user
-    const mail = getMail(username, mailId);
+    const mail = await getMail(username, mailId);
     if (!mail) {
         return res.status(404).json({ error: 'Mail not found' });
     }
@@ -400,14 +405,14 @@ const patchMail = async (req, res) => {
                     await addUrl(url);
                 }
                 // Update spam status for ALL users who have this email
-                updateMailSpamStatus(mailId, true, username);
+                await updateMailSpamStatus(mailId, true, username);
             } else {
                 // Report as not spam: remove URLs from blacklist
                 for (const url of urls) {
                     await deleteUrl(url);
                 }
                 // Update spam status for ALL users who have this email
-                updateMailSpamStatus(mailId, false, username);
+                await updateMailSpamStatus(mailId, false, username);
             }
             
             // Remove reportSpam from updates since it's not a mail field
@@ -441,7 +446,7 @@ const patchMail = async (req, res) => {
     }
 
     // Update the mail
-    const success = updateMail(username, mailId, updates);
+    const success = await updateMail(username, mailId, updates);
     if (success) {
         return res.status(204).end();
     } else {
@@ -449,7 +454,7 @@ const patchMail = async (req, res) => {
     }
 };
 
-const deleteMail = (req, res) => {
+const deleteMailController = async (req, res) => {
     // Get token from header
     const token = req.headers.authorization;
     if (!token) {
@@ -471,13 +476,13 @@ const deleteMail = (req, res) => {
     }
 
     // Check if the mail exists and belongs to the user
-    const mail = getMail(username, mailId);
+    const mail = await getMail(username, mailId);
     if (!mail) {
         return res.status(404).json({ error: 'Mail not found' });
     }
 
     // Delete the mail
-    const success = deleteMailOfUser(username, mailId);
+    const success = await deleteMail(username, mailId);
     if (success) {
         return res.status(204).end();
     } else {
@@ -485,4 +490,4 @@ const deleteMail = (req, res) => {
     }
 }
 
-export { getAllMails, getMailById, createMail, createDraft, sendDraft, patchMail, deleteMail }; 
+export { getAllMails, getMailById, createMail, createDraft, sendDraft, patchMail, deleteMailController }; 

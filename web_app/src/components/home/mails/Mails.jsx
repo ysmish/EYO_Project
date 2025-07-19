@@ -30,7 +30,7 @@ const Mails = ({mails, setMails}) => {
           }
         });
         if (response.ok) {
-          const data = await response.json();
+          const data = await response.json().filter(label => label.id > 5); // Exclude default labels (1-5)
           setLabels(data);
         }
       } catch (error) {
@@ -92,7 +92,7 @@ const Mails = ({mails, setMails}) => {
   // Get display text for mail sender/recipient
   const getMailDisplayText = (mail) => {
     // If it's a draft, show "Draft"
-    if (mail.labels && mail.labels.includes('Drafts')) {
+    if (mail.labels && mail.labels.includes(4)) {
       return 'Draft';
     }
     
@@ -108,7 +108,7 @@ const Mails = ({mails, setMails}) => {
 
   // Get CSS class for mail sender/recipient
   const getMailSenderClass = (mail) => {
-    if (mail.labels && mail.labels.includes('Drafts')) {
+    if (mail.labels && mail.labels.includes(4)) {
       return 'mail-sender mail-sender--draft';
     }
     return 'mail-sender';
@@ -162,7 +162,7 @@ const Mails = ({mails, setMails}) => {
 
   const handleMailClick = (mail) => {
     // If it's a draft, open compose modal for editing
-    if (mail.labels && mail.labels.includes('Drafts')) {
+    if (mail.labels && mail.labels.includes(4)) {
       onOpenCompose(mail);
       return;
     }
@@ -446,13 +446,13 @@ const Mails = ({mails, setMails}) => {
                 <button
                   className="mail-star-btn"
                   style={{ backgroundColor: '10px' }}
-                  title={mail.labels && mail.labels.includes('Starred') ? 'Unstar' : 'Star'}
+                  title={mail.labels && mail.labels.includes(3) ? 'Unstar' : 'Star'}
                   onClick={async e => {
                     e.stopPropagation();
-                    const isStarred = mail.labels && mail.labels.includes('Starred');
+                    const isStarred = mail.labels && mail.labels.includes(3);
                     const newLabels = isStarred
-                      ? (mail.labels || []).filter(label => label !== 'Starred')
-                      : [...(mail.labels || []), 'Starred'];
+                      ? (mail.labels || []).filter(label => label !== 3)
+                      : [...(mail.labels || []), 3];
 
                     try {
                       const response = await fetch(`http://localhost:3000/api/mails/${mail.id}`, {
@@ -476,7 +476,7 @@ const Mails = ({mails, setMails}) => {
                     }
                   }}
                 >
-                  <i className={`bi ${mail.labels && mail.labels.includes('Starred') ? 'bi-star-fill' : 'bi-star'}`}></i>
+                  <i className={`bi ${mail.labels && mail.labels.includes(3) ? 'bi-star-fill' : 'bi-star'}`}></i>
                 </button>
                 <div className="mail-content">
                   <span className={getMailSenderClass(mail)}>
@@ -491,10 +491,10 @@ const Mails = ({mails, setMails}) => {
                 <div className="mail-item-actions">
                   <button
                     className="mail-spam-btn"
-                    title={mail.labels && mail.labels.includes('Spam') ? 'Not Spam' : 'Report Spam'}
+                    title={mail.labels && mail.labels.includes(5) ? 'Not Spam' : 'Report Spam'}
                     onClick={async e => {
                       e.stopPropagation();
-                      const isSpam = mail.labels && mail.labels.includes('Spam');
+                      const isSpam = mail.labels && mail.labels.includes(5);
                       try {
                         await fetch(`http://localhost:3000/api/mails/${mail.id}`, {
                           method: 'PATCH',
@@ -519,7 +519,7 @@ const Mails = ({mails, setMails}) => {
                       }
                     }}
                   >
-                    <i className={`bi ${mail.labels && mail.labels.includes('Spam') ? 'bi-check-circle' : 'bi-exclamation-triangle'}`}></i>
+                    <i className={`bi ${mail.labels && mail.labels.includes(5) ? 'bi-check-circle' : 'bi-exclamation-triangle'}`}></i>
                   </button>
                   <button
                     className="mail-label-btn"

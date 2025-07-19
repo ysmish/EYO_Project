@@ -1,31 +1,35 @@
 import jwt from 'jsonwebtoken';
-import { users } from './users.js';
+import User from '../service/User.js';
 import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
 
-
 const JWT_SECRET = process.env.JWT_SECRET;
-const generateToken = (username, password) => {
+
+const generateToken = async (username, password) => {
     if (!username || !password) {
         return { error: 'Username and password are required.' };
     }
 
-    const user = users.find(user => user.id === username && user.password === password);
-    
-    if (!user) {
-        return { error: 'Invalid username or password.' };
+    try {
+        const user = await User.findOne({ id: username, password: password });
+        
+        if (!user) {
+            return { error: 'Invalid username or password.' };
+        }
+        
+        // Generate JWT token with 2-hour expiration
+        const token = jwt.sign(
+            { username: user.id },
+            JWT_SECRET,
+            { expiresIn: '2h' }
+        );
+        
+        return { token };
+    } catch (error) {
+        return { error: 'Database error: ' + error.message };
     }
-    
-    // Generate JWT token with 2-hour expiration
-    const token = jwt.sign(
-        { username: user.id },
-        JWT_SECRET,
-        { expiresIn: '2h' }
-    );
-    
-    return { token };
 }
 
 const authorizeToken = (token) => {
