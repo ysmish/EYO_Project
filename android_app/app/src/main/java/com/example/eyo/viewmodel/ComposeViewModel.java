@@ -61,6 +61,11 @@ public class ComposeViewModel extends AndroidViewModel {
     
     // Send email method
     public void sendEmail(List<String> toList, List<String> ccList, String subject, String body) {
+        sendEmail(toList, ccList, subject, body, null);
+    }
+    
+    // Send email method with draft ID (for sending existing drafts)
+    public void sendEmail(List<String> toList, List<String> ccList, String subject, String body, Integer draftId) {
         // Validate input
         if (toList == null || toList.isEmpty()) {
             errorMessage.setValue("Please enter at least one recipient");
@@ -78,11 +83,15 @@ public class ComposeViewModel extends AndroidViewModel {
         }
         
         // Validate users exist in system
-        validateUsersExist(toList, ccList, subject, body);
+        validateUsersExist(toList, ccList, subject, body, draftId);
     }
     
     // Validate users exist in system
     private void validateUsersExist(List<String> toList, List<String> ccList, String subject, String body) {
+        validateUsersExist(toList, ccList, subject, body, null);
+    }
+    
+    private void validateUsersExist(List<String> toList, List<String> ccList, String subject, String body, Integer draftId) {
         // Set loading state
         isLoading.setValue(true);
         errorMessage.setValue(null);
@@ -115,13 +124,13 @@ public class ComposeViewModel extends AndroidViewModel {
         }
         
         // Validate all users asynchronously
-        validateUsersBatch(allUsers, authToken, toList, ccList, subject, body, 0);
+        validateUsersBatch(allUsers, authToken, toList, ccList, subject, body, draftId, 0);
     }
     
-    private void validateUsersBatch(List<String> users, String authToken, List<String> toList, List<String> ccList, String subject, String body, int index) {
+    private void validateUsersBatch(List<String> users, String authToken, List<String> toList, List<String> ccList, String subject, String body, Integer draftId, int index) {
         if (index >= users.size()) {
             // All users are valid, proceed with sending
-            proceedWithSending(toList, ccList, subject, body, authToken);
+            proceedWithSending(toList, ccList, subject, body, authToken, draftId);
             return;
         }
         
@@ -131,7 +140,7 @@ public class ComposeViewModel extends AndroidViewModel {
             public void onSuccess(Boolean userExists) {
                 if (userExists) {
                     // User exists, check next user
-                    validateUsersBatch(users, authToken, toList, ccList, subject, body, index + 1);
+                    validateUsersBatch(users, authToken, toList, ccList, subject, body, draftId, index + 1);
                 } else {
                     // User doesn't exist
                     errorMessage.setValue("User '" + currentUser + "' not found in system");
@@ -148,30 +157,51 @@ public class ComposeViewModel extends AndroidViewModel {
     }
     
     private void proceedWithSending(List<String> toList, List<String> ccList, String subject, String body, String authToken) {
-        // Create Mail object
-        Mail mail = new Mail();
-        mail.setTo(toList);
-        mail.setCc(ccList);
-        mail.setSubject(subject);
-        mail.setBody(body);
-        mail.setDate(new Date());
-        mail.setRead(false);
-        mail.setLabels(new ArrayList<>());
-        
-        // Send email through repository
-        userRepository.sendMail(mail, authToken, new UserRepository.SendMailCallback() {
-            @Override
-            public void onSuccess() {
-                isLoading.setValue(false);
-                successMessage.setValue("Email sent successfully!");
-            }
+        proceedWithSending(toList, ccList, subject, body, authToken, null);
+    }
+    
+    private void proceedWithSending(List<String> toList, List<String> ccList, String subject, String body, String authToken, Integer draftId) {
+        if (draftId != null) {
+            // Send existing draft using the sendDraft API
+            ApiService.sendDraft(draftId, toList, ccList, subject, body, authToken, new ApiService.ApiCallback<String>() {
+                @Override
+                public void onSuccess(String result) {
+                    isLoading.setValue(false);
+                    successMessage.setValue("Draft sent successfully!");
+                }
+                
+                @Override
+                public void onError(String error) {
+                    isLoading.setValue(false);
+                    errorMessage.setValue("Failed to send draft: " + error);
+                }
+            });
+        } else {
+            // Create and send new email
+            Mail mail = new Mail();
+            mail.setTo(toList);
+            mail.setCc(ccList);
+            mail.setSubject(subject);
+            mail.setBody(body);
+            mail.setDate(new Date());
+            mail.setRead(false);
+            mail.setLabels(new ArrayList<>());
             
-            @Override
-            public void onError(String error) {
-                isLoading.setValue(false);
-                errorMessage.setValue("Failed to send email: " + error);
-            }
-        });
+            // Send email through repository
+            userRepository.sendMail(mail, authToken, new UserRepository.SendMailCallback() {
+                @Override
+                public void onSuccess() {
+                    isLoading.setValue(false);
+                    successMessage.setValue("Email sent successfully!");
+                }
+                
+                @Override
+                public void onError(String error) {
+                    isLoading.setValue(false);
+                    errorMessage.setValue("Failed to send email: " + error);
+                }
+            });
+        }
     }
     
     // Save as draft method

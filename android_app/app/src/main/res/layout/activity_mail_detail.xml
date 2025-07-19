@@ -26,17 +26,19 @@
             android:contentDescription="Back"
             android:scaleType="centerInside"
             android:padding="8dp" />
-
-        <!-- Title -->
-        <TextView
+        
+        <!-- Spacer -->
+        <View
             android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <!-- Mini Action Bar -->
+        <com.example.eyo.ui.components.MiniMailActionBar
+            android:id="@+id/mini_action_bar"
+            android:layout_width="157dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp"
-            android:text="Mail Details"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/mail_unread_text" />
+            android:layout_gravity="right" />
 
     </LinearLayout>
 
@@ -74,24 +76,56 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
-                    <!-- Subject -->
-                    <TextView
-                        android:id="@+id/tv_subject"
-                        android:layout_width="match_parent"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Email Subject"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/mail_unread_text"
-                        android:layout_marginBottom="12dp" />
-
+                        android:orientation="horizontal">
+                        <!-- Subject -->
+                        <TextView
+                            android:id="@+id/tv_subject"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Email Subject"
+                            android:textSize="25sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/mail_unread_text"
+                            android:layout_marginBottom="12dp" />
+                        <!-- Spacer -->
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1" />
+                        <!-- Star Button -->
+                        <ImageButton
+                            android:id="@+id/btn_star"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/search_background"
+                            android:src="@drawable/ic_star"
+                            android:contentDescription="Star mail"
+                            android:scaleType="centerInside"
+                            android:padding="8dp" />
+                    </LinearLayout>
+                    <!-- User Avatar -->
+                    <ImageView
+                        android:id="@+id/iv_user_avatar"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/avatar_background"
+                        android:src="@drawable/ic_person"
+                        android:padding="6dp"
+                        android:scaleType="centerInside" />
                     <!-- From -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center_vertical">
+
+
+
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -236,15 +270,6 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Message"
-                        android:textStyle="bold"
-                        android:textColor="@color/compose_label_text"
-                        android:textSize="16sp"
-                        android:layout_marginBottom="12dp" />
-
                     <ScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -301,12 +326,6 @@
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
-
-            <!-- Mini Action Bar -->
-            <com.example.eyo.ui.components.MiniMailActionBar
-                android:id="@+id/mini_action_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
 
         </LinearLayout>
 
