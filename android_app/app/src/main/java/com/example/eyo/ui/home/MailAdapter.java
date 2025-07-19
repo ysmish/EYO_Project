@@ -11,17 +11,27 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.eyo.R;
+import com.example.eyo.data.ApiService;
 import com.example.eyo.data.Mail;
+import com.example.eyo.data.User;
+import com.example.eyo.utils.TokenManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder> {
     
     private List<Mail> mails = new ArrayList<>();
     private OnMailClickListener onMailClickListener;
     private String currentCategory = "inbox"; // Default category
+    
+    // Cache for user data to avoid repeated API calls
+    private Map<String, User> userCache = new HashMap<>();
+    private TokenManager tokenManager;
     
     public interface OnMailClickListener {
         void onMailClick(Mail mail);
@@ -30,6 +40,10 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
     
     public MailAdapter(OnMailClickListener listener) {
         this.onMailClickListener = listener;
+    }
+    
+    public void setTokenManager(TokenManager tokenManager) {
+        this.tokenManager = tokenManager;
     }
     
     @NonNull
@@ -159,8 +173,8 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
                 mailPreview.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.mail_preview_text));
             }
             
-            // Set sender avatar (simple placeholder for now)
-            senderAvatar.setImageResource(R.drawable.ic_person);
+            // Load sender avatar
+            loadSenderAvatar(mail, senderAvatar);
         }
         
         private void setSenderText(Mail mail) {
@@ -215,6 +229,54 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
             }
             
             return recipients.toString();
+        }
+        
+        private void loadSenderAvatar(Mail mail, ImageView senderAvatar) {
+            String senderUsername = mail.getCleanFrom();
+            
+            // Check if we have this user in cache
+            if (userCache.containsKey(senderUsername)) {
+                User cachedUser = userCache.get(senderUsername);
+                loadAvatarImage(cachedUser, senderAvatar);
+                return;
+            }
+            
+            // Set default image while loading
+            senderAvatar.setImageResource(R.drawable.ic_person);
+            
+            // Load user data from API if we have token
+            if (tokenManager != null && tokenManager.getBearerToken() != null) {
+                ApiService.getUserData(senderUsername, tokenManager.getBearerToken(), new ApiService.ApiCallback<User>() {
+                    @Override
+                    public void onSuccess(User user) {
+                        // Cache the user data
+                        userCache.put(senderUsername, user);
+                        // Load avatar image
+                        loadAvatarImage(user, senderAvatar);
+                    }
+                    
+                    @Override
+                    public void onError(String error) {
+                        // Keep default image on error
+                        // Could log error if needed for debugging
+                    }
+                });
+            }
+        }
+        
+        private void loadAvatarImage(User user, ImageView senderAvatar) {
+            if (user != null && user.getPhoto() != null && !user.getPhoto().isEmpty()) {
+                // Load user's profile picture
+                Glide.with(senderAvatar.getContext())
+                        .load(user.getPhoto())
+                        .circleCrop()
+                        .placeholder(R.drawable.ic_person)
+                        .error(R.drawable.ic_person)
+                        .into(senderAvatar);
+            } else {
+                // Use default avatar
+                senderAvatar.setImageResource(R.drawable.ic_person);
+            }
         }
     }
 } 

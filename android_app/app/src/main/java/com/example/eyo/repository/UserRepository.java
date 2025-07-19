@@ -39,6 +39,11 @@ public class UserRepository {
         void onError(String error);
     }
     
+    public interface GetUserDataCallback {
+        void onSuccess(User user);
+        void onError(String error);
+    }
+    
     public void registerUser(User user, RegistrationCallback callback) {
         ApiService.registerUser(user, new ApiService.ApiCallback<String>() {
             @Override
@@ -160,6 +165,30 @@ public class UserRepository {
             @Override
             public void onSuccess(List<Label> labels) {
                 callback.onSuccess(labels);
+            }
+            
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
+        });
+    }
+    
+    public void getUserData(String username, String authToken, GetUserDataCallback callback) {
+        if (authToken == null || authToken.isEmpty()) {
+            callback.onError("Authentication token is required");
+            return;
+        }
+        
+        if (username == null || username.isEmpty()) {
+            callback.onError("Username is required");
+            return;
+        }
+        
+        ApiService.getUserData(username, authToken, new ApiService.ApiCallback<User>() {
+            @Override
+            public void onSuccess(User user) {
+                callback.onSuccess(user);
             }
             
             @Override
