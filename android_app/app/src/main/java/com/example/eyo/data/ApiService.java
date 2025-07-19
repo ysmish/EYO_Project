@@ -3,6 +3,7 @@ package com.example.eyo.data;
 import com.example.eyo.data.requests.CheckUserRequest;
 import com.example.eyo.data.requests.DeleteMailRequest;
 import com.example.eyo.data.requests.GetLabelsRequest;
+import com.example.eyo.data.requests.GetMailRequest;
 import com.example.eyo.data.requests.LoginRequest;
 import com.example.eyo.data.requests.RegisterRequest;
 import com.example.eyo.data.requests.SaveDraftRequest;
@@ -46,6 +47,11 @@ public class ApiService {
     
     public static void getLabels(String authToken, ApiCallback<List<Label>> callback) {
         GetLabelsRequest request = new GetLabelsRequest(authToken);
+        new GenericApiTask<>(request, callback).execute();
+    }
+    
+    public static void getMail(int mailId, String authToken, ApiCallback<Mail> callback) {
+        GetMailRequest request = new GetMailRequest(mailId, authToken);
         new GenericApiTask<>(request, callback).execute();
     }
     

@@ -1,5 +1,6 @@
 package com.example.eyo.ui.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -41,6 +42,8 @@ import com.example.eyo.utils.TokenManager;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final int REQUEST_CODE_MAIL_DETAIL = 1001;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -108,8 +111,9 @@ public class HomeActivity extends AppCompatActivity
         mailAdapter = new MailAdapter(new MailAdapter.OnMailClickListener() {
             @Override
             public void onMailClick(Mail mail) {
-                // TODO: Handle mail click (open mail detail)
-                Toast.makeText(HomeActivity.this, "Mail clicked: " + mail.getSubject(), Toast.LENGTH_SHORT).show();
+                // Open mail detail activity
+                Intent intent = com.example.eyo.ui.mail.MailDetailActivity.createIntent(HomeActivity.this, mail);
+                startActivityForResult(intent, REQUEST_CODE_MAIL_DETAIL);
             }
             
             @Override
@@ -363,6 +367,17 @@ public class HomeActivity extends AppCompatActivity
             drawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == REQUEST_CODE_MAIL_DETAIL && resultCode == RESULT_OK) {
+            // Mail was deleted or updated, refresh the mail list
+            viewModel.loadUserLabels(); // Refresh labels if needed
+            // The ViewModel will automatically refresh the mails based on current filter
         }
     }
 

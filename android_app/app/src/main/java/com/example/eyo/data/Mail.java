@@ -1,9 +1,12 @@
 package com.example.eyo.data;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class Mail {
+public class Mail implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private int id;
     private String from;
     private List<String> to;
