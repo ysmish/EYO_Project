@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Compose Activity Colors - Dark mode -->
+    <color name="compose_background">#121212</color>
+    <color name="compose_card_background">#1E1E1E</color>
+    <color name="compose_action_bar_background">#1E1E1E</color>
+    <color name="compose_divider">#2C2C2C</color>
+    <color name="compose_label_text">#AAAAAA</color>
+    <color name="compose_hint_text">#888888</color>
+    <color name="compose_input_text">#FFFFFF</color>
+    <color name="compose_delete_text">#FF5252</color>
+    
     <!-- Mail item colors - Dark mode -->
     <color name="mail_background">#121212</color>
     <color name="mail_divider">#2C2C2C</color>
