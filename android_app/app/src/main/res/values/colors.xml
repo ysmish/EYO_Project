@@ -28,4 +28,11 @@
     <color name="mail_preview_text">#757575</color>
     <color name="mail_read_all">#757575</color>
     <color name="mail_draft_text">#D32F2F</color>
+    
+    <!-- Profile dialog colors -->
+    <color name="profile_picture_background">#F5F5F5</color>
+    
+    <!-- Search bar colors -->
+    <color name="search_wrapper_background">#F0F4F8</color>
+    <color name="search_wrapper_border">#E2E8F0</color>
 </resources>
