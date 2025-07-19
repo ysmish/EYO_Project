@@ -35,4 +35,11 @@
     <!-- Search bar colors -->
     <color name="search_wrapper_background">#F0F4F8</color>
     <color name="search_wrapper_border">#E2E8F0</color>
+    
+    <!-- Light theme specific colors -->
+    <color name="navigation_icon_tint">#000000</color>
+    <color name="profile_icon_tint">#666666</color>
+    <color name="action_icon_tint">#000000</color>
+    <color name="menu_icon_tint">#000000</color>
+    <color name="sender_avatar_tint">#888888</color>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.eyo.data;
 
 import com.example.eyo.data.requests.CheckUserRequest;
+import com.example.eyo.data.requests.CreateLabelRequest;
 import com.example.eyo.data.requests.DeleteMailRequest;
 import com.example.eyo.data.requests.GetLabelsRequest;
 import com.example.eyo.data.requests.GetUserRequest;
@@ -52,6 +53,11 @@ public class ApiService {
     
     public static void getLabels(String authToken, ApiCallback<List<Label>> callback) {
         GetLabelsRequest request = new GetLabelsRequest(authToken);
+        new GenericApiTask<>(request, callback).execute();
+    }
+    
+    public static void createLabel(String name, String color, String authToken, ApiCallback<String> callback) {
+        CreateLabelRequest request = new CreateLabelRequest(name, color, authToken);
         new GenericApiTask<>(request, callback).execute();
     }
     

@@ -13,4 +13,18 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <!-- Compact Navigation View Style -->
+    <style name="CompactNavigationView" parent="Widget.MaterialComponents.NavigationView">
+        <item name="itemIconSize">@dimen/nav_item_icon_size</item>
+        <item name="itemTextAppearanceInactive">@style/CompactNavigationTextAppearance</item>
+        <item name="itemTextAppearanceActive">@style/CompactNavigationTextAppearance</item>
+        <item name="itemMinHeight">@dimen/nav_item_height</item>
+        <item name="itemVerticalPadding">8dp</item>
+    </style>
+    
+    <!-- Compact Navigation Text Style -->
+    <style name="CompactNavigationTextAppearance" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:textSize">@dimen/nav_item_text_size</item>
+    </style>
 </resources>

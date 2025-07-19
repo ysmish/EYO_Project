@@ -44,7 +44,7 @@ public class ProfileDialogManager {
         // Set user data
         String fullName = user.getFirstName() + " " + user.getLastName();
         tvUserName.setText(fullName);
-        tvUsername.setText("@" + user.getUsername());
+        tvUsername.setText(user.getUsername() + "@eyo.com");
         
         // Load profile picture using Glide
         if (user.getPhoto() != null && !user.getPhoto().isEmpty()) {
