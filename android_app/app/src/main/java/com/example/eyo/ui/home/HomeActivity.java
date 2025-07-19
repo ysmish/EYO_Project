@@ -1,14 +1,21 @@
 package com.example.eyo.ui.home;
 
 import android.os.Bundle;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
@@ -16,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.eyo.R;
+import com.example.eyo.data.Label;
 import com.example.eyo.data.Mail;
 import com.example.eyo.viewmodel.HomeViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -45,6 +53,7 @@ public class HomeActivity extends AppCompatActivity
     
     private HomeViewModel viewModel;
     private MailAdapter mailAdapter;
+    private List<Label> userLabels;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -198,10 +207,71 @@ public class HomeActivity extends AppCompatActivity
                 mailAdapter.setCurrentCategory(filter);
             }
         });
+        
+        viewModel.getUserLabels().observe(this, labels -> {
+            if (labels != null) {
+                populateLabelsInNavigationMenu(labels);
+            }
+        });
     }
 
     private void updateNavigationHeader() {
         // Logo is now handled in the layout - no dynamic updates needed
+    }
+    
+    private void populateLabelsInNavigationMenu(List<Label> labels) {
+        // Store labels for use in navigation item selection
+        this.userLabels = labels;
+        
+        Menu menu = navigationView.getMenu();
+        
+        // Find the Labels submenu (assuming it's the second group after default mail folders)
+        SubMenu labelsSubmenu = null;
+        
+        // Look for the "Labels" submenu by iterating through the menu
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            if (item.hasSubMenu()) {
+                // Check if this is the labels submenu by looking for the example item
+                SubMenu subMenu = item.getSubMenu();
+                for (int j = 0; j < subMenu.size(); j++) {
+                    if (subMenu.getItem(j).getItemId() == R.id.nav_example) {
+                        labelsSubmenu = subMenu;
+                        break;
+                    }
+                }
+                if (labelsSubmenu != null) break;
+            }
+        }
+        
+        if (labelsSubmenu != null) {
+            // Clear existing label items (including the example)
+            labelsSubmenu.clear();
+            
+            // Disable automatic icon tinting for the NavigationView to allow custom colors
+            navigationView.setItemIconTintList(null);
+            
+            // Add user labels dynamically
+            for (Label label : labels) {
+                MenuItem labelItem = labelsSubmenu.add(Menu.NONE, View.generateViewId(), Menu.NONE, label.getName());
+                
+                // Create a colored icon for this label
+                Drawable iconDrawable = ContextCompat.getDrawable(this, R.drawable.ic_label);
+                if (iconDrawable != null) {
+                    iconDrawable = DrawableCompat.wrap(iconDrawable).mutate(); // Wrap and mutate for better compatibility
+                    try {
+                        int color = Color.parseColor(label.getColor());
+                        DrawableCompat.setTint(iconDrawable, color);
+                    } catch (IllegalArgumentException e) {
+                        // If color parsing fails, use default color
+                        DrawableCompat.setTint(iconDrawable, Color.parseColor("#4F46E5"));
+                    }
+                    labelItem.setIcon(iconDrawable);
+                }
+                
+                labelItem.setCheckable(true);
+            }
+        }
     }
 
     private void updateMailsList(List<Mail> mails) {
@@ -241,11 +311,23 @@ public class HomeActivity extends AppCompatActivity
         } else if (id == R.id.nav_spam) {
             viewModel.navigateToSpam();
         } else if (id == R.id.nav_example) {
+            // This should not happen anymore as we remove the example
             viewModel.navigateToExample();
         } else if (id == R.id.nav_settings) {
             Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_logout) {
             handleLogout();
+        } else {
+            // Handle dynamically created label items
+            if (userLabels != null) {
+                String itemTitle = item.getTitle().toString();
+                for (Label label : userLabels) {
+                    if (label.getName().equals(itemTitle)) {
+                        viewModel.navigateToLabel(label.getName());
+                        break;
+                    }
+                }
+            }
         }
         
         drawerLayout.closeDrawer(GravityCompat.START);

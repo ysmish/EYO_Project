@@ -1,6 +1,7 @@
 package com.example.eyo.repository;
 
 import com.example.eyo.data.ApiService;
+import com.example.eyo.data.Label;
 import com.example.eyo.data.Mail;
 import com.example.eyo.data.User;
 
@@ -30,6 +31,11 @@ public class UserRepository {
     
     public interface SaveDraftCallback {
         void onSuccess(String message);
+        void onError(String error);
+    }
+    
+    public interface GetLabelsCallback {
+        void onSuccess(List<Label> labels);
         void onError(String error);
     }
     
@@ -135,6 +141,25 @@ public class UserRepository {
             @Override
             public void onSuccess(String result) {
                 callback.onSuccess(result);
+            }
+            
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
+        });
+    }
+    
+    public void getLabels(String authToken, GetLabelsCallback callback) {
+        if (authToken == null || authToken.isEmpty()) {
+            callback.onError("Authentication token is required");
+            return;
+        }
+        
+        ApiService.getLabels(authToken, new ApiService.ApiCallback<List<Label>>() {
+            @Override
+            public void onSuccess(List<Label> labels) {
+                callback.onSuccess(labels);
             }
             
             @Override

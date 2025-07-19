@@ -1,6 +1,7 @@
 package com.example.eyo.data;
 
 import com.example.eyo.data.requests.CheckUserRequest;
+import com.example.eyo.data.requests.GetLabelsRequest;
 import com.example.eyo.data.requests.LoginRequest;
 import com.example.eyo.data.requests.RegisterRequest;
 import com.example.eyo.data.requests.SaveDraftRequest;
@@ -38,6 +39,11 @@ public class ApiService {
     
     public static void checkUser(String username, String authToken, ApiCallback<Boolean> callback) {
         CheckUserRequest request = new CheckUserRequest(username, authToken);
+        new GenericApiTask<>(request, callback).execute();
+    }
+    
+    public static void getLabels(String authToken, ApiCallback<List<Label>> callback) {
+        GetLabelsRequest request = new GetLabelsRequest(authToken);
         new GenericApiTask<>(request, callback).execute();
     }
     

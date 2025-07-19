@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.LiveData;
 
+import com.example.eyo.data.Label;
 import com.example.eyo.data.Mail;
 import com.example.eyo.repository.UserRepository;
 import com.example.eyo.utils.TokenManager;
@@ -20,6 +21,7 @@ public class HomeViewModel extends AndroidViewModel {
     private MutableLiveData<String> errorMessage;
     private MutableLiveData<List<Mail>> mails;
     private MutableLiveData<String> categoryTitle;
+    private MutableLiveData<List<Label>> userLabels;
     
     // Navigation states
     private MutableLiveData<String> selectedNavItem;
@@ -41,6 +43,7 @@ public class HomeViewModel extends AndroidViewModel {
         selectedNavItem = new MutableLiveData<>();
         mails = new MutableLiveData<>();
         categoryTitle = new MutableLiveData<>();
+        userLabels = new MutableLiveData<>();
         
         // Initialize repository
         userRepository = new UserRepository();
@@ -53,6 +56,9 @@ public class HomeViewModel extends AndroidViewModel {
         selectedNavItem.setValue("inbox");
         mails.setValue(null);
         categoryTitle.setValue("Inbox mails");
+        
+        // Load user labels
+        loadUserLabels();
     }
     
     // Getters for LiveData
@@ -82,6 +88,10 @@ public class HomeViewModel extends AndroidViewModel {
     
     public LiveData<String> getCategoryTitle() {
         return categoryTitle;
+    }
+    
+    public LiveData<List<Label>> getUserLabels() {
+        return userLabels;
     }
     
     // Methods to update state
@@ -132,6 +142,73 @@ public class HomeViewModel extends AndroidViewModel {
     // All mails navigation
     public void navigateToAll() {
         clearSearchAndNavigate("all");
+    }
+    
+    // Label navigation
+    public void navigateToLabel(String labelName) {
+        // Set current filter and category title
+        setCurrentFilter("all"); // Set filter to "all" to allow searching across all mails
+        categoryTitle.setValue(labelName); // Just label name, no "mails" suffix
+        
+        // Perform the search without updating the search query field
+        performLabelSearch(labelName);
+    }
+    
+    // Private method to search by label without affecting the search bar
+    private void performLabelSearch(String labelName) {
+        setLoading(true);
+        setErrorMessage(null);
+        
+        // Get the actual auth token from TokenManager
+        String authToken = tokenManager.getBearerToken();
+        
+        if (authToken == null) {
+            setErrorMessage("Authentication required. Please login again.");
+            setLoading(false);
+            return;
+        }
+        
+        // Build search query for the label
+        String searchQuery = "label:" + labelName;
+        
+        userRepository.searchMails(searchQuery, authToken, new UserRepository.SearchCallback() {
+            @Override
+            public void onSuccess(List<Mail> searchResults) {
+                mails.setValue(searchResults);
+                setLoading(false);
+                // Keep search query empty to not show it in the search bar
+                setSearchQuery("");
+            }
+            
+            @Override
+            public void onError(String error) {
+                setErrorMessage("Failed to load " + labelName + " mails: " + error);
+                setLoading(false);
+                // Keep search query empty even on error
+                setSearchQuery("");
+            }
+        });
+    }
+    
+    // Load user labels
+    public void loadUserLabels() {
+        String authToken = tokenManager.getBearerToken();
+        if (authToken == null) {
+            setErrorMessage("Authentication required. Please login again.");
+            return;
+        }
+        
+        userRepository.getLabels(authToken, new UserRepository.GetLabelsCallback() {
+            @Override
+            public void onSuccess(List<Label> labels) {
+                userLabels.setValue(labels);
+            }
+            
+            @Override
+            public void onError(String error) {
+                setErrorMessage("Failed to load labels: " + error);
+            }
+        });
     }
     
     // Helper method to clear search and navigate to category
