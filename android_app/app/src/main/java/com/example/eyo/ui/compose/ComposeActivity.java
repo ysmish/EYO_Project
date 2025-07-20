@@ -19,12 +19,16 @@ import com.example.eyo.R;
 import com.example.eyo.data.Mail;
 import com.example.eyo.viewmodel.ComposeViewModel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class ComposeActivity extends AppCompatActivity {
 
     private static final String EXTRA_DRAFT_MAIL = "extra_draft_mail";
+    public static final int RESULT_DRAFT_SAVED = 1001;
+    public static final int RESULT_MAIL_SENT = 1002;
+    public static final int RESULT_DRAFT_DELETED = 1003;
 
     private EditText etTo, etCc, etSubject, etBody;
     private ImageButton btnAddCc, btnRemoveCc;
@@ -161,6 +165,7 @@ public class ComposeActivity extends AppCompatActivity {
 
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
+                android.util.Log.e("ComposeActivity", "Error message received: " + error);
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
                 // Reset waiting flag on error
                 isWaitingForOperation = false;
@@ -171,8 +176,16 @@ public class ComposeActivity extends AppCompatActivity {
             if (success != null) {
                 Toast.makeText(this, success, Toast.LENGTH_SHORT).show();
                 
-                // Close activity after any successful operation
+                // Close activity after any successful operation with proper result
                 if (isWaitingForOperation) {
+                    // Determine the result based on the success message
+                    if (success.contains("sent") || success.contains("Sent")) {
+                        setResult(RESULT_MAIL_SENT);
+                    } else if (success.contains("deleted")) {
+                        setResult(RESULT_DRAFT_DELETED);
+                    } else {
+                        setResult(RESULT_DRAFT_SAVED);
+                    }
                     finish();
                 }
             }
@@ -246,40 +259,71 @@ public class ComposeActivity extends AppCompatActivity {
         String subject = etSubject.getText().toString().trim();
         String body = etBody.getText().toString().trim();
 
+        android.util.Log.d("ComposeActivity", "saveAsDraftAndClose - to: '" + to + "', cc: '" + cc + "', subject: '" + subject + "', body: '" + body + "'");
+
         if (!to.isEmpty() || !cc.isEmpty() || !subject.isEmpty() || !body.isEmpty()) {
             // Save as draft using the ViewModel and wait for completion
             isWaitingForOperation = true;
             List<String> toList = parseUsernames(to);
             List<String> ccList = cc.isEmpty() ? null : parseUsernames(cc);
-            viewModel.saveAsDraft(toList, ccList, subject, body);
+            
+            android.util.Log.d("ComposeActivity", "saveAsDraftAndClose - toList: " + toList + ", ccList: " + ccList);
+            
+            if (draftMail != null) {
+                // We're editing an existing draft - update it instead of creating new
+                android.util.Log.d("ComposeActivity", "saveAsDraftAndClose - updating existing draft: " + draftMail.getId());
+                viewModel.updateDraft(draftMail.getId(), toList, ccList, subject, body);
+            } else {
+                // We're creating a new draft
+                android.util.Log.d("ComposeActivity", "saveAsDraftAndClose - creating new draft");
+                viewModel.saveAsDraft(toList, ccList, subject, body);
+            }
         } else {
             // No content to save, just close
+            android.util.Log.d("ComposeActivity", "saveAsDraftAndClose - no content to save, closing");
             finish();
         }
     }
 
     private void deleteWithoutSaving() {
-        // Check if there's content
-        String to = etTo.getText().toString().trim();
-        String cc = etCc.getText().toString().trim();
-        String subject = etSubject.getText().toString().trim();
-        String body = etBody.getText().toString().trim();
+        // Check if we're editing an existing draft
+        if (draftMail != null) {
+            // Delete the existing draft from server
+            isWaitingForOperation = true;
+            viewModel.deleteDraft(draftMail.getId());
+        } else {
+            // Check if there's content for a new draft
+            String to = etTo.getText().toString().trim();
+            String cc = etCc.getText().toString().trim();
+            String subject = etSubject.getText().toString().trim();
+            String body = etBody.getText().toString().trim();
 
-        if (!to.isEmpty() || !cc.isEmpty() || !subject.isEmpty() || !body.isEmpty()) {
-            Toast.makeText(this, "Message discarded", Toast.LENGTH_SHORT).show();
+            if (!to.isEmpty() || !cc.isEmpty() || !subject.isEmpty() || !body.isEmpty()) {
+                Toast.makeText(this, "Message discarded", Toast.LENGTH_SHORT).show();
+            }
+            
+            // No server call needed for new draft, just close
+            finish();
         }
-        
-        // Delete doesn't need server call, so finish immediately
-        finish();
     }
 
     private List<String> parseUsernames(String usernameString) {
+        if (usernameString == null || usernameString.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        
         // Split by comma and trim whitespace
         String[] usernames = usernameString.split(",");
-        for (int i = 0; i < usernames.length; i++) {
-            usernames[i] = usernames[i].trim();
+        List<String> result = new ArrayList<>();
+        
+        for (String username : usernames) {
+            String trimmed = username.trim();
+            if (!trimmed.isEmpty()) {
+                result.add(trimmed);
+            }
         }
-        return Arrays.asList(usernames);
+        
+        return result;
     }
 
     private void populateFieldsFromDraft() {
@@ -314,6 +358,6 @@ public class ComposeActivity extends AppCompatActivity {
     public void onBackPressed() {
         // Save as draft when back button is pressed (same as X button)
         saveAsDraftAndClose();
-        super.onBackPressed();
+        // Don't call super.onBackPressed() here - let the operation complete first
     }
 } 

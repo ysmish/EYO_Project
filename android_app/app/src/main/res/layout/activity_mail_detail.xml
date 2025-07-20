@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:padding="16dp"
     android:background="@color/mail_background">
 
     <!-- Custom Action Bar -->
@@ -11,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:orientation="horizontal"
-        android:background="@color/compose_action_bar_background"
+        android:background="@color/mail_background"
         android:elevation="4dp"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp">
@@ -21,11 +23,12 @@
             android:id="@+id/btn_back"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/search_background"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back"
             android:contentDescription="Back"
             android:scaleType="centerInside"
-            android:padding="8dp" />
+            android:padding="8dp"
+            app:tint="@color/action_icon_tint" />
         
         <!-- Spacer -->
         <View
@@ -59,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingTop="24dp">
 
             <!-- Mail Header Card -->
             <androidx.cardview.widget.CardView
@@ -100,23 +103,13 @@
                             android:id="@+id/btn_star"
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:background="@drawable/search_background"
+                            android:background="?android:attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_star"
                             android:contentDescription="Star mail"
                             android:scaleType="centerInside"
                             android:padding="8dp" />
                     </LinearLayout>
-                    <!-- User Avatar -->
-                    <ImageView
-                        android:id="@+id/iv_user_avatar"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/avatar_background"
-                        android:src="@drawable/ic_person"
-                        android:padding="6dp"
-                        android:scaleType="centerInside" />
-                    <!-- From -->
+                    <!-- From with Avatar -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -124,8 +117,15 @@
                         android:layout_marginBottom="8dp"
                         android:gravity="center_vertical">
 
-
-
+                        <!-- User Avatar -->
+                        <ImageView
+                            android:id="@+id/iv_user_avatar"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_marginEnd="12dp"
+                            android:background="@drawable/avatar_background"
+                            android:src="@drawable/ic_person"
+                            android:scaleType="centerInside" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -237,15 +237,6 @@
                         android:orientation="vertical"
                         android:visibility="gone">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Labels: "
-                            android:textStyle="bold"
-                            android:textColor="@color/compose_label_text"
-                            android:textSize="14sp"
-                            android:layout_marginBottom="8dp" />
-
                         <com.example.eyo.ui.components.LabelChipsContainer
                             android:id="@+id/chips_labels"
                             android:layout_width="match_parent"
@@ -262,7 +253,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:elevation="2dp">
+                android:elevation="2dp"
+                app:cardBackgroundColor="@color/compose_card_background">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -298,7 +290,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:elevation="2dp"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/compose_card_background">
 
                 <LinearLayout
                     android:layout_width="match_parent"

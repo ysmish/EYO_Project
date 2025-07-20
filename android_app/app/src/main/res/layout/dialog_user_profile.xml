@@ -27,7 +27,7 @@
         android:text="John Doe"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="@android:color/black"
+        android:textColor="?android:attr/textColorPrimary"
         android:layout_marginBottom="8dp" />
 
     <!-- Username -->
@@ -37,7 +37,7 @@
         android:layout_height="wrap_content"
         android:text="@johndoe"
         android:textSize="14sp"
-        android:textColor="@android:color/darker_gray"
+        android:textColor="?android:attr/textColorSecondary"
         android:layout_marginBottom="16dp" />
 
     <!-- OK Button -->

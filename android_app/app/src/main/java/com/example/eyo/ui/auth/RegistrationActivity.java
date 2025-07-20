@@ -19,7 +19,7 @@ import com.google.android.material.textfield.TextInputEditText;
 
 public class RegistrationActivity extends AppCompatActivity {
 
-    private TextInputEditText etFirstName, etLastName, etBirthday, etUsername, etPassword;
+    private TextInputEditText etFirstName, etLastName, etBirthday, etUsername, etPassword, etConfirmPassword;
     private Button btnRegister;
     private ProgressBar progressBar;
     private TextView tvMessage, tvLogin;
@@ -42,6 +42,7 @@ public class RegistrationActivity extends AppCompatActivity {
         etBirthday = findViewById(R.id.etBirthday);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
+        etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnRegister = findViewById(R.id.btnRegister);
         progressBar = findViewById(R.id.progressBar);
         tvMessage = findViewById(R.id.tvMessage);
@@ -59,6 +60,13 @@ public class RegistrationActivity extends AppCompatActivity {
             String birthday = etBirthday.getText().toString().trim();
             String username = etUsername.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
+            String confirmPassword = etConfirmPassword.getText().toString().trim();
+
+            // Validate password confirmation
+            if (!password.equals(confirmPassword)) {
+                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             viewModel.registerUser(firstName, lastName, birthday, username, password);
         });
@@ -119,5 +127,6 @@ public class RegistrationActivity extends AppCompatActivity {
         etBirthday.setText("");
         etUsername.setText("");
         etPassword.setText("");
+        etConfirmPassword.setText("");
     }
 } 

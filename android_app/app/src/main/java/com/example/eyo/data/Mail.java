@@ -107,18 +107,18 @@ public class Mail implements Serializable {
     }
 
     public boolean isInInbox() {
-        return labels != null && labels.contains("Inbox");
+        return labels != null && (labels.contains("1") || labels.contains("Inbox"));
     }
 
     public boolean isInSent() {
-        return labels != null && labels.contains("Sent");
+        return labels != null && (labels.contains("2") || labels.contains("Sent"));
     }
 
-    public boolean isDraft() {
-        return labels != null && (labels.contains("Drafts") || labels.contains("4"));
+    public boolean isDraft() { 
+        return labels != null && (labels.contains("4") || labels.contains("Drafts"));
     }
 
     public boolean isSpam() {
-        return labels != null && labels.contains("Spam");
+        return labels != null && (labels.contains("5") || labels.contains("Spam"));
     }
 } 

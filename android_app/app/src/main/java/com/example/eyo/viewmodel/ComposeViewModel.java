@@ -204,7 +204,7 @@ public class ComposeViewModel extends AndroidViewModel {
         }
     }
     
-    // Save as draft method
+    // Save as draft method (creates new draft)
     public void saveAsDraft(List<String> toList, List<String> ccList, String subject, String body) {
         isLoading.setValue(true);
         
@@ -261,6 +261,102 @@ public class ComposeViewModel extends AndroidViewModel {
             public void onError(String error) {
                 isLoading.setValue(false);
                 errorMessage.setValue("Failed to save draft: " + error);
+            }
+        });
+    }
+    
+    // Update existing draft method
+    public void updateDraft(int draftId, List<String> toList, List<String> ccList, String subject, String body) {
+        isLoading.setValue(true);
+        
+        // Get auth token
+        String authToken = tokenManager.getBearerToken();
+        
+        if (authToken == null) {
+            isLoading.setValue(false);
+            errorMessage.setValue("Authentication required. Please login again.");
+            return;
+        }
+
+        // Clean the lists - remove empty entries
+        List<String> cleanToList = null;
+        if (toList != null) {
+            cleanToList = new ArrayList<>();
+            for (String user : toList) {
+                if (user != null && !user.trim().isEmpty()) {
+                    cleanToList.add(user.trim());
+                }
+            }
+            if (cleanToList.isEmpty()) {
+                cleanToList = null;
+            }
+        }
+
+        List<String> cleanCcList = null;
+        if (ccList != null) {
+            cleanCcList = new ArrayList<>();
+            for (String user : ccList) {
+                if (user != null && !user.trim().isEmpty()) {
+                    cleanCcList.add(user.trim());
+                }
+            }
+            if (cleanCcList.isEmpty()) {
+                cleanCcList = null;
+            }
+        }
+
+        // Update draft through repository
+        userRepository.updateDraft(draftId, cleanToList, cleanCcList, subject, body, authToken, new UserRepository.UpdateDraftCallback() {
+            @Override
+            public void onSuccess(String message) {
+                isLoading.setValue(false);
+                // Only show message if there was actual content saved
+                if (!"No content to save".equals(message)) {
+                    successMessage.setValue("Draft updated");
+                } else {
+                    successMessage.setValue("No content to save");
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                isLoading.setValue(false);
+                // If update fails, fall back to creating a new draft
+                if (error.contains("API endpoint not found") || error.contains("404")) {
+                    // Try to create a new draft instead
+                    saveAsDraft(toList, ccList, subject, body);
+                } else {
+                    errorMessage.setValue("Failed to update draft: " + error);
+                }
+            }
+        });
+    }
+    
+    // Delete draft method
+    public void deleteDraft(int draftId) {
+        isLoading.setValue(true);
+        
+        // Get auth token
+        String authToken = tokenManager.getBearerToken();
+        
+        if (authToken == null) {
+            isLoading.setValue(false);
+            errorMessage.setValue("Authentication required. Please login again.");
+            return;
+        }
+
+        // Delete draft through API
+        ApiService.deleteMail(draftId, authToken, new ApiService.ApiCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                isLoading.setValue(false);
+                successMessage.setValue("Draft deleted");
+            }
+
+            @Override
+            public void onError(String error) {
+                isLoading.setValue(false);
+                errorMessage.setValue("Failed to delete draft: " + error);
             }
         });
     }

@@ -65,7 +65,6 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_person"
                     android:contentDescription="User Profile"
-                    android:tint="@color/profile_icon_tint"
                     android:scaleType="centerCrop" />
 
             </LinearLayout>
