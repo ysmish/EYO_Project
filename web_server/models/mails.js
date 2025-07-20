@@ -328,10 +328,7 @@ const updateMailSpamStatus = async (mailId, isSpam, reportingUsername) => {
                 // Mark as spam: remove the inbox label and add spam label
                 mail.labels = (mail.labels || []).filter(label => label !== 1 && label !== 2);
                 
-                // Only add SPAM label to the reporting user 
-                if (username === reportingUsername) {
-                    mail.labels.push(5);
-                }
+                mail.labels.push(5); // Add 'Spam' label
             } else {
                 // Unmark as spam: remove 'Spam' and add appropriate label based on user role
                 mail.labels = (mail.labels || []).filter(label => label !== 5);
@@ -356,44 +353,33 @@ const updateMailSpamStatus = async (mailId, isSpam, reportingUsername) => {
     }
 };
 
+const extractUrlsFromString = (text) => {
+    if (!text || typeof text !== 'string') return [];
+    const urlRegex = /((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?/g;
+    return text.match(urlRegex) || [];
+};
+
 const extractUrlsFromMail = (mail) => {
-    const urlRegex = /https?:\/\/[^\s]+/g;
-    const urls = [];
+    const urls = new Set();
     
-    // Extract URLs from all string fields
-    const fields = [mail.from, mail.subject, mail.body];
-    
-    // Add to and cc arrays
-    if (Array.isArray(mail.to)) {
-        fields.push(...mail.to);
-    } else if (mail.to) {
-        fields.push(mail.to);
-    }
-    
-    if (Array.isArray(mail.cc)) {
-        fields.push(...mail.cc);
-    }
-    
-    // Check attachments if they exist
-    if (mail.attachments && Array.isArray(mail.attachments)) {
-        mail.attachments.forEach(attachment => {
-            if (attachment.filename) {
-                fields.push(attachment.filename);
-            }
-        });
-    }
-    
-    // Extract URLs from all fields
-    fields.forEach(field => {
-        if (typeof field === 'string') {
-            const matches = field.match(urlRegex);
-            if (matches) {
-                urls.push(...matches);
-            }
+    // Go through all fields in the mail object
+    for (const [key, value] of Object.entries(mail)) {
+        if (Array.isArray(value)) {
+            // Handle arrays (like cc and attachments)
+            value.forEach(item => {
+                if (typeof item === 'string') {
+                    extractUrlsFromString(item).forEach(url => urls.add(url));
+                } else if (item && typeof item === 'object' && item.name) {
+                    // Handle attachment objects with names
+                    extractUrlsFromString(item.name).forEach(url => urls.add(url));
+                }
+            });
+        } else if (typeof value === 'string') {
+            // Handle string fields
+            extractUrlsFromString(value).forEach(url => urls.add(url));
         }
-    });
-    
-    return [...new Set(urls)]; // Remove duplicates
+    }
+    return Array.from(urls);
 };
 
 const deleteMail = async (username, mailId) => {
