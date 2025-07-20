@@ -89,10 +89,10 @@ public class MiniMailActionBar extends LinearLayout {
             boolean isSpam = currentMail.isSpam();
             // Change button appearance based on spam status
             if (isSpam) {
-                btnReportSpam.setAlpha(1.0f);
+                btnReportSpam.setImageResource(R.drawable.ic_verify);
                 btnReportSpam.setContentDescription("Remove from spam");
             } else {
-                btnReportSpam.setAlpha(0.6f);
+                btnReportSpam.setImageResource(R.drawable.ic_report);
                 btnReportSpam.setContentDescription("Report as spam");
             }
         }
@@ -179,11 +179,17 @@ public class MiniMailActionBar extends LinearLayout {
             }
         });
         
-        builder.setView(dialogView)
+        AlertDialog dialog = builder.setView(dialogView)
                 .setTitle("Manage Labels")
-                .setPositiveButton("Apply", (dialog, which) -> updateMailLabels(modifiedLabels))
+                .setPositiveButton("Apply", (dialogInterface, which) -> updateMailLabels(modifiedLabels))
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+        
+        dialog.show();
+        
+        // Set custom button colors for dark mode compatibility
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getContext().getResources().getColor(R.color.dialog_button_text));
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getContext().getResources().getColor(R.color.dialog_button_text));
     }
     
     private void updateMailLabels(List<String> newLabels) {
@@ -221,12 +227,18 @@ public class MiniMailActionBar extends LinearLayout {
     private void deleteMail() {
         if (currentMail == null) return;
         
-        new AlertDialog.Builder(getContext())
+        AlertDialog deleteDialog = new AlertDialog.Builder(getContext())
                 .setTitle("Delete Mail")
                 .setMessage("Are you sure you want to delete this mail?")
                 .setPositiveButton("Delete", (dialog, which) -> performDelete())
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+        
+        deleteDialog.show();
+        
+        // Set custom button colors for dark mode compatibility
+        deleteDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getContext().getResources().getColor(R.color.dialog_button_text));
+        deleteDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getContext().getResources().getColor(R.color.dialog_button_text));
     }
     
     private void performDelete() {

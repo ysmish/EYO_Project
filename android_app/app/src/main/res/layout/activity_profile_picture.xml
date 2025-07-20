@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/compose_background"
+    tools:context=".ui.profile.ProfilePictureActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Profile Picture form card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="50dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/compose_card_background">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="16dp">
+
+                <!-- Top action bar -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="8dp"
+                    android:background="@color/compose_action_bar_background"
+                    android:elevation="1dp">
+
+                    <!-- Close button -->
+                    <ImageButton
+                        android:id="@+id/btn_close"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_arrow_back"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Close"
+                        android:padding="12dp" />
+
+                    <!-- Title -->
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Profile Picture"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/mail_unread_text"
+                        android:gravity="center"
+                        android:layout_marginHorizontal="16dp" />
+
+                    <!-- Placeholder for symmetry -->
+                    <View
+                        android:layout_width="48dp"
+                        android:layout_height="48dp" />
+
+                </LinearLayout>
+
+                <!-- Profile Picture Display -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="32dp"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/iv_profile_picture_large"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"
+                        android:background="@drawable/circle_background"
+                        android:src="@drawable/ic_person"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="Profile Picture"
+                        android:layout_marginBottom="24dp" />
+
+                    <!-- Change Profile Picture Button -->
+                    <Button
+                        android:id="@+id/btn_change_profile_picture"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Change Profile Picture"
+                        android:layout_marginTop="180dp"
+                        android:textColor="@color/white"
+                        android:backgroundTint="@color/app_primary"
+                        android:minWidth="200dp"
+                        android:padding="12dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+</ScrollView> 

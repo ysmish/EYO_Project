@@ -14,6 +14,9 @@ import com.example.eyo.data.requests.SendDraftRequest;
 import com.example.eyo.data.requests.SendMailRequest;
 import com.example.eyo.data.requests.UpdateDraftRequest;
 import com.example.eyo.data.requests.UpdateMailRequest;
+import com.example.eyo.data.requests.UpdatePhotoRequest;
+
+import java.io.File;
 
 import java.util.List;
 
@@ -57,6 +60,18 @@ public class ApiService {
     public static void getLabels(String authToken, ApiCallback<List<Label>> callback) {
         GetLabelsRequest request = new GetLabelsRequest(authToken);
         new GenericApiTask<>(request, callback).execute();
+    }
+    
+    public static void updateUserPhoto(String authToken, File imageFile, ApiCallback<String> callback) {
+        UpdatePhotoRequest request = new UpdatePhotoRequest(authToken, imageFile);
+        PhotoUploadTask task = new PhotoUploadTask(request, callback);
+        task.execute();
+    }
+    
+    public static void updateUserPhoto(String authToken, String imageUri, ApiCallback<String> callback) {
+        UpdatePhotoRequest request = new UpdatePhotoRequest(authToken, imageUri);
+        PhotoUploadTask task = new PhotoUploadTask(request, callback);
+        task.execute();
     }
     
 

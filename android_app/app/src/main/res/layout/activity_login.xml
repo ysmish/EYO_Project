@@ -15,30 +15,47 @@
         android:gravity="center">
 
         <!-- Logo -->
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/logo_b"
-            android:layout_marginBottom="32dp"
-            android:contentDescription="App Logo" />
 
-        <TextView
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Welcome Back"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="8dp" />
+            android:orientation="horizontal"
+            android:layout_marginBottom="60dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Sign in to your account"
-            android:textSize="16sp"
-            android:gravity="center"
-            android:layout_marginBottom="48dp"
-            android:textColor="@android:color/darker_gray" />
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="72dp"
+                android:contentDescription="App Logo"
+                android:src="@drawable/logo_b"
+                android:layout_marginRight="20dp"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Welcome Back"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sign in to your account"
+                    android:textSize="16sp"
+                    android:gravity="center"
+                    android:textColor="@android:color/darker_gray" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
