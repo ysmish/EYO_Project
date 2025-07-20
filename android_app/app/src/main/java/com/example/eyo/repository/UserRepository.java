@@ -34,6 +34,11 @@ public class UserRepository {
         void onError(String error);
     }
     
+    public interface UpdateDraftCallback {
+        void onSuccess(String message);
+        void onError(String error);
+    }
+    
     public interface GetLabelsCallback {
         void onSuccess(List<Label> labels);
         void onError(String error);
@@ -148,6 +153,46 @@ public class UserRepository {
         }
 
         ApiService.saveDraft(toList, ccList, subject, body, authToken, new ApiService.ApiCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                callback.onSuccess(result);
+            }
+            
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
+        });
+    }
+    
+    public void updateDraft(int draftId, List<String> toList, List<String> ccList, String subject, String body, String authToken, UpdateDraftCallback callback) {
+        if (authToken == null || authToken.isEmpty()) {
+            callback.onError("Authentication token is required");
+            return;
+        }
+
+        // Check if there's any content to save (like React app does)
+        boolean hasContent = false;
+        if (toList != null && !toList.isEmpty() && !toList.get(0).trim().isEmpty()) {
+            hasContent = true;
+        }
+        if (ccList != null && !ccList.isEmpty() && !ccList.get(0).trim().isEmpty()) {
+            hasContent = true;
+        }
+        if (subject != null && !subject.trim().isEmpty()) {
+            hasContent = true;
+        }
+        if (body != null && !body.trim().isEmpty()) {
+            hasContent = true;
+        }
+        
+        if (!hasContent) {
+            // No content to save, just return success
+            callback.onSuccess("No content to save");
+            return;
+        }
+
+        ApiService.updateDraft(draftId, toList, ccList, subject, body, authToken, new ApiService.ApiCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 callback.onSuccess(result);

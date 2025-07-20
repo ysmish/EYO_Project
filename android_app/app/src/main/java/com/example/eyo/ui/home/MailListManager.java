@@ -17,33 +17,17 @@ public class MailListManager {
     private final RecyclerView mailsRecyclerView;
     private final View emptyState;
     
-    public MailListManager(RecyclerView mailsRecyclerView, View emptyState, TokenManager tokenManager) {
+    public MailListManager(RecyclerView mailsRecyclerView, View emptyState, TokenManager tokenManager, MailAdapter mailAdapter) {
         this.mailsRecyclerView = mailsRecyclerView;
         this.emptyState = emptyState;
-        
-        // Initialize mail adapter
-        this.mailAdapter = new MailAdapter(new MailAdapter.OnMailClickListener() {
-            @Override
-            public void onMailClick(Mail mail) {
-                // TODO: Handle mail click (open mail detail)
-                Toast.makeText(mailsRecyclerView.getContext(), 
-                    "Mail clicked: " + mail.getSubject(), Toast.LENGTH_SHORT).show();
-            }
-            
-            @Override
-            public void onStarClick(Mail mail) {
-                // TODO: Handle star click (toggle star)
-                Toast.makeText(mailsRecyclerView.getContext(), 
-                    "Star clicked for: " + mail.getSubject(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        this.mailAdapter = mailAdapter;
         
         // Set TokenManager for loading sender avatars
         mailAdapter.setTokenManager(tokenManager);
         
-        // Setup RecyclerView
+        // Setup RecyclerView (adapter should already be set in HomeActivity)
         mailsRecyclerView.setLayoutManager(new LinearLayoutManager(mailsRecyclerView.getContext()));
-        mailsRecyclerView.setAdapter(mailAdapter);
+        // Note: We don't set the adapter here since it's already set in HomeActivity
     }
     
     /**

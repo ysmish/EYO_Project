@@ -26,6 +26,13 @@
     <color name="search_wrapper_background">#2C2C2C</color>
     <color name="search_wrapper_border">#3C3C3C</color>
     
+    <!-- Label Chip Colors - Dark mode -->
+    <color name="chip_background_color">#2C2C2C</color>
+    <color name="chip_background_start">#2C2C2C</color>
+    <color name="chip_background_end">#1E1E1E</color>
+    <color name="chip_border_color">#3C3C3C</color>
+    <color name="chip_text_color">#FFFFFF</color>
+    
     <!-- Dark theme specific colors -->
     <color name="navigation_icon_tint">#FFFFFF</color>
     <color name="profile_icon_tint">#AAAAAA</color>

@@ -3,6 +3,7 @@ package com.example.eyo.ui.mail;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -11,11 +12,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.eyo.R;
 import com.example.eyo.data.Mail;
 import com.example.eyo.data.Label;
+import com.example.eyo.data.User;
 import com.example.eyo.data.requests.GetLabelsRequest;
 import com.example.eyo.data.ApiService;
 import com.example.eyo.utils.TokenManager;
@@ -78,7 +80,6 @@ public class MailDetailActivity extends AppCompatActivity {
         
         initializeViews();
         setupListeners();
-        loadLabels();
         loadMailData();
     }
     
@@ -114,6 +115,8 @@ public class MailDetailActivity extends AppCompatActivity {
                 currentMail = mail;
                 updateMailDisplay();
                 Toast.makeText(MailDetailActivity.this, "Mail updated successfully", Toast.LENGTH_SHORT).show();
+                // Set result to trigger refresh in calling activity
+                setResult(RESULT_OK);
             }
             
             @Override
@@ -293,27 +296,25 @@ public class MailDetailActivity extends AppCompatActivity {
         if (currentMail == null) return;
         
         List<String> labelsList = currentMail.getLabels();
+        Log.d("MailDetailActivity", "updateLabelChipsDisplay - mail labels: " + labelsList);
+        Log.d("MailDetailActivity", "updateLabelChipsDisplay - available labels count: " + availableLabels.size());
+        
         if (labelsList != null && !labelsList.isEmpty()) {
-            // Filter out system labels and show only meaningful ones
-            List<String> meaningfulLabels = new ArrayList<>();
-            for (String label : labelsList) {
-                // Skip numeric system labels
-                if (!label.matches("\\d+")) {
-                    meaningfulLabels.add(label);
-                }
-            }
+            // Show ALL labels including system labels and custom labels
+            List<String> allLabels = new ArrayList<>(labelsList);
             
-            if (!meaningfulLabels.isEmpty()) {
+            Log.d("MailDetailActivity", "updateLabelChipsDisplay - showing labels: " + allLabels);
+            
+            if (!allLabels.isEmpty()) {
                 layoutLabels.setVisibility(View.VISIBLE);
                 
-                // If we have available labels with colors, use proper chip display
-                if (!availableLabels.isEmpty()) {
-                    chipsLabels.setAvailableLabels(availableLabels);
-                    chipsLabels.setAppliedLabels(meaningfulLabels);
-                } else {
-                    // Fall back to simple chips if labels not loaded yet
-                    chipsLabels.showSimpleChips(meaningfulLabels);
-                }
+                // Always use simple chips since the mail's labels already contain all the information
+                // This ensures system labels (Inbox, Sent, Starred, Drafts, Spam) are always shown
+                Log.d("MailDetailActivity", "Using simple chips for " + allLabels.size() + " labels");
+                chipsLabels.showSimpleChips(allLabels);
+                
+                // Update star button state after labels are displayed
+                updateStarButtonState();
             } else {
                 layoutLabels.setVisibility(View.GONE);
             }
@@ -329,46 +330,66 @@ public class MailDetailActivity extends AppCompatActivity {
             return;
         }
         
-        // For now, we'll use a placeholder avatar
-        // In the future, this could be enhanced to load user photos from the API
-        // You could extract the first letter of the email for a personalized avatar
-        String firstLetter = fromEmail.substring(0, 1).toUpperCase();
+        // Extract username from email (remove @eyo.com if present)
+        String username = fromEmail;
+        if (fromEmail.contains("@")) {
+            username = fromEmail.substring(0, fromEmail.indexOf("@"));
+        }
         
-        // Set default person icon for now
+        // Set default image while loading
         ivUserAvatar.setImageResource(R.drawable.ic_person);
         
-        // Optional: You can set the avatar background color based on the email hash
-        // to give each user a unique color
-        int colorIndex = Math.abs(fromEmail.hashCode()) % 5;
-        int[] colors = {
-            R.color.compose_label_text,
-            R.color.mail_unread_text, 
-            R.color.compose_action_bar_background,
-            R.color.compose_card_background,
-            R.color.compose_divider
-        };
+        // Load user data from API if we have token
+        TokenManager tokenManager = TokenManager.getInstance(this);
+        String authToken = tokenManager.getBearerToken();
         
-        // This would require creating a colored background drawable
-        // For now, we'll keep the default avatar background
+        if (authToken != null) {
+            ApiService.getUserData(username, authToken, new ApiService.ApiCallback<User>() {
+                @Override
+                public void onSuccess(User user) {
+                    // Load avatar image using Glide
+                    loadAvatarImage(user, ivUserAvatar);
+                }
+                
+                @Override
+                public void onError(String error) {
+                    // Keep default image on error
+                    ivUserAvatar.setImageResource(R.drawable.ic_person);
+                }
+            });
+        } else {
+            // No token available, use default
+            ivUserAvatar.setImageResource(R.drawable.ic_person);
+        }
     }
     
-    private void toggleStarStatus() {
+    private void loadAvatarImage(User user, ImageView avatarImageView) {
+        if (user != null && user.getPhoto() != null && !user.getPhoto().isEmpty()) {
+            // Load user's profile picture using Glide
+            Glide.with(this)
+                    .load(user.getPhoto())
+                    .circleCrop()
+                    .placeholder(R.drawable.ic_person)
+                    .error(R.drawable.ic_person)
+                    .into(avatarImageView);
+        } else {
+            // Use default avatar
+            avatarImageView.setImageResource(R.drawable.ic_person);
+        }
+    }
+
+        private void toggleStarStatus() {
         if (currentMail == null) return;
         
         List<String> labels = new ArrayList<>(currentMail.getLabels());
-        boolean isStarred = labels.contains("3");
+        boolean isStarred = currentMail.isStarred();
         
         if (isStarred) {
-            // Remove star label (label id 3)
-            labels.remove("3");
-            labels.removeIf(label -> label.equals("3"));
+            labels.remove("Starred");
         } else {
-            // Add star label (label id 3)
-            if (!labels.contains("3")) {
-                labels.add("3");
-            }
+            labels.add("Starred");
         }
-        
+
         // Update mail labels via API
         TokenManager tokenManager = TokenManager.getInstance(this);
         String token = tokenManager.getBearerToken();
@@ -379,9 +400,9 @@ public class MailDetailActivity extends AppCompatActivity {
                     // Update the mail object
                     currentMail.setLabels(labels);
                     updateStarButtonState();
-                    Toast.makeText(MailDetailActivity.this, 
-                        isStarred ? "Removed from starred" : "Added to starred", 
-                        Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MailDetailActivity.this,
+                            isStarred ? "Removed from starred" : "Added to starred",
+                            Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
@@ -393,19 +414,23 @@ public class MailDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "Authentication required", Toast.LENGTH_SHORT).show();
         }
     }
-    
-    private void updateStarButtonState() {
+
+        private void updateStarButtonState() {
         if (currentMail == null) return;
         
         List<String> labels = currentMail.getLabels();
-        boolean isStarred = labels != null && labels.contains("3");
+        boolean isStarred = labels != null && (labels.contains("Starred"));
+        
+        Log.d("MailDetailActivity", "updateStarButtonState - labels: " + labels + ", isStarred: " + isStarred);
         
         if (isStarred) {
             btnStar.setImageResource(R.drawable.ic_star_filled);
             btnStar.setContentDescription("Remove from starred");
+            Log.d("MailDetailActivity", "Star button set to FILLED");
         } else {
             btnStar.setImageResource(R.drawable.ic_star);
             btnStar.setContentDescription("Add to starred");
+            Log.d("MailDetailActivity", "Star button set to EMPTY");
         }
     }
     

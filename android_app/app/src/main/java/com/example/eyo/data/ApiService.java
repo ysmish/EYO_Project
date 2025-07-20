@@ -12,6 +12,7 @@ import com.example.eyo.data.requests.SaveDraftRequest;
 import com.example.eyo.data.requests.SearchRequest;
 import com.example.eyo.data.requests.SendDraftRequest;
 import com.example.eyo.data.requests.SendMailRequest;
+import com.example.eyo.data.requests.UpdateDraftRequest;
 import com.example.eyo.data.requests.UpdateMailRequest;
 
 import java.util.List;
@@ -74,6 +75,11 @@ public class ApiService {
         new GenericApiTask<>(request, callback).execute();
     }
     
+    public static void updateDraft(int draftId, List<String> toList, List<String> ccList, String subject, String body, String authToken, ApiCallback<String> callback) {
+        UpdateDraftRequest request = new UpdateDraftRequest(draftId, toList, ccList, subject, body, authToken);
+        new GenericApiTask<>(request, callback).execute();
+    }
+    
     public static void updateMail(int mailId, boolean reportSpam, String authToken, ApiCallback<String> callback) {
         UpdateMailRequest request = new UpdateMailRequest(mailId, reportSpam, authToken);
         new GenericApiTask<>(request, callback).execute();
@@ -81,6 +87,11 @@ public class ApiService {
     
     public static void updateMailLabels(int mailId, List<String> labels, String authToken, ApiCallback<String> callback) {
         UpdateMailRequest request = new UpdateMailRequest(mailId, labels, authToken);
+        new GenericApiTask<>(request, callback).execute();
+    }
+    
+    public static void updateMailReadStatus(int mailId, boolean read, String authToken, ApiCallback<String> callback) {
+        UpdateMailRequest request = new UpdateMailRequest(mailId, read, authToken, true);
         new GenericApiTask<>(request, callback).execute();
     }
     

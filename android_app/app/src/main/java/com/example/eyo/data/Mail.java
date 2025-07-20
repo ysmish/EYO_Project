@@ -103,7 +103,7 @@ public class Mail implements Serializable {
     }
 
     public boolean isStarred() {
-        return labels != null && (labels.contains("3") || labels.contains("Starred"));
+        return labels != null && labels.contains("Starred");
     }
 
     public boolean isInInbox() {
@@ -114,9 +114,7 @@ public class Mail implements Serializable {
         return labels != null && labels.contains("Sent");
     }
 
-    public boolean isDraft() {
-        return labels != null && (labels.contains("Drafts") || labels.contains("4"));
-    }
+    public boolean isDraft() { return labels != null && (labels.contains("Drafts"));}
 
     public boolean isSpam() {
         return labels != null && labels.contains("Spam");

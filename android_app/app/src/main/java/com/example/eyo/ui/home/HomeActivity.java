@@ -2,7 +2,7 @@ package com.example.eyo.ui.home;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.content.Intent;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,9 +13,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eyo.R;
+import com.example.eyo.data.Mail;
 import com.example.eyo.viewmodel.HomeViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -33,6 +35,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_CREATE_LABEL = 100;
     private static final int REQUEST_CODE_MAIL_DETAIL = 1001;
+    private static final int REQUEST_CODE_COMPOSE = 1002;
 
 
     private DrawerLayout drawerLayout;
@@ -46,6 +49,7 @@ public class HomeActivity extends AppCompatActivity {
     private TextView categoryTitle;
     
     private HomeViewModel viewModel;
+    private MailAdapter mailAdapter;
     
     // Manager classes for organized code
     private ProfileDialogManager profileDialogManager;
@@ -104,7 +108,7 @@ public class HomeActivity extends AppCompatActivity {
         profileDialogManager = new ProfileDialogManager(this);
         navigationHandler = new NavigationHandler(this, viewModel, navigationView, drawerLayout);
         searchHandler = new SearchHandler(viewModel, searchEditText);
-        mailListManager = new MailListManager(mailsRecyclerView, emptyState, tokenManager);
+        mailListManager = new MailListManager(mailsRecyclerView, emptyState, tokenManager, mailAdapter);
         
         // Set navigation listener
         navigationView.setNavigationItemSelectedListener(navigationHandler);
@@ -117,11 +121,34 @@ public class HomeActivity extends AppCompatActivity {
         mailAdapter = new MailAdapter(new MailAdapter.OnMailClickListener() {
             @Override
             public void onMailClick(Mail mail) {
+                // Mark mail as read if it's not already read and not a draft
+                if (!mail.isRead() && !mail.isDraft()) {
+                    TokenManager tokenManager = TokenManager.getInstance(HomeActivity.this);
+                    String token = tokenManager.getBearerToken();
+                    if (token != null) {
+                        com.example.eyo.data.ApiService.updateMailReadStatus(mail.getId(), true, token, new com.example.eyo.data.ApiService.ApiCallback<String>() {
+                            @Override
+                            public void onSuccess(String result) {
+                                // Update the mail object to reflect read status
+                                mail.setRead(true);
+                                // Refresh the adapter to show updated read status
+                                mailAdapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                // Continue with opening the mail even if read status update fails
+                                Log.e("HomeActivity", "Failed to mark mail as read: " + error);
+                            }
+                        });
+                    }
+                }
+                
                 // Check if this is a draft mail
                 if (mail.isDraft()) {
                     // Open compose activity for editing draft
                     Intent intent = com.example.eyo.ui.compose.ComposeActivity.createIntentForDraft(HomeActivity.this, mail);
-                    startActivity(intent);
+                    startActivityForResult(intent, REQUEST_CODE_COMPOSE);
                 } else {
                     // Open mail detail activity for regular mails
                     Intent intent = com.example.eyo.ui.mail.MailDetailActivity.createIntent(HomeActivity.this, mail);
@@ -153,7 +180,7 @@ public class HomeActivity extends AppCompatActivity {
         fabCompose.setOnClickListener(v -> {
             // Open ComposeActivity
             Intent intent = com.example.eyo.ui.compose.ComposeActivity.createIntent(this);
-            startActivity(intent);
+            startActivityForResult(intent, REQUEST_CODE_COMPOSE);
         });
         
         // Profile button click - delegate to ProfileDialogManager
@@ -244,6 +271,20 @@ public class HomeActivity extends AppCompatActivity {
                 viewModel.loadUserLabels();
             }, 500); // 500ms delay
         }
+        
+        if (requestCode == REQUEST_CODE_MAIL_DETAIL && resultCode == RESULT_OK) {
+            // Mail was deleted or updated, refresh the mail list
+            viewModel.loadUserLabels(); // Refresh labels if needed
+            viewModel.refreshCurrentCategory(); // Refresh the current category mails
+        }
+        
+        if (requestCode == REQUEST_CODE_COMPOSE && (resultCode == com.example.eyo.ui.compose.ComposeActivity.RESULT_DRAFT_SAVED || 
+                                                   resultCode == com.example.eyo.ui.compose.ComposeActivity.RESULT_MAIL_SENT ||
+                                                   resultCode == com.example.eyo.ui.compose.ComposeActivity.RESULT_DRAFT_DELETED)) {
+            // Draft was saved, mail was sent, or draft was deleted, refresh the mail list
+            viewModel.loadUserLabels(); // Refresh labels if needed
+            viewModel.refreshCurrentCategory(); // Refresh the current category mails
+        }
     }
     
     @Override
@@ -255,32 +296,16 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        
-        if (requestCode == REQUEST_CODE_MAIL_DETAIL && resultCode == RESULT_OK) {
-            // Mail was deleted or updated, refresh the mail list
-            viewModel.loadUserLabels(); // Refresh labels if needed
-            // The ViewModel will automatically refresh the mails based on current filter
-        }
-    }
-
     private void toggleStarStatus(Mail mail) {
         if (mail == null) return;
         
         List<String> labels = new ArrayList<>(mail.getLabels());
-        boolean isStarred = labels.contains("3");
+        boolean isStarred = mail.isStarred();
         
         if (isStarred) {
-            // Remove star label (label id 3)
-            labels.remove("3");
-            labels.removeIf(label -> label.equals("3"));
+            labels.remove("Starred");
         } else {
-            // Add star label (label id 3)
-            if (!labels.contains("3")) {
-                labels.add("3");
-            }
+            labels.add("Starred");
         }
         
         // Update mail labels via API

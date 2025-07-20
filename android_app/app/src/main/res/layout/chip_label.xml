@@ -5,19 +5,10 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:background="@drawable/chip_background"
-    android:paddingHorizontal="10dp"
-    android:paddingVertical="4dp"
-    android:layout_marginEnd="6dp"
-    android:layout_marginBottom="4dp">
-
-    <!-- Color Indicator -->
-    <View
-        android:id="@+id/v_label_color"
-        android:layout_width="6dp"
-        android:layout_height="5dp"
-        android:layout_marginEnd="6dp"
-        android:background="@drawable/label_color_circle" />
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="8dp"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/label_chip_background">
 
     <!-- Label Name -->
     <TextView
@@ -25,8 +16,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Label Name"
-        android:textSize="11sp"
-        android:textColor="@color/chip_text_color"
+        android:textSize="12sp"
+        android:textColor="@android:color/white"
         android:maxLines="1"
         android:ellipsize="end"
         android:textStyle="bold" />

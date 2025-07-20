@@ -251,6 +251,14 @@ public class HomeViewModel extends AndroidViewModel {
         loadMailsForCategoryInternal(category);
     }
     
+    // Public method to refresh current category mails
+    public void refreshCurrentCategory() {
+        String currentCategory = currentFilter.getValue();
+        if (currentCategory != null) {
+            loadMailsForCategoryInternal(currentCategory);
+        }
+    }
+    
     // Load mails for specific category
     private void loadMailsForCategoryInternal(String category) {
         setLoading(true);

@@ -14,11 +14,12 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginEnd="12dp"
-        android:background="@drawable/search_background"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_report"
         android:contentDescription="Report as spam"
         android:scaleType="centerInside"
-        android:padding="8dp" />
+        android:padding="8dp"
+        android:tint="@color/action_icon_tint" />
 
     <!-- Label Button -->
     <ImageButton
@@ -26,22 +27,24 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginEnd="12dp"
-        android:background="@drawable/search_background"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_label"
         android:contentDescription="Manage labels"
         android:scaleType="centerInside"
-        android:padding="8dp" />
+        android:padding="8dp"
+        android:tint="@color/action_icon_tint" />
 
     <!-- Delete Button -->
     <ImageButton
         android:id="@+id/btn_delete"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:background="@drawable/search_background"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_delete"
         android:contentDescription="Delete mail"
         android:scaleType="centerInside"
-        android:padding="8dp" />
+        android:padding="8dp"
+        android:tint="@color/action_icon_tint" />
 
     <!-- Spacer -->
     <View

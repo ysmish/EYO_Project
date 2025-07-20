@@ -25,6 +25,9 @@ import java.util.List;
 public class ComposeActivity extends AppCompatActivity {
 
     private static final String EXTRA_DRAFT_MAIL = "extra_draft_mail";
+    public static final int RESULT_DRAFT_SAVED = 1001;
+    public static final int RESULT_MAIL_SENT = 1002;
+    public static final int RESULT_DRAFT_DELETED = 1003;
 
     private EditText etTo, etCc, etSubject, etBody;
     private ImageButton btnAddCc, btnRemoveCc;
@@ -171,8 +174,16 @@ public class ComposeActivity extends AppCompatActivity {
             if (success != null) {
                 Toast.makeText(this, success, Toast.LENGTH_SHORT).show();
                 
-                // Close activity after any successful operation
+                // Close activity after any successful operation with proper result
                 if (isWaitingForOperation) {
+                    // Determine the result based on the success message
+                    if (success.contains("sent") || success.contains("Sent")) {
+                        setResult(RESULT_MAIL_SENT);
+                    } else if (success.contains("deleted")) {
+                        setResult(RESULT_DRAFT_DELETED);
+                    } else {
+                        setResult(RESULT_DRAFT_SAVED);
+                    }
                     finish();
                 }
             }
@@ -251,7 +262,14 @@ public class ComposeActivity extends AppCompatActivity {
             isWaitingForOperation = true;
             List<String> toList = parseUsernames(to);
             List<String> ccList = cc.isEmpty() ? null : parseUsernames(cc);
-            viewModel.saveAsDraft(toList, ccList, subject, body);
+            
+            if (draftMail != null) {
+                // We're editing an existing draft - update it instead of creating new
+                viewModel.updateDraft(draftMail.getId(), toList, ccList, subject, body);
+            } else {
+                // We're creating a new draft
+                viewModel.saveAsDraft(toList, ccList, subject, body);
+            }
         } else {
             // No content to save, just close
             finish();
@@ -259,18 +277,25 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     private void deleteWithoutSaving() {
-        // Check if there's content
-        String to = etTo.getText().toString().trim();
-        String cc = etCc.getText().toString().trim();
-        String subject = etSubject.getText().toString().trim();
-        String body = etBody.getText().toString().trim();
+        // Check if we're editing an existing draft
+        if (draftMail != null) {
+            // Delete the existing draft from server
+            isWaitingForOperation = true;
+            viewModel.deleteDraft(draftMail.getId());
+        } else {
+            // Check if there's content for a new draft
+            String to = etTo.getText().toString().trim();
+            String cc = etCc.getText().toString().trim();
+            String subject = etSubject.getText().toString().trim();
+            String body = etBody.getText().toString().trim();
 
-        if (!to.isEmpty() || !cc.isEmpty() || !subject.isEmpty() || !body.isEmpty()) {
-            Toast.makeText(this, "Message discarded", Toast.LENGTH_SHORT).show();
+            if (!to.isEmpty() || !cc.isEmpty() || !subject.isEmpty() || !body.isEmpty()) {
+                Toast.makeText(this, "Message discarded", Toast.LENGTH_SHORT).show();
+            }
+            
+            // No server call needed for new draft, just close
+            finish();
         }
-        
-        // Delete doesn't need server call, so finish immediately
-        finish();
     }
 
     private List<String> parseUsernames(String usernameString) {
