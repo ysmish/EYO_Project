@@ -89,6 +89,14 @@ public class MailAdapter extends RecyclerView.Adapter<MailAdapter.MailViewHolder
         notifyDataSetChanged(); // Refresh to update display
     }
     
+    /**
+     * Clear user cache and refresh the mail list to show updated profile pictures
+     */
+    public void refreshProfilePictures() {
+        userCache.clear();
+        notifyDataSetChanged();
+    }
+    
     class MailViewHolder extends RecyclerView.ViewHolder {
         private TextView senderName;
         private TextView mailTime;

@@ -108,6 +108,14 @@ public class RegistrationActivity extends AppCompatActivity {
                 
                 // Clear form fields after successful registration
                 clearForm();
+                
+                // Auto-redirect to login activity after a short delay
+                new android.os.Handler().postDelayed(() -> {
+                    Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                }, 2000); // 2 second delay to show the success message
             }
         });
 

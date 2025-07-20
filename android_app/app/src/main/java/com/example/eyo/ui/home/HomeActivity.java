@@ -36,6 +36,7 @@ public class HomeActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_CREATE_LABEL = 100;
     private static final int REQUEST_CODE_MAIL_DETAIL = 1001;
     private static final int REQUEST_CODE_COMPOSE = 1002;
+    private static final int REQUEST_CODE_PROFILE_PICTURE = 1003;
 
 
     private DrawerLayout drawerLayout;
@@ -206,7 +207,22 @@ public class HomeActivity extends AppCompatActivity {
         
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
-                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+                // Check if it's a session expired error
+                if (error.contains("Session expired")) {
+                    // Clear token and redirect to login
+                    TokenManager tokenManager = TokenManager.getInstance(this);
+                    tokenManager.clearToken();
+                    
+                    Toast.makeText(this, "Session expired. Please login again.", Toast.LENGTH_LONG).show();
+                    
+                    // Redirect to login activity
+                    Intent intent = new Intent(this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+                }
             }
         });
         
@@ -284,6 +300,20 @@ public class HomeActivity extends AppCompatActivity {
             // Draft was saved, mail was sent, or draft was deleted, refresh the mail list
             viewModel.loadUserLabels(); // Refresh labels if needed
             viewModel.refreshCurrentCategory(); // Refresh the current category mails
+        }
+        
+        if (requestCode == REQUEST_CODE_PROFILE_PICTURE && resultCode == RESULT_OK) {
+            // Profile picture was updated, refresh user data
+            viewModel.loadCurrentUserData(); // Refresh user data to get updated profile picture
+            // Also refresh the profile button
+            viewModel.getCurrentUser().observe(this, user -> {
+                if (user != null) {
+                    profileDialogManager.updateProfileButton(user, btnProfile);
+                }
+            });
+            
+            // Refresh the mail list to show updated profile pictures
+            mailAdapter.refreshProfilePictures();
         }
     }
     

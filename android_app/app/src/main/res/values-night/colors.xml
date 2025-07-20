@@ -39,4 +39,9 @@
     <color name="action_icon_tint">#FFFFFF</color>
     <color name="menu_icon_tint">#FFFFFF</color>
     <color name="sender_avatar_tint">#888888</color>
+    
+    <!-- Dialog colors - Dark mode -->
+    <color name="dialog_background">#1E1E1E</color>
+    <color name="dialog_text_color">#FFFFFF</color>
+    <color name="dialog_button_text">#BB86FC</color>
 </resources> 

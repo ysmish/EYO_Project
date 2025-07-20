@@ -64,6 +64,19 @@ public class ProfileDialogManager {
                 .setCancelable(true)
                 .create();
         
+        // Add click listener to profile picture (after dialog is created)
+        ivProfilePicture.setOnClickListener(v -> {
+            dialog.dismiss();
+            // Launch ProfilePictureActivity
+            android.content.Intent intent = new android.content.Intent(context, com.example.eyo.ui.profile.ProfilePictureActivity.class);
+            if (context instanceof android.app.Activity) {
+                ((android.app.Activity) context).startActivityForResult(intent, 1003); // REQUEST_CODE_PROFILE_PICTURE
+            } else {
+                intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            }
+        });
+        
         btnOk.setOnClickListener(v -> dialog.dismiss());
         
         dialog.show();

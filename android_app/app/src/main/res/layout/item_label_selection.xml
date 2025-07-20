@@ -28,6 +28,6 @@
         android:layout_weight="1"
         android:text="Label Name"
         android:textSize="14sp"
-        android:textColor="@color/mail_unread_text" />
+        android:textColor="@color/dialog_text_color" />
 
 </LinearLayout>

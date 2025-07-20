@@ -71,6 +71,11 @@ public class GenericApiTask<T> extends AsyncTask<Void, Void, ApiResponse<T>> {
                 T data = request.parseResponse(responseCode, response.toString());
                 return new ApiResponse<>(true, data, "Success");
             } else {
+                // Handle 401 Unauthorized - session expired
+                if (responseCode == 401) {
+                    return new ApiResponse<>(false, "Session expired. Please login again.");
+                }
+                
                 String error = request.getErrorMessage(responseCode, response.toString());
                 return new ApiResponse<>(false, error);
             }
@@ -85,7 +90,26 @@ public class GenericApiTask<T> extends AsyncTask<Void, Void, ApiResponse<T>> {
         if (response.isSuccess()) {
             callback.onSuccess(response.getData());
         } else {
+            // If it's a session expired error, we need to handle it specially
+            if (response.getError().contains("Session expired")) {
+                // Clear the token and redirect to login
+                clearTokenAndRedirectToLogin();
+            }
             callback.onError(response.getError());
+        }
+    }
+    
+    private void clearTokenAndRedirectToLogin() {
+        // Clear the stored token
+        try {
+            Class<?> tokenManagerClass = Class.forName("com.example.eyo.utils.TokenManager");
+            java.lang.reflect.Method getInstanceMethod = tokenManagerClass.getMethod("getInstance", android.content.Context.class);
+            Object tokenManager = getInstanceMethod.invoke(null, (Object) null);
+            java.lang.reflect.Method clearTokenMethod = tokenManagerClass.getMethod("clearToken");
+            clearTokenMethod.invoke(tokenManager);
+        } catch (Exception e) {
+            // If we can't clear the token, just log it
+            android.util.Log.w("GenericApiTask", "Could not clear token on session expiry");
         }
     }
 } 
