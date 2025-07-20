@@ -19,6 +19,7 @@ import com.example.eyo.R;
 import com.example.eyo.data.Mail;
 import com.example.eyo.viewmodel.ComposeViewModel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -164,6 +165,7 @@ public class ComposeActivity extends AppCompatActivity {
 
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) {
+                android.util.Log.e("ComposeActivity", "Error message received: " + error);
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
                 // Reset waiting flag on error
                 isWaitingForOperation = false;
@@ -257,21 +259,28 @@ public class ComposeActivity extends AppCompatActivity {
         String subject = etSubject.getText().toString().trim();
         String body = etBody.getText().toString().trim();
 
+        android.util.Log.d("ComposeActivity", "saveAsDraftAndClose - to: '" + to + "', cc: '" + cc + "', subject: '" + subject + "', body: '" + body + "'");
+
         if (!to.isEmpty() || !cc.isEmpty() || !subject.isEmpty() || !body.isEmpty()) {
             // Save as draft using the ViewModel and wait for completion
             isWaitingForOperation = true;
             List<String> toList = parseUsernames(to);
             List<String> ccList = cc.isEmpty() ? null : parseUsernames(cc);
             
+            android.util.Log.d("ComposeActivity", "saveAsDraftAndClose - toList: " + toList + ", ccList: " + ccList);
+            
             if (draftMail != null) {
                 // We're editing an existing draft - update it instead of creating new
+                android.util.Log.d("ComposeActivity", "saveAsDraftAndClose - updating existing draft: " + draftMail.getId());
                 viewModel.updateDraft(draftMail.getId(), toList, ccList, subject, body);
             } else {
                 // We're creating a new draft
+                android.util.Log.d("ComposeActivity", "saveAsDraftAndClose - creating new draft");
                 viewModel.saveAsDraft(toList, ccList, subject, body);
             }
         } else {
             // No content to save, just close
+            android.util.Log.d("ComposeActivity", "saveAsDraftAndClose - no content to save, closing");
             finish();
         }
     }
@@ -299,12 +308,22 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     private List<String> parseUsernames(String usernameString) {
+        if (usernameString == null || usernameString.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        
         // Split by comma and trim whitespace
         String[] usernames = usernameString.split(",");
-        for (int i = 0; i < usernames.length; i++) {
-            usernames[i] = usernames[i].trim();
+        List<String> result = new ArrayList<>();
+        
+        for (String username : usernames) {
+            String trimmed = username.trim();
+            if (!trimmed.isEmpty()) {
+                result.add(trimmed);
+            }
         }
-        return Arrays.asList(usernames);
+        
+        return result;
     }
 
     private void populateFieldsFromDraft() {
@@ -339,6 +358,6 @@ public class ComposeActivity extends AppCompatActivity {
     public void onBackPressed() {
         // Save as draft when back button is pressed (same as X button)
         saveAsDraftAndClose();
-        super.onBackPressed();
+        // Don't call super.onBackPressed() here - let the operation complete first
     }
 } 

@@ -69,6 +69,11 @@ public class NavigationHandler implements NavigationView.OnNavigationItemSelecte
             
             // Add user labels dynamically
             for (Label label : labels) {
+                // Skip system labels (IDs 1-5: Inbox, Sent, Starred, Drafts, Spam)
+                if (label.getId() >= 1 && label.getId() <= 5) {
+                    continue;
+                }
+                
                 MenuItem labelItem = labelsSubmenu.add(Menu.NONE, View.generateViewId(), Menu.NONE, label.getName());
                 
                 // Create a colored icon for this label

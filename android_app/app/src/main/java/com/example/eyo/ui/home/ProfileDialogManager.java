@@ -94,9 +94,9 @@ public class ProfileDialogManager {
             Log.d("ProfileDialog", "No profile picture found, using default. User: " + (user != null ? "exists" : "null") + 
                   ", Photo: " + (user != null ? user.getPhoto() : "N/A"));
             
-            // Use default icon with black tint for light theme
+            // Use default icon without tint to keep original gray color
             profileButton.setImageResource(R.drawable.ic_person);
-            profileButton.setImageTintList(context.getResources().getColorStateList(R.color.black, context.getTheme()));
+            profileButton.setImageTintList(null);
         }
     }
 } 

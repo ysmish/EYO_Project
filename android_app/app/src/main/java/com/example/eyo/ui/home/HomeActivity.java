@@ -303,9 +303,12 @@ public class HomeActivity extends AppCompatActivity {
         boolean isStarred = mail.isStarred();
         
         if (isStarred) {
-            labels.remove("Starred");
+            // Remove Starred label (ID 3)
+            labels.remove("3");
+            labels.remove("Starred"); // Also remove string version if present
         } else {
-            labels.add("Starred");
+            // Add Starred label (ID 3)
+            labels.add("3");
         }
         
         // Update mail labels via API
@@ -322,6 +325,9 @@ public class HomeActivity extends AppCompatActivity {
                     Toast.makeText(HomeActivity.this, 
                         isStarred ? "Removed from starred" : "Added to starred", 
                         Toast.LENGTH_SHORT).show();
+                    
+                    // Refresh the mail list from server to ensure consistency
+                    viewModel.refreshCurrentCategory();
                 }
 
                 @Override

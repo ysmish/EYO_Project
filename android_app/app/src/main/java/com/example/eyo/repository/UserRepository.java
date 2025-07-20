@@ -133,16 +133,26 @@ public class UserRepository {
 
         // Check if there's any content to save (like React app does)
         boolean hasContent = false;
-        if (toList != null && !toList.isEmpty() && !toList.get(0).trim().isEmpty()) {
+        if (toList != null && !toList.isEmpty()) {
+            for (String recipient : toList) {
+                if (recipient != null && !recipient.trim().isEmpty()) {
+                    hasContent = true;
+                    break;
+                }
+            }
+        }
+        if (!hasContent && ccList != null && !ccList.isEmpty()) {
+            for (String recipient : ccList) {
+                if (recipient != null && !recipient.trim().isEmpty()) {
+                    hasContent = true;
+                    break;
+                }
+            }
+        }
+        if (!hasContent && subject != null && !subject.trim().isEmpty()) {
             hasContent = true;
         }
-        if (ccList != null && !ccList.isEmpty() && !ccList.get(0).trim().isEmpty()) {
-            hasContent = true;
-        }
-        if (subject != null && !subject.trim().isEmpty()) {
-            hasContent = true;
-        }
-        if (body != null && !body.trim().isEmpty()) {
+        if (!hasContent && body != null && !body.trim().isEmpty()) {
             hasContent = true;
         }
         
@@ -173,16 +183,26 @@ public class UserRepository {
 
         // Check if there's any content to save (like React app does)
         boolean hasContent = false;
-        if (toList != null && !toList.isEmpty() && !toList.get(0).trim().isEmpty()) {
+        if (toList != null && !toList.isEmpty()) {
+            for (String recipient : toList) {
+                if (recipient != null && !recipient.trim().isEmpty()) {
+                    hasContent = true;
+                    break;
+                }
+            }
+        }
+        if (!hasContent && ccList != null && !ccList.isEmpty()) {
+            for (String recipient : ccList) {
+                if (recipient != null && !recipient.trim().isEmpty()) {
+                    hasContent = true;
+                    break;
+                }
+            }
+        }
+        if (!hasContent && subject != null && !subject.trim().isEmpty()) {
             hasContent = true;
         }
-        if (ccList != null && !ccList.isEmpty() && !ccList.get(0).trim().isEmpty()) {
-            hasContent = true;
-        }
-        if (subject != null && !subject.trim().isEmpty()) {
-            hasContent = true;
-        }
-        if (body != null && !body.trim().isEmpty()) {
+        if (!hasContent && body != null && !body.trim().isEmpty()) {
             hasContent = true;
         }
         

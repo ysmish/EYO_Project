@@ -282,8 +282,14 @@ public class LabelChipsContainer extends ViewGroup {
             // Set label name (for custom labels, use the name as-is)
             labelNameText.setText(labelName);
             
-            // Use default color for custom labels
-            int color = Color.parseColor("#4F46E5"); // Default purple
+            // Use theme-aware color for custom labels
+            Context context = getContext();
+            int color;
+            if (context != null) {
+                color = context.getResources().getColor(R.color.chip_background_color, context.getTheme());
+            } else {
+                color = Color.parseColor("#4F46E5"); // Default purple fallback
+            }
             chipView.setBackground(createColoredBackground(color));
             
             addView(chipView);
@@ -316,42 +322,30 @@ public class LabelChipsContainer extends ViewGroup {
 
     /**
      * Get system label color based on label ID
+     * Uses theme-aware colors that work in both light and dark modes
      */
     private int getSystemLabelColor(String labelId) {
-        switch (labelId) {
-            case "1": // Inbox
-                return Color.parseColor("#3B82F6"); // Blue
-            case "2": // Sent
-                return Color.parseColor("#10B981"); // Green
-            case "3": // Starred
-                return Color.parseColor("#F59E0B"); // Yellow
-            case "4": // Drafts
-                return Color.parseColor("#6B7280"); // Gray
-            case "5": // Spam
-                return Color.parseColor("#EF4444"); // Red
-            default:
-                return Color.parseColor("#4F46E5"); // Default purple
+        Context context = getContext();
+        if (context == null) {
+            return Color.parseColor("#4F46E5"); // Default purple fallback
         }
+        
+        // Use theme-aware chip colors similar to search wrapper
+        return context.getResources().getColor(R.color.chip_background_color, context.getTheme());
     }
 
     /**
      * Get system label color based on label name
+     * Uses theme-aware colors that work in both light and dark modes
      */
     private int getSystemLabelColorByName(String labelName) {
-        switch (labelName) {
-            case "Inbox":
-                return Color.parseColor("#3B82F6"); // Blue
-            case "Sent":
-                return Color.parseColor("#10B981"); // Green
-            case "Starred":
-                return Color.parseColor("#F59E0B"); // Yellow
-            case "Drafts":
-                return Color.parseColor("#6B7280"); // Gray
-            case "Spam":
-                return Color.parseColor("#EF4444"); // Red
-            default:
-                return Color.parseColor("#4F46E5"); // Default purple
+        Context context = getContext();
+        if (context == null) {
+            return Color.parseColor("#4F46E5"); // Default purple fallback
         }
+        
+        // Use theme-aware chip colors similar to search wrapper
+        return context.getResources().getColor(R.color.chip_background_color, context.getTheme());
     }
 
     /**

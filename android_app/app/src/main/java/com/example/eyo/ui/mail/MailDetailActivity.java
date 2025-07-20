@@ -80,6 +80,7 @@ public class MailDetailActivity extends AppCompatActivity {
         
         initializeViews();
         setupListeners();
+        loadLabels();
         loadMailData();
     }
     
@@ -103,7 +104,11 @@ public class MailDetailActivity extends AppCompatActivity {
     }
     
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(v -> {
+            // Set result to indicate activity finished (for potential list refresh)
+            setResult(RESULT_OK);
+            finish();
+        });
         
         // Star button listener
         btnStar.setOnClickListener(v -> toggleStarStatus());
@@ -308,10 +313,16 @@ public class MailDetailActivity extends AppCompatActivity {
             if (!allLabels.isEmpty()) {
                 layoutLabels.setVisibility(View.VISIBLE);
                 
-                // Always use simple chips since the mail's labels already contain all the information
-                // This ensures system labels (Inbox, Sent, Starred, Drafts, Spam) are always shown
-                Log.d("MailDetailActivity", "Using simple chips for " + allLabels.size() + " labels");
-                chipsLabels.showSimpleChips(allLabels);
+                // If we have available labels with colors, use proper chip display
+                if (!availableLabels.isEmpty()) {
+                    Log.d("MailDetailActivity", "Using proper chip display with " + availableLabels.size() + " available labels");
+                    chipsLabels.setLabels(availableLabels);
+                    chipsLabels.setAppliedLabels(allLabels);
+                } else {
+                    // Fall back to simple chips if labels not loaded yet
+                    Log.d("MailDetailActivity", "Using simple chips fallback for " + allLabels.size() + " labels");
+                    chipsLabels.showSimpleChips(allLabels);
+                }
                 
                 // Update star button state after labels are displayed
                 updateStarButtonState();
@@ -385,9 +396,12 @@ public class MailDetailActivity extends AppCompatActivity {
         boolean isStarred = currentMail.isStarred();
         
         if (isStarred) {
-            labels.remove("Starred");
+            // Remove Starred label (ID 3)
+            labels.remove("3");
+            labels.remove("Starred"); // Also remove string version if present
         } else {
-            labels.add("Starred");
+            // Add Starred label (ID 3)
+            labels.add("3");
         }
 
         // Update mail labels via API
@@ -399,10 +413,19 @@ public class MailDetailActivity extends AppCompatActivity {
                 public void onSuccess(String result) {
                     // Update the mail object
                     currentMail.setLabels(labels);
+                    
+                    // Refresh the chips display to show the updated labels
+                    updateLabelChipsDisplay();
+                    
+                    // Update star button state
                     updateStarButtonState();
+                    
                     Toast.makeText(MailDetailActivity.this,
                             isStarred ? "Removed from starred" : "Added to starred",
                             Toast.LENGTH_SHORT).show();
+                    
+                    // Set result to indicate mail was updated
+                    setResult(RESULT_OK);
                 }
 
                 @Override
@@ -418,10 +441,9 @@ public class MailDetailActivity extends AppCompatActivity {
         private void updateStarButtonState() {
         if (currentMail == null) return;
         
-        List<String> labels = currentMail.getLabels();
-        boolean isStarred = labels != null && (labels.contains("Starred"));
+        boolean isStarred = currentMail.isStarred();
         
-        Log.d("MailDetailActivity", "updateStarButtonState - labels: " + labels + ", isStarred: " + isStarred);
+        Log.d("MailDetailActivity", "updateStarButtonState - labels: " + currentMail.getLabels() + ", isStarred: " + isStarred);
         
         if (isStarred) {
             btnStar.setImageResource(R.drawable.ic_star_filled);
@@ -436,8 +458,8 @@ public class MailDetailActivity extends AppCompatActivity {
     
     @Override
     public void onBackPressed() {
-        // Handle back button press
+        // Set result to indicate activity finished (for potential list refresh)
+        setResult(RESULT_OK);
         super.onBackPressed();
-        finish();
     }
 }
