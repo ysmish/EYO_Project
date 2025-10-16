@@ -1,4 +1,4 @@
-# ASP Project - Email System with Bloom Filter
+# EYO Project - Email System with Bloom Filter
 
 A comprehensive email management system featuring URL blacklisting with Bloom Filter, built with modern microservices architecture.
 
@@ -6,8 +6,8 @@ A comprehensive email management system featuring URL blacklisting with Bloom Fi
 
 ```bash
 # Clone the repository
-git clone https://github.com/Mro2903/ASP_Project.git
-cd ASP_Project
+git clone https://github.com/ysmish/EYO_Project.git
+cd EYO_Project
 
 # Start the complete system
 docker-compose run --service-ports web_app
