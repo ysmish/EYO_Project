@@ -2,6 +2,14 @@
 
 A comprehensive email management system featuring URL blacklisting with Bloom Filter, built with modern microservices architecture.
 
+## 📹 Video Of WebApp
+https://github.com/user-attachments/assets/40164366-2e3c-4a53-9b73-117602cc5bad
+
+## 📱 Video Of AndroidApp
+https://github.com/user-attachments/assets/0c637f27-7773-4752-b7b4-f91f298d6f75
+
+
+
 ## 🚀 Quick Start
 
 ```bash
